@@ -1,0 +1,7 @@
+[2024-10-25 16:18:47.930] [info] Updating Model file from 40000 to latest format...
+[2024-10-25 16:18:47.936] [info] Loaded model Human_prosthesis_body from file E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\model\NOT YET TO USE\Human-prosthesis body.osim
+[2024-10-25 16:19:01.515] [info] Loaded model subject01 from file E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\model\coupled_human-prosthesis_model_scaledFinal.osim
+[2024-10-25 16:19:27.244] [info] Loaded model subject01 from file E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\model\coupled_human-prosthesis_model_scaledOnly.osim
+[2024-10-25 16:21:05.566] [info] Loaded model coupled_human-prosthesis_model from file E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\model\coupled_human-prosthesis_model.osim
+[2024-10-25 16:22:03.874] [info] Loaded model subject01 from file E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\model\coupled_human-prosthesis_model_scaledFinal.osim
+[2024-10-25 16:22:32.927] [info] Storage: read data file = E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\assets\subject01_static_output.mot (nr=1 nc=55)
