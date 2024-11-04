@@ -21,13 +21,22 @@
 addpath('assets\', 'model\')
 import org.opensim.modeling.*
 
-%% Run Inverse Kinematics Tool
+%% run Inverse Kinematics Tool and display logger
+loggerFile = fopen('opensim.log','rt');
+fseek(loggerFile,0,'eof');
+
 model = Model('model\coupled_human-prosthesis_model_scaledFinal.osim');
 model.setUseVisualizer(true);
 state = model.initSystem();
 ikTool = InverseKinematicsTool('ik_setup.xml'); % configure ik tool
 ikTool.setModel(model); 
-ikTool.run();
+ikTool.run(); % RUN INVERSE KINEMATICS
+
+while ~feof(loggerFile)
+    line = fgetl(loggerFile);
+    disp(line)
+end
+fclose(loggerFile);
 
 movefile('subject01_ik_marker_errors.sto','assets\'); % this .sto file is auto generated, which has to be moved manually
 

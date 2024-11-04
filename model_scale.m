@@ -21,11 +21,18 @@
 addpath('assets\', 'model\')
 import org.opensim.modeling.*
 
-%% configure scaling tool
-scaleTool = ScaleTool('scale_setup.xml');
+%% run scaling tool and display logger
+loggerFile = fopen('opensim.log','rt');
+fseek(loggerFile,0,'eof');
 
-%% run scaling tool
-scaleTool.run();
+scaleTool = ScaleTool('scale_setup.xml'); % configure scaling tool
+scaleTool.run(); % RUN SCALE
+
+while ~feof(loggerFile)
+    line = fgetl(loggerFile);
+    disp(line)
+end
+fclose(loggerFile);
 
 %% show scaled model with static pose
 % flow: get the values from .mot -> get the names from model -> assign the

@@ -55,12 +55,21 @@
 addpath('assets\', 'model\')
 import org.opensim.modeling.*
 
-%% Run Inverse Kinematics Tool
+%% run Inverse Kinematics Tool and display logger
+loggerFile = fopen('opensim.log','rt');
+fseek(loggerFile,0,'eof');
+
 rraTool = RRATool('rra_setup.xml'); % configure rra tool
-rraTool.run();
+rraTool.run(); % RUN RRA
+
+while ~feof(loggerFile)
+    line = fgetl(loggerFile);
+    disp(line)
+end
+fclose(loggerFile);
 
 % report of average residual force
-type 'assets\ResultsRRA\subject01_walk1_RRA_avgResiduals.txt','r';
+type('assets\ResultsRRA\subject01_walk1_RRA_avgResiduals.txt','r');
 
 %% Read .sto file and plot the force/torque profile
 forceData = Storage('assets\ResultsRRA\subject01_walk1_RRA_Actuation_force.sto');
