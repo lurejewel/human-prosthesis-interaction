@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="30000">
-	<CMC_TaskSet name="gait2354_RRA">
+	<CMC_TaskSet name="model_RRA">
 		<defaults>
 			<ControlLinear name="default">
 				<is_model_control>true</is_model_control>
@@ -74,11 +74,18 @@
 				<max_control>1</max_control>
 				<!--The set of points defining the path of the muscle.-->
 				<GeometryPath>
+					<!--The set of points defining the path-->
 					<PathPointSet>
 						<objects />
 						<groups />
 					</PathPointSet>
-					<VisibleObject>
+					<!--The wrap objecs that are associated with this path-->
+					<PathWrapSet>
+						<objects />
+						<groups />
+					</PathWrapSet>
+					<!--Used to display the path in the 3D window-->
+					<VisibleObject name="display">
 						<!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
 						<GeometrySet>
 							<objects />
@@ -93,10 +100,6 @@
 						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
 						<display_preference>4</display_preference>
 					</VisibleObject>
-					<PathWrapSet>
-						<objects />
-						<groups />
-					</PathWrapSet>
 				</GeometryPath>
 				<!--The maximum force this actuator can produce.-->
 				<optimal_force>1</optimal_force>
@@ -137,7 +140,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> false false false</active>
+				<active>false false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 1 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -167,7 +170,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -195,7 +198,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -223,7 +226,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -251,7 +254,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -279,7 +282,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -307,7 +310,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -335,7 +338,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -363,7 +366,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -391,7 +394,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -409,7 +412,7 @@
 				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
 				<limit>0</limit>
 			</CMC_Joint>
-			<CMC_Joint name="knee_angle_r">
+			<CMC_Joint name="knee_flexion_r">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
 				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
@@ -419,7 +422,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -433,11 +436,11 @@
 				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
 				<r2> 0 0 0</r2>
 				<!--Name of the coordinate to be tracked.-->
-				<coordinate>knee_angle_r</coordinate>
+				<coordinate>knee_flexion_r</coordinate>
 				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
 				<limit>0</limit>
 			</CMC_Joint>
-			<CMC_Joint name="ankle_angle_r">
+			<CMC_Joint name="ankle_dorsiflexion_r">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
 				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
@@ -447,7 +450,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -461,63 +464,7 @@
 				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
 				<r2> 0 0 0</r2>
 				<!--Name of the coordinate to be tracked.-->
-				<coordinate>ankle_angle_r</coordinate>
-				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
-				<limit>0</limit>
-			</CMC_Joint>
-			<CMC_Joint name="subtalar_angle_r">
-				<!--Flag (true or false) indicating whether or not a task is enabled.-->
-				<on>true</on>
-				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
-				<weight> 20</weight>
-				<!--Name of body frame with respect to which a tracking objective is specified. The special name 'center_of_mass' refers to the system center of mass. This property is not used for tracking joint angles.-->
-				<wrt_body>-1</wrt_body>
-				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
-				<express_body>-1</express_body>
-				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
-				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kp> 100 1 1</kp>
-				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kv> 20 1 1</kv>
-				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no gain.-->
-				<ka> 1 1 1</ka>
-				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use this propery.-->
-				<r0> 0 0 0</r0>
-				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use this property.-->
-				<r1> 0 0 0</r1>
-				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
-				<r2> 0 0 0</r2>
-				<!--Name of the coordinate to be tracked.-->
-				<coordinate>subtalar_angle_r</coordinate>
-				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
-				<limit>0</limit>
-			</CMC_Joint>
-			<CMC_Joint name="mtp_angle_r">
-				<!--Flag (true or false) indicating whether or not a task is enabled.-->
-				<on>true</on>
-				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
-				<weight> 20</weight>
-				<!--Name of body frame with respect to which a tracking objective is specified. The special name 'center_of_mass' refers to the system center of mass. This property is not used for tracking joint angles.-->
-				<wrt_body>-1</wrt_body>
-				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
-				<express_body>-1</express_body>
-				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
-				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kp> 100 1 1</kp>
-				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kv> 20 1 1</kv>
-				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no gain.-->
-				<ka> 1 1 1</ka>
-				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use this propery.-->
-				<r0> 0 0 0</r0>
-				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use this property.-->
-				<r1> 0 0 0</r1>
-				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
-				<r2> 0 0 0</r2>
-				<!--Name of the coordinate to be tracked.-->
-				<coordinate>mtp_angle_r</coordinate>
+				<coordinate>ankle_dorsiflexion_r</coordinate>
 				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
 				<limit>0</limit>
 			</CMC_Joint>
@@ -531,7 +478,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -559,7 +506,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -587,7 +534,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -605,7 +552,7 @@
 				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
 				<limit>0</limit>
 			</CMC_Joint>
-			<CMC_Joint name="knee_angle_l">
+			<CMC_Joint name="knee_flexion_l">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
 				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
@@ -615,7 +562,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -629,11 +576,11 @@
 				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
 				<r2> 0 0 0</r2>
 				<!--Name of the coordinate to be tracked.-->
-				<coordinate>knee_angle_l</coordinate>
+				<coordinate>knee_flexion_l</coordinate>
 				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
 				<limit>0</limit>
 			</CMC_Joint>
-			<CMC_Joint name="ankle_angle_l">
+			<CMC_Joint name="ankle_dorsiflexion_l">
 				<!--Flag (true or false) indicating whether or not a task is enabled.-->
 				<on>true</on>
 				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
@@ -643,7 +590,7 @@
 				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
 				<express_body>-1</express_body>
 				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
+				<active>true false false </active>
 				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
 				<kp> 100 1 1</kp>
 				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
@@ -657,147 +604,7 @@
 				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
 				<r2> 0 0 0</r2>
 				<!--Name of the coordinate to be tracked.-->
-				<coordinate>ankle_angle_l</coordinate>
-				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
-				<limit>0</limit>
-			</CMC_Joint>
-			<CMC_Joint name="subtalar_angle_l">
-				<!--Flag (true or false) indicating whether or not a task is enabled.-->
-				<on>true</on>
-				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
-				<weight> 20</weight>
-				<!--Name of body frame with respect to which a tracking objective is specified. The special name 'center_of_mass' refers to the system center of mass. This property is not used for tracking joint angles.-->
-				<wrt_body>-1</wrt_body>
-				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
-				<express_body>-1</express_body>
-				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
-				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kp> 100 1 1</kp>
-				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kv> 20 1 1</kv>
-				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no gain.-->
-				<ka> 1 1 1</ka>
-				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use this propery.-->
-				<r0> 0 0 0</r0>
-				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use this property.-->
-				<r1> 0 0 0</r1>
-				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
-				<r2> 0 0 0</r2>
-				<!--Name of the coordinate to be tracked.-->
-				<coordinate>subtalar_angle_l</coordinate>
-				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
-				<limit>0</limit>
-			</CMC_Joint>
-			<CMC_Joint name="mtp_angle_l">
-				<!--Flag (true or false) indicating whether or not a task is enabled.-->
-				<on>true</on>
-				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
-				<weight> 20</weight>
-				<!--Name of body frame with respect to which a tracking objective is specified. The special name 'center_of_mass' refers to the system center of mass. This property is not used for tracking joint angles.-->
-				<wrt_body>-1</wrt_body>
-				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
-				<express_body>-1</express_body>
-				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
-				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kp> 100 1 1</kp>
-				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kv> 20 1 1</kv>
-				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no gain.-->
-				<ka> 1 1 1</ka>
-				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use this propery.-->
-				<r0> 0 0 0</r0>
-				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use this property.-->
-				<r1> 0 0 0</r1>
-				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
-				<r2> 0 0 0</r2>
-				<!--Name of the coordinate to be tracked.-->
-				<coordinate>mtp_angle_l</coordinate>
-				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
-				<limit>0</limit>
-			</CMC_Joint>
-			<CMC_Joint name="lumbar_extension">
-				<!--Flag (true or false) indicating whether or not a task is enabled.-->
-				<on>true</on>
-				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
-				<weight> 50</weight>
-				<!--Name of body frame with respect to which a tracking objective is specified. The special name 'center_of_mass' refers to the system center of mass. This property is not used for tracking joint angles.-->
-				<wrt_body>-1</wrt_body>
-				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
-				<express_body>-1</express_body>
-				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
-				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kp> 100 1 1</kp>
-				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kv> 20 1 1</kv>
-				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no gain.-->
-				<ka> 1 1 1</ka>
-				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use this propery.-->
-				<r0> 0 0 0</r0>
-				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use this property.-->
-				<r1> 0 0 0</r1>
-				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
-				<r2> 0 0 0</r2>
-				<!--Name of the coordinate to be tracked.-->
-				<coordinate>lumbar_extension</coordinate>
-				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
-				<limit>0</limit>
-			</CMC_Joint>
-			<CMC_Joint name="lumbar_bending">
-				<!--Flag (true or false) indicating whether or not a task is enabled.-->
-				<on>true</on>
-				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
-				<weight> 50</weight>
-				<!--Name of body frame with respect to which a tracking objective is specified. The special name 'center_of_mass' refers to the system center of mass. This property is not used for tracking joint angles.-->
-				<wrt_body>-1</wrt_body>
-				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
-				<express_body>-1</express_body>
-				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
-				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kp> 100 1 1</kp>
-				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kv> 20 1 1</kv>
-				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no gain.-->
-				<ka> 1 1 1</ka>
-				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use this propery.-->
-				<r0> 0 0 0</r0>
-				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use this property.-->
-				<r1> 0 0 0</r1>
-				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
-				<r2> 0 0 0</r2>
-				<!--Name of the coordinate to be tracked.-->
-				<coordinate>lumbar_bending</coordinate>
-				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
-				<limit>0</limit>
-			</CMC_Joint>
-			<CMC_Joint name="lumbar_rotation">
-				<!--Flag (true or false) indicating whether or not a task is enabled.-->
-				<on>true</on>
-				<!--Weight with which a task is tracked relative to other tasks. To track a task more tightly, make the weight larger.-->
-				<weight> 10</weight>
-				<!--Name of body frame with respect to which a tracking objective is specified. The special name 'center_of_mass' refers to the system center of mass. This property is not used for tracking joint angles.-->
-				<wrt_body>-1</wrt_body>
-				<!--Name of body frame in which the tracking objectives are expressed.  This property is not used for tracking joint angles.-->
-				<express_body>-1</express_body>
-				<!--Array of 3 flags (each true or false) specifying whether a component of a task is active.  For example, tracking the trajectory of a point in space could have three components (x,y,z).  This allows each of those to be made active (true) or inactive (false).  A task for tracking a joint coordinate only has one component.-->
-				<active> true false false</active>
-				<!--Position error feedback gain (stiffness). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kp> 100 1 1</kp>
-				<!--Velocity error feedback gain (damping). To achieve critical damping of errors, choose kv = 2*sqrt(kp).-->
-				<kv> 20 1 1</kv>
-				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no gain.-->
-				<ka> 1 1 1</ka>
-				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use this propery.-->
-				<r0> 0 0 0</r0>
-				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use this property.-->
-				<r1> 0 0 0</r1>
-				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use this property.-->
-				<r2> 0 0 0</r2>
-				<!--Name of the coordinate to be tracked.-->
-				<coordinate>lumbar_rotation</coordinate>
+				<coordinate>ankle_dorsiflexion_l</coordinate>
 				<!--Error limit on the tracking accuracy for this coordinate. If the tracking errors approach this limit, the weighting for this coordinate is increased. -->
 				<limit>0</limit>
 			</CMC_Joint>

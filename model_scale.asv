@@ -1,0 +1,50 @@
+% -------------------------------------------------------------------------
+% Name: model_scale.m
+% Description: scale model and place markers according to experimental data
+% Info that needs to be specified (in .xml file):
+% - Basic info: mass(kg), height(mm), age(yr)
+% - Generic model: 
+%   * model file name/path
+%   * markerset file name/path [note: markerset should be defined in a seperate file, NOT in the generic model]
+% - Model scaler: 
+%   * measurement pairs
+%   * manual scaling factors
+%   * static .trc file & time range
+%   * output model & scaling file name/path
+% - Marker placer:
+%   * IK weights for markers
+%   * .trc file (usually the same file as above) & time range (usually very small)
+%   * output motion file name/path (.mot)
+%   * output model file name/path
+%   * output marker file name/path (optional)
+% -------------------------------------------------------------------------
+addpath('assets\', 'model\')
+import org.opensim.modeling.*
+
+%% configure scaling tool and logger
+scaleTool = ScaleTool('scale_setup.xml');
+
+Logger.setWritingToXMLFile(true);
+L
+
+%% run scaling tool
+scaleTool.run();
+
+%% show scaled model with static pose
+% flow: get the values from .mot -> get the names from model -> assign the
+% values to the state according to names
+
+% load scaled model
+model = Model('model\coupled_human-prosthesis_model_scaledFinal.osim');
+model.setUseVisualizer(true);
+% read initial pose
+staticState = model.initSystem(); % simply called for a state (which can be reset later)
+motData = Storage('assets\subject01_static_output.mot');  % load initial pose file (.mot); it's a one-frame motion file since it's an output result from the scale tool.
+stateVec = motData.getStateVector(0).getData(); % get all states (q, dq, muscle activation, fiber length) in array form
+% allocate each state value in 'staticState' correspondingly
+for i = 0 : stateVec.size() - 1
+    stateVal = stateVec.get(i); % get the i-th state value
+    stateName = model.getStateVariableNames().get(i); % get its name in the model
+    model.setStateVariableValue(staticState, stateName, stateVal); % assign the state value to the specific state
+end
+model.updVisualizer().show(staticState); % show the model in 'staticState'

@@ -20,7 +20,7 @@
 % - foot, both sides: calcn_r/l
 % - HAT: torso
 % [joints]
-% - ground ~ pelvis: ground_pelvis
+% - ground ~ pelvis: ground_pelvis, with 
 % - pelvis ~ HAT: back
 % - pelvis ~ thigh, both sides: hip_r/l
 % - thigh ~ shank, both sides: knee_r/l
@@ -57,9 +57,9 @@
 % 24-10-12: [joints], [muscles] finished
 % 24-10-14: [markers], [contact] finished
 % 24-10-18: [markers] removed (seperately defined in
-% assets/scale_markerSet.xml; [bodies] hip DOF refined
-% TODO: [forces]; scale, ik, id, so, cmc, fd...trial;
-% muscle reflex; cma-es optimization
+% assets/scale_markerSet.xml; [joints] hip DOF refined
+% 24-10-25: [joints] ground_pelvis DOF refined
+% TODO: rra, so, cmc trial; muscle reflex; cma-es optimization
 % 
 % -------------------------------------------------------------------------
 addpath('assets\', 'model\','model\Geometry\');
