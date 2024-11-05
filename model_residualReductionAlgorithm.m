@@ -2,8 +2,8 @@
 % Name: model_resultsReductionAlgorithim.m
 % Description: calculate model joint torques according to marker data
 % (.trc), while realizing as little residual forces as possible by means of
-% adjusting COM of some body of the model. Residual forces include
-% pelvis_tilt/list/rotation, pelvis_tx/ty/tz.
+% adjusting COM of some body of the model and joint kinematics. Residual
+% forces include pelvis_tilt/list/rotation, pelvis_tx/ty/tz.
 % Info that needs to be specified:
 % - in rra_setup.xml:
 %   * model file name/path
@@ -55,7 +55,7 @@
 addpath('assets\', 'model\')
 import org.opensim.modeling.*
 
-%% run Inverse Kinematics Tool and display logger
+%% run Residual Reduction Algorithm and display logger
 loggerFile = fopen('opensim.log','rt');
 fseek(loggerFile,0,'eof');
 

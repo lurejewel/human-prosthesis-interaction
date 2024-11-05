@@ -1578,3 +1578,2362 @@ y[31] = /jointset/ankle_l/ankle_dorsiflexion_l/speed
 ************************************************************
 
 
+[2024-11-05 11:29:21.080] [info] Loaded model subject01 from file model\subject01_rra_adjusted.osim
+[2024-11-05 12:23:55.197] [info] Loaded model subject01 from file model\subject01_rra_adjusted.osim
+[2024-11-05 12:23:55.208] [info] AbstractTool subject01_walk1 loading model model/subject01_rra_adjusted.osim
+[2024-11-05 12:23:55.217] [info] Loaded model subject01 from file model/subject01_rra_adjusted.osim
+[2024-11-05 14:24:31.717] [error] Failed to construct ExternalLoads from file subject01_walk1_grf.xml. Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one.
+[2024-11-05 14:25:23.979] [info] Loaded model subject01 from file model\subject01_rra_adjusted.osim
+[2024-11-05 14:25:23.997] [info] AbstractTool subject01_walk1 loading model model/subject01_rra_adjusted.osim
+[2024-11-05 14:25:24.009] [info] Loaded model subject01 from file model/subject01_rra_adjusted.osim
+[2024-11-05 14:25:24.017] [info] ExternalLoads 'Ex2' was renamed and is being reset to 'externalloads'.
+[2024-11-05 14:25:24.032] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 14:25:24.049] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 14:25:24.049] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 14:25:24.053] [info] Loading coordinates from file 'assets/subject01_walk1_ik.mot'.
+[2024-11-05 14:25:24.061] [info] Storage: read data file = assets/subject01_walk1_ik.mot (nr=73 nc=17)
+[2024-11-05 14:25:24.076] [info] Found 73 state vectors with time stamps ranging from 0.4 to 1.6.
+[2024-11-05 14:25:24.076] [info] Executing the analyses from 0.4 to 0.45...
+[2024-11-05 14:25:24.084] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 14:25:24.098] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 14:25:24.099] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 14:25:24.104] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 14:25:24.119] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 14:25:24.119] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 14:25:24.259] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 14:25:24.260] [warning] OPTIMIZATION FAILED...
+[2024-11-05 14:25:24.260] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.4.
+[2024-11-05 14:25:24.260] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 11.8201
+   pelvis_rotation: constraint violation = -55.9035
+   pelvis_tilt: constraint violation = -14.3797
+   pelvis_tx: constraint violation = -1.34116
+   pelvis_ty: constraint violation = 4.63229
+   pelvis_tz: constraint violation = 9.96832
+   hip_adduction_r: constraint violation = 1.82026
+   hip_rotation_r: constraint violation = 25.3307
+   hip_flexion_r: constraint violation = 17.5771
+   hip_adduction_l: constraint violation = 8.85427
+   hip_rotation_l: constraint violation = 78.6993
+   hip_flexion_l: constraint violation = -33.8022
+   knee_flexion_r: constraint violation = 66.7341
+   knee_flexion_l: constraint violation = 284.317
+   ankle_dorsiflexion_r: constraint violation = 67.4037
+   ankle_dorsiflexion_l: constraint violation = -8892.63
+
+[2024-11-05 14:25:24.260] [cout] [info] time = 0.4 Performance = 0.0 Constraint violation = 8898.35
+[2024-11-05 14:25:24.261] [info] Bounds for 'hamstrings_r': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'glut_max_r': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'ilipsoas_r': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'vasti_r': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'gastroc_r': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'soleus_r': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'tibia_r': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'hamstrings_l': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'glut_max_l': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'ilipsoas_l': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'vasti_l': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'gastroc_l': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'soleus_l': 0.01 to 1.0.
+[2024-11-05 14:25:24.261] [info] Bounds for 'tibia_l': 0.01 to 1.0.
+[2024-11-05 14:25:24.268] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 14:25:24.268] [warning] OPTIMIZATION FAILED...
+[2024-11-05 14:25:24.268] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.417.
+[2024-11-05 14:25:24.268] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.27595
+   pelvis_rotation: constraint violation = -0.0690941
+   pelvis_tilt: constraint violation = 8.39344
+   pelvis_tx: constraint violation = 2.60758
+   pelvis_ty: constraint violation = 9.17233
+   pelvis_tz: constraint violation = 3.93769
+   hip_adduction_r: constraint violation = 4.35912
+   hip_rotation_r: constraint violation = -14.9628
+   hip_flexion_r: constraint violation = -22.2227
+   hip_adduction_l: constraint violation = 21.9013
+   hip_rotation_l: constraint violation = 28.7842
+   hip_flexion_l: constraint violation = -52.2346
+   knee_flexion_r: constraint violation = 35.9561
+   knee_flexion_l: constraint violation = 286.298
+   ankle_dorsiflexion_r: constraint violation = 96.8961
+   ankle_dorsiflexion_l: constraint violation = -9279.54
+
+[2024-11-05 14:25:24.268] [cout] [info] time = 0.417 Performance = 0.0 Constraint violation = 9284.8
+[2024-11-05 14:25:24.275] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 14:25:24.275] [warning] OPTIMIZATION FAILED...
+[2024-11-05 14:25:24.275] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.433.
+[2024-11-05 14:25:24.275] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 7.70019
+   pelvis_rotation: constraint violation = 1.75318
+   pelvis_tilt: constraint violation = 7.25086
+   pelvis_tx: constraint violation = 0.979028
+   pelvis_ty: constraint violation = 9.74285
+   pelvis_tz: constraint violation = 0.620489
+   hip_adduction_r: constraint violation = -9.40076
+   hip_rotation_r: constraint violation = 1.21619
+   hip_flexion_r: constraint violation = -13.5269
+   hip_adduction_l: constraint violation = 12.4353
+   hip_rotation_l: constraint violation = 38.7959
+   hip_flexion_l: constraint violation = -23.381
+   knee_flexion_r: constraint violation = -21.8317
+   knee_flexion_l: constraint violation = 256.746
+   ankle_dorsiflexion_r: constraint violation = 102.028
+   ankle_dorsiflexion_l: constraint violation = -9790.7
+
+[2024-11-05 14:25:24.275] [cout] [info] time = 0.433 Performance = 0.0 Constraint violation = 9794.76
+[2024-11-05 14:25:24.282] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 14:25:24.282] [warning] OPTIMIZATION FAILED...
+[2024-11-05 14:25:24.282] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.45.
+[2024-11-05 14:25:24.282] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 7.45961
+   pelvis_rotation: constraint violation = 2.07521
+   pelvis_tilt: constraint violation = -7.01683
+   pelvis_tx: constraint violation = -0.899592
+   pelvis_ty: constraint violation = 8.47175
+   pelvis_tz: constraint violation = -0.00577603
+   hip_adduction_r: constraint violation = -5.32583
+   hip_rotation_r: constraint violation = 5.91306
+   hip_flexion_r: constraint violation = 3.32003
+   hip_adduction_l: constraint violation = 13.7587
+   hip_rotation_l: constraint violation = 51.285
+   hip_flexion_l: constraint violation = -15.1066
+   knee_flexion_r: constraint violation = 2.82976
+   knee_flexion_l: constraint violation = 262.564
+   ankle_dorsiflexion_r: constraint violation = 97.005
+   ankle_dorsiflexion_l: constraint violation = -10209.2
+
+[2024-11-05 14:25:24.282] [cout] [info] time = 0.45 Performance = 0.0 Constraint violation = 10213.2
+[2024-11-05 14:25:24.282] [info] Printing results of investigation subject01_walk1 to StaticOptimization
+[2024-11-05 15:07:28.541] [info] Loaded model subject01 from file model\subject01_rra_adjusted.osim
+[2024-11-05 15:07:28.552] [info] AbstractTool subject01_walk1 loading model model/subject01_rra_adjusted.osim
+[2024-11-05 15:07:28.559] [info] Loaded model subject01 from file model/subject01_rra_adjusted.osim
+[2024-11-05 15:07:28.565] [info] ExternalLoads 'Ex2' was renamed and is being reset to 'externalloads'.
+[2024-11-05 15:07:28.567] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 15:07:28.579] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:07:28.579] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:07:28.582] [info] Loading coordinates from file 'assets/ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto'.
+[2024-11-05 15:07:28.582] [info] Storage: read data file = assets/ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto (nr=1201 nc=17)
+[2024-11-05 15:07:28.715] [info] Found 1201 state vectors with time stamps ranging from 0.4 to 1.599.
+[2024-11-05 15:07:28.715] [info] Executing the analyses from 0.409000 to 0.449...
+[2024-11-05 15:07:28.722] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 15:07:28.736] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:07:28.736] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:07:28.742] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 15:07:28.755] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:07:28.755] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:07:29.059] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.059] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.059] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.409000.
+[2024-11-05 15:07:29.059] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.606553
+   pelvis_rotation: constraint violation = -2.00269
+   pelvis_tilt: constraint violation = 1.14883
+   pelvis_tx: constraint violation = 0.491909
+   pelvis_ty: constraint violation = 8.51169
+   pelvis_tz: constraint violation = 1.17194
+   hip_adduction_r: constraint violation = -3.20487
+   hip_rotation_r: constraint violation = 12.2948
+   hip_flexion_r: constraint violation = 1.229
+   hip_adduction_l: constraint violation = 20.3267
+   hip_rotation_l: constraint violation = 19.3411
+   hip_flexion_l: constraint violation = -37.0668
+   knee_flexion_r: constraint violation = -10.6538
+   knee_flexion_l: constraint violation = 282.024
+   ankle_dorsiflexion_r: constraint violation = 96.0682
+   ankle_dorsiflexion_l: constraint violation = -9090.28
+
+[2024-11-05 15:07:29.059] [cout] [info] time = 0.409000 Performance = 0.0 Constraint violation = 9095.3
+[2024-11-05 15:07:29.060] [info] Bounds for 'hamstrings_r': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'glut_max_r': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'ilipsoas_r': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'vasti_r': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'gastroc_r': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'soleus_r': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'tibia_r': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'hamstrings_l': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'glut_max_l': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'ilipsoas_l': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'vasti_l': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'gastroc_l': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'soleus_l': 0.01 to 1.0.
+[2024-11-05 15:07:29.060] [info] Bounds for 'tibia_l': 0.01 to 1.0.
+[2024-11-05 15:07:29.116] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.116] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.116] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.41.
+[2024-11-05 15:07:29.116] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.47247
+   pelvis_rotation: constraint violation = -1.94922
+   pelvis_tilt: constraint violation = 1.20386
+   pelvis_tx: constraint violation = 0.524731
+   pelvis_ty: constraint violation = 8.54869
+   pelvis_tz: constraint violation = 1.14466
+   hip_adduction_r: constraint violation = -3.42806
+   hip_rotation_r: constraint violation = 12.5431
+   hip_flexion_r: constraint violation = 0.72406
+   hip_adduction_l: constraint violation = 20.1451
+   hip_rotation_l: constraint violation = 20.0281
+   hip_flexion_l: constraint violation = -37.1111
+   knee_flexion_r: constraint violation = -9.74708
+   knee_flexion_l: constraint violation = 282.018
+   ankle_dorsiflexion_r: constraint violation = 96.1225
+   ankle_dorsiflexion_l: constraint violation = -9115.33
+
+[2024-11-05 15:07:29.116] [cout] [info] time = 0.41 Performance = 0.0 Constraint violation = 9120.34
+[2024-11-05 15:07:29.172] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.172] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.172] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.411.
+[2024-11-05 15:07:29.172] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.33817
+   pelvis_rotation: constraint violation = -1.89632
+   pelvis_tilt: constraint violation = 1.25847
+   pelvis_tx: constraint violation = 0.557314
+   pelvis_ty: constraint violation = 8.58592
+   pelvis_tz: constraint violation = 1.11752
+   hip_adduction_r: constraint violation = -3.64973
+   hip_rotation_r: constraint violation = 12.789
+   hip_flexion_r: constraint violation = 0.223032
+   hip_adduction_l: constraint violation = 19.9651
+   hip_rotation_l: constraint violation = 20.7444
+   hip_flexion_l: constraint violation = -37.1534
+   knee_flexion_r: constraint violation = -8.85046
+   knee_flexion_l: constraint violation = 282.019
+   ankle_dorsiflexion_r: constraint violation = 96.1936
+   ankle_dorsiflexion_l: constraint violation = -9141
+
+[2024-11-05 15:07:29.172] [cout] [info] time = 0.411 Performance = 0.0 Constraint violation = 9145.99
+[2024-11-05 15:07:29.228] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.228] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.228] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.412.
+[2024-11-05 15:07:29.229] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.206942
+   pelvis_rotation: constraint violation = -1.8459
+   pelvis_tilt: constraint violation = 1.31292
+   pelvis_tx: constraint violation = 0.589862
+   pelvis_ty: constraint violation = 8.62105
+   pelvis_tz: constraint violation = 1.09142
+   hip_adduction_r: constraint violation = -3.86571
+   hip_rotation_r: constraint violation = 13.0363
+   hip_flexion_r: constraint violation = -0.269751
+   hip_adduction_l: constraint violation = 19.7905
+   hip_rotation_l: constraint violation = 21.4772
+   hip_flexion_l: constraint violation = -37.2039
+   knee_flexion_r: constraint violation = -7.97669
+   knee_flexion_l: constraint violation = 282.014
+   ankle_dorsiflexion_r: constraint violation = 96.2948
+   ankle_dorsiflexion_l: constraint violation = -9164.89
+
+[2024-11-05 15:07:29.229] [cout] [info] time = 0.412 Performance = 0.0 Constraint violation = 9169.88
+[2024-11-05 15:07:29.286] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.286] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.286] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.413.
+[2024-11-05 15:07:29.286] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.0784567
+   pelvis_rotation: constraint violation = -1.79774
+   pelvis_tilt: constraint violation = 1.36713
+   pelvis_tx: constraint violation = 0.622303
+   pelvis_ty: constraint violation = 8.65437
+   pelvis_tz: constraint violation = 1.06627
+   hip_adduction_r: constraint violation = -4.07654
+   hip_rotation_r: constraint violation = 13.2849
+   hip_flexion_r: constraint violation = -0.754699
+   hip_adduction_l: constraint violation = 19.621
+   hip_rotation_l: constraint violation = 22.2271
+   hip_flexion_l: constraint violation = -37.2614
+   knee_flexion_r: constraint violation = -7.12462
+   knee_flexion_l: constraint violation = 282.006
+   ankle_dorsiflexion_r: constraint violation = 96.4251
+   ankle_dorsiflexion_l: constraint violation = -9187.32
+
+[2024-11-05 15:07:29.286] [cout] [info] time = 0.413 Performance = 0.0 Constraint violation = 9192.29
+[2024-11-05 15:07:29.345] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.345] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.345] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.414.
+[2024-11-05 15:07:29.345] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.0522866
+   pelvis_rotation: constraint violation = -1.74886
+   pelvis_tilt: constraint violation = 1.42023
+   pelvis_tx: constraint violation = 0.654104
+   pelvis_ty: constraint violation = 8.68992
+   pelvis_tz: constraint violation = 1.04066
+   hip_adduction_r: constraint violation = -4.28861
+   hip_rotation_r: constraint violation = 13.5264
+   hip_flexion_r: constraint violation = -1.23631
+   hip_adduction_l: constraint violation = 19.4521
+   hip_rotation_l: constraint violation = 23.0124
+   hip_flexion_l: constraint violation = -37.3069
+   knee_flexion_r: constraint violation = -6.27867
+   knee_flexion_l: constraint violation = 282.019
+   ankle_dorsiflexion_r: constraint violation = 96.5613
+   ankle_dorsiflexion_l: constraint violation = -9212.51
+
+[2024-11-05 15:07:29.345] [cout] [info] time = 0.414 Performance = 0.0 Constraint violation = 9217.48
+[2024-11-05 15:07:29.402] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.402] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.402] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.415.
+[2024-11-05 15:07:29.402] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.185473
+   pelvis_rotation: constraint violation = -1.69923
+   pelvis_tilt: constraint violation = 1.47218
+   pelvis_tx: constraint violation = 0.68522
+   pelvis_ty: constraint violation = 8.72791
+   pelvis_tz: constraint violation = 1.01452
+   hip_adduction_r: constraint violation = -4.50222
+   hip_rotation_r: constraint violation = 13.7607
+   hip_flexion_r: constraint violation = -1.71473
+   hip_adduction_l: constraint violation = 19.2837
+   hip_rotation_l: constraint violation = 23.8308
+   hip_flexion_l: constraint violation = -37.3395
+   knee_flexion_r: constraint violation = -5.43855
+   knee_flexion_l: constraint violation = 282.053
+   ankle_dorsiflexion_r: constraint violation = 96.7023
+   ankle_dorsiflexion_l: constraint violation = -9240.71
+
+[2024-11-05 15:07:29.402] [cout] [info] time = 0.415 Performance = 0.0 Constraint violation = 9245.66
+[2024-11-05 15:07:29.460] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.460] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.460] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.416.
+[2024-11-05 15:07:29.460] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.317993
+   pelvis_rotation: constraint violation = -1.65064
+   pelvis_tilt: constraint violation = 1.52337
+   pelvis_tx: constraint violation = 0.715934
+   pelvis_ty: constraint violation = 8.76599
+   pelvis_tz: constraint violation = 0.98874
+   hip_adduction_r: constraint violation = -4.71349
+   hip_rotation_r: constraint violation = 13.9922
+   hip_flexion_r: constraint violation = -2.18662
+   hip_adduction_l: constraint violation = 19.1193
+   hip_rotation_l: constraint violation = 24.667
+   hip_flexion_l: constraint violation = -37.3699
+   knee_flexion_r: constraint violation = -4.61505
+   knee_flexion_l: constraint violation = 282.097
+   ankle_dorsiflexion_r: constraint violation = 96.8617
+   ankle_dorsiflexion_l: constraint violation = -9269.46
+
+[2024-11-05 15:07:29.460] [cout] [info] time = 0.416 Performance = 0.0 Constraint violation = 9274.4
+[2024-11-05 15:07:29.518] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.518] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.518] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.417.
+[2024-11-05 15:07:29.518] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.446799
+   pelvis_rotation: constraint violation = -1.60481
+   pelvis_tilt: constraint violation = 1.57412
+   pelvis_tx: constraint violation = 0.746499
+   pelvis_ty: constraint violation = 8.80192
+   pelvis_tz: constraint violation = 0.964162
+   hip_adduction_r: constraint violation = -4.9186
+   hip_rotation_r: constraint violation = 14.2256
+   hip_flexion_r: constraint violation = -2.64875
+   hip_adduction_l: constraint violation = 18.9624
+   hip_rotation_l: constraint violation = 25.5091
+   hip_flexion_l: constraint violation = -37.4084
+   knee_flexion_r: constraint violation = -3.8186
+   knee_flexion_l: constraint violation = 282.139
+   ankle_dorsiflexion_r: constraint violation = 97.0526
+   ankle_dorsiflexion_l: constraint violation = -9296.42
+
+[2024-11-05 15:07:29.518] [cout] [info] time = 0.417 Performance = 0.0 Constraint violation = 9301.36
+[2024-11-05 15:07:29.576] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.576] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.576] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.418.
+[2024-11-05 15:07:29.576] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.57204
+   pelvis_rotation: constraint violation = -1.56159
+   pelvis_tilt: constraint violation = 1.6243
+   pelvis_tx: constraint violation = 0.776811
+   pelvis_ty: constraint violation = 8.83589
+   pelvis_tz: constraint violation = 0.940738
+   hip_adduction_r: constraint violation = -5.11785
+   hip_rotation_r: constraint violation = 14.4604
+   hip_flexion_r: constraint violation = -3.10093
+   hip_adduction_l: constraint violation = 18.8129
+   hip_rotation_l: constraint violation = 26.3556
+   hip_flexion_l: constraint violation = -37.4536
+   knee_flexion_r: constraint violation = -3.04915
+   knee_flexion_l: constraint violation = 282.182
+   ankle_dorsiflexion_r: constraint violation = 97.274
+   ankle_dorsiflexion_l: constraint violation = -9321.84
+
+[2024-11-05 15:07:29.576] [cout] [info] time = 0.418 Performance = 0.0 Constraint violation = 9326.77
+[2024-11-05 15:07:29.638] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.638] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.638] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.419.
+[2024-11-05 15:07:29.639] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.698659
+   pelvis_rotation: constraint violation = -1.51819
+   pelvis_tilt: constraint violation = 1.6732
+   pelvis_tx: constraint violation = 0.806452
+   pelvis_ty: constraint violation = 8.87182
+   pelvis_tz: constraint violation = 0.917073
+   hip_adduction_r: constraint violation = -5.31751
+   hip_rotation_r: constraint violation = 14.6887
+   hip_flexion_r: constraint violation = -3.54801
+   hip_adduction_l: constraint violation = 18.6659
+   hip_rotation_l: constraint violation = 27.2197
+   hip_flexion_l: constraint violation = -37.4871
+   knee_flexion_r: constraint violation = -2.29092
+   knee_flexion_l: constraint violation = 282.242
+   ankle_dorsiflexion_r: constraint violation = 97.5031
+   ankle_dorsiflexion_l: constraint violation = -9349.76
+
+[2024-11-05 15:07:29.639] [cout] [info] time = 0.419 Performance = 0.0 Constraint violation = 9354.68
+[2024-11-05 15:07:29.697] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.697] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.697] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.42.
+[2024-11-05 15:07:29.697] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.826814
+   pelvis_rotation: constraint violation = -1.47458
+   pelvis_tilt: constraint violation = 1.72077
+   pelvis_tx: constraint violation = 0.835378
+   pelvis_ty: constraint violation = 8.90987
+   pelvis_tz: constraint violation = 0.89311
+   hip_adduction_r: constraint violation = -5.51785
+   hip_rotation_r: constraint violation = 14.9102
+   hip_flexion_r: constraint violation = -3.98996
+   hip_adduction_l: constraint violation = 18.5215
+   hip_rotation_l: constraint violation = 28.0996
+   hip_flexion_l: constraint violation = -37.5079
+   knee_flexion_r: constraint violation = -1.54381
+   knee_flexion_l: constraint violation = 282.319
+   ankle_dorsiflexion_r: constraint violation = 97.7387
+   ankle_dorsiflexion_l: constraint violation = -9380.36
+
+[2024-11-05 15:07:29.697] [cout] [info] time = 0.42 Performance = 0.0 Constraint violation = 9385.27
+[2024-11-05 15:07:29.756] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.756] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.756] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.421.
+[2024-11-05 15:07:29.757] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.953446
+   pelvis_rotation: constraint violation = -1.43243
+   pelvis_tilt: constraint violation = 1.76733
+   pelvis_tx: constraint violation = 0.863831
+   pelvis_ty: constraint violation = 8.94777
+   pelvis_tz: constraint violation = 0.869704
+   hip_adduction_r: constraint violation = -5.71504
+   hip_rotation_r: constraint violation = 15.1293
+   hip_flexion_r: constraint violation = -4.42345
+   hip_adduction_l: constraint violation = 18.383
+   hip_rotation_l: constraint violation = 28.9836
+   hip_flexion_l: constraint violation = -37.5261
+   knee_flexion_r: constraint violation = -0.8183
+   knee_flexion_l: constraint violation = 282.401
+   ankle_dorsiflexion_r: constraint violation = 97.994
+   ankle_dorsiflexion_l: constraint violation = -9411.29
+
+[2024-11-05 15:07:29.757] [cout] [info] time = 0.421 Performance = 0.0 Constraint violation = 9416.19
+[2024-11-05 15:07:29.813] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.813] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.813] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.422.
+[2024-11-05 15:07:29.814] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.07544
+   pelvis_rotation: constraint violation = -1.39337
+   pelvis_tilt: constraint violation = 1.81313
+   pelvis_tx: constraint violation = 0.892019
+   pelvis_ty: constraint violation = 8.98327
+   pelvis_tz: constraint violation = 0.847744
+   hip_adduction_r: constraint violation = -5.90522
+   hip_rotation_r: constraint violation = 15.3507
+   hip_flexion_r: constraint violation = -4.84512
+   hip_adduction_l: constraint violation = 18.254
+   hip_rotation_l: constraint violation = 29.8604
+   hip_flexion_l: constraint violation = -37.5521
+   knee_flexion_r: constraint violation = -0.124812
+   knee_flexion_l: constraint violation = 282.48
+   ankle_dorsiflexion_r: constraint violation = 98.2825
+   ankle_dorsiflexion_l: constraint violation = -9440.21
+
+[2024-11-05 15:07:29.814] [cout] [info] time = 0.422 Performance = 0.0 Constraint violation = 9445.11
+[2024-11-05 15:07:29.870] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.870] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.870] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.423.
+[2024-11-05 15:07:29.870] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.19292
+   pelvis_rotation: constraint violation = -1.35724
+   pelvis_tilt: constraint violation = 1.85806
+   pelvis_tx: constraint violation = 0.919852
+   pelvis_ty: constraint violation = 9.01655
+   pelvis_tz: constraint violation = 0.827177
+   hip_adduction_r: constraint violation = -6.08863
+   hip_rotation_r: constraint violation = 15.5741
+   hip_flexion_r: constraint violation = -5.25476
+   hip_adduction_l: constraint violation = 18.1345
+   hip_rotation_l: constraint violation = 30.7288
+   hip_flexion_l: constraint violation = -37.5843
+   knee_flexion_r: constraint violation = 0.536762
+   knee_flexion_l: constraint violation = 282.555
+   ankle_dorsiflexion_r: constraint violation = 98.603
+   ankle_dorsiflexion_l: constraint violation = -9467.32
+
+[2024-11-05 15:07:29.870] [cout] [info] time = 0.423 Performance = 0.0 Constraint violation = 9472.22
+[2024-11-05 15:07:29.928] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.928] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.928] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.424.
+[2024-11-05 15:07:29.928] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.31093
+   pelvis_rotation: constraint violation = -1.32139
+   pelvis_tilt: constraint violation = 1.90152
+   pelvis_tx: constraint violation = 0.946995
+   pelvis_ty: constraint violation = 9.05145
+   pelvis_tz: constraint violation = 0.806562
+   hip_adduction_r: constraint violation = -6.27164
+   hip_rotation_r: constraint violation = 15.7913
+   hip_flexion_r: constraint violation = -5.65739
+   hip_adduction_l: constraint violation = 18.019
+   hip_rotation_l: constraint violation = 31.6041
+   hip_flexion_l: constraint violation = -37.6043
+   knee_flexion_r: constraint violation = 1.18227
+   knee_flexion_l: constraint violation = 282.638
+   ankle_dorsiflexion_r: constraint violation = 98.9323
+   ankle_dorsiflexion_l: constraint violation = -9496.6
+
+[2024-11-05 15:07:29.928] [cout] [info] time = 0.424 Performance = 0.0 Constraint violation = 9501.48
+[2024-11-05 15:07:29.985] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:29.985] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:29.985] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.425.
+[2024-11-05 15:07:29.985] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.4297
+   pelvis_rotation: constraint violation = -1.28575
+   pelvis_tilt: constraint violation = 1.94347
+   pelvis_tx: constraint violation = 0.973411
+   pelvis_ty: constraint violation = 9.08818
+   pelvis_tz: constraint violation = 0.785817
+   hip_adduction_r: constraint violation = -6.45456
+   hip_rotation_r: constraint violation = 16.0018
+   hip_flexion_r: constraint violation = -6.05303
+   hip_adduction_l: constraint violation = 17.9073
+   hip_rotation_l: constraint violation = 32.4869
+   hip_flexion_l: constraint violation = -37.6107
+   knee_flexion_r: constraint violation = 1.81196
+   knee_flexion_l: constraint violation = 282.726
+   ankle_dorsiflexion_r: constraint violation = 99.269
+   ankle_dorsiflexion_l: constraint violation = -9528.24
+
+[2024-11-05 15:07:29.985] [cout] [info] time = 0.425 Performance = 0.0 Constraint violation = 9533.12
+[2024-11-05 15:07:30.042] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.042] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.042] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.426.
+[2024-11-05 15:07:30.042] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.54614
+   pelvis_rotation: constraint violation = -1.25188
+   pelvis_tilt: constraint violation = 1.98417
+   pelvis_tx: constraint violation = 0.999301
+   pelvis_ty: constraint violation = 9.12449
+   pelvis_tz: constraint violation = 0.76581
+   hip_adduction_r: constraint violation = -6.63359
+   hip_rotation_r: constraint violation = 16.2103
+   hip_flexion_r: constraint violation = -6.4383
+   hip_adduction_l: constraint violation = 17.8029
+   hip_rotation_l: constraint violation = 33.3671
+   hip_flexion_l: constraint violation = -37.6137
+   knee_flexion_r: constraint violation = 2.41557
+   knee_flexion_l: constraint violation = 282.811
+   ankle_dorsiflexion_r: constraint violation = 99.6262
+   ankle_dorsiflexion_l: constraint violation = -9559.92
+
+[2024-11-05 15:07:30.042] [cout] [info] time = 0.426 Performance = 0.0 Constraint violation = 9564.79
+[2024-11-05 15:07:30.096] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.096] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.096] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.427.
+[2024-11-05 15:07:30.096] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.65705
+   pelvis_rotation: constraint violation = -1.22131
+   pelvis_tilt: constraint violation = 2.02381
+   pelvis_tx: constraint violation = 1.02483
+   pelvis_ty: constraint violation = 9.15812
+   pelvis_tz: constraint violation = 0.74747
+   hip_adduction_r: constraint violation = -6.80472
+   hip_rotation_r: constraint violation = 16.4214
+   hip_flexion_r: constraint violation = -6.80967
+   hip_adduction_l: constraint violation = 17.7098
+   hip_rotation_l: constraint violation = 34.2336
+   hip_flexion_l: constraint violation = -37.6232
+   knee_flexion_r: constraint violation = 2.98267
+   knee_flexion_l: constraint violation = 282.883
+   ankle_dorsiflexion_r: constraint violation = 100.018
+   ankle_dorsiflexion_l: constraint violation = -9589.32
+
+[2024-11-05 15:07:30.096] [cout] [info] time = 0.427 Performance = 0.0 Constraint violation = 9594.19
+[2024-11-05 15:07:30.155] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.155] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.155] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.428.
+[2024-11-05 15:07:30.156] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.76257
+   pelvis_rotation: constraint violation = -1.19385
+   pelvis_tilt: constraint violation = 2.06229
+   pelvis_tx: constraint violation = 1.04993
+   pelvis_ty: constraint violation = 9.18925
+   pelvis_tz: constraint violation = 0.730733
+   hip_adduction_r: constraint violation = -6.96823
+   hip_rotation_r: constraint violation = 16.6346
+   hip_flexion_r: constraint violation = -7.16701
+   hip_adduction_l: constraint violation = 17.628
+   hip_rotation_l: constraint violation = 35.0872
+   hip_flexion_l: constraint violation = -37.6377
+   knee_flexion_r: constraint violation = 3.51353
+   knee_flexion_l: constraint violation = 282.943
+   ankle_dorsiflexion_r: constraint violation = 100.442
+   ankle_dorsiflexion_l: constraint violation = -9616.63
+
+[2024-11-05 15:07:30.156] [cout] [info] time = 0.428 Performance = 0.0 Constraint violation = 9621.5
+[2024-11-05 15:07:30.213] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.213] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.213] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.429.
+[2024-11-05 15:07:30.213] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.86809
+   pelvis_rotation: constraint violation = -1.16694
+   pelvis_tilt: constraint violation = 2.09913
+   pelvis_tx: constraint violation = 1.07433
+   pelvis_ty: constraint violation = 9.22181
+   pelvis_tz: constraint violation = 0.714035
+   hip_adduction_r: constraint violation = -7.13085
+   hip_rotation_r: constraint violation = 16.8415
+   hip_flexion_r: constraint violation = -7.51568
+   hip_adduction_l: constraint violation = 17.5508
+   hip_rotation_l: constraint violation = 35.9479
+   hip_flexion_l: constraint violation = -37.6386
+   knee_flexion_r: constraint violation = 4.02447
+   knee_flexion_l: constraint violation = 282.997
+   ankle_dorsiflexion_r: constraint violation = 100.875
+   ankle_dorsiflexion_l: constraint violation = -9645.88
+
+[2024-11-05 15:07:30.213] [cout] [info] time = 0.429 Performance = 0.0 Constraint violation = 9650.74
+[2024-11-05 15:07:30.270] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.270] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.270] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.43.
+[2024-11-05 15:07:30.270] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.9739
+   pelvis_rotation: constraint violation = -1.14048
+   pelvis_tilt: constraint violation = 2.13431
+   pelvis_tx: constraint violation = 1.098
+   pelvis_ty: constraint violation = 9.25604
+   pelvis_tz: constraint violation = 0.697261
+   hip_adduction_r: constraint violation = -7.293
+   hip_rotation_r: constraint violation = 17.0414
+   hip_flexion_r: constraint violation = -7.85582
+   hip_adduction_l: constraint violation = 17.4779
+   hip_rotation_l: constraint violation = 36.8181
+   hip_flexion_l: constraint violation = -37.6245
+   knee_flexion_r: constraint violation = 4.51604
+   knee_flexion_l: constraint violation = 283.045
+   ankle_dorsiflexion_r: constraint violation = 101.314
+   ankle_dorsiflexion_l: constraint violation = -9677.31
+
+[2024-11-05 15:07:30.270] [cout] [info] time = 0.43 Performance = 0.0 Constraint violation = 9682.16
+[2024-11-05 15:07:30.326] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.326] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.326] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.431.
+[2024-11-05 15:07:30.326] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.07688
+   pelvis_rotation: constraint violation = -1.11593
+   pelvis_tilt: constraint violation = 2.16802
+   pelvis_tx: constraint violation = 1.12111
+   pelvis_ty: constraint violation = 9.28971
+   pelvis_tz: constraint violation = 0.68131
+   hip_adduction_r: constraint violation = -7.45078
+   hip_rotation_r: constraint violation = 17.239
+   hip_flexion_r: constraint violation = -8.18396
+   hip_adduction_l: constraint violation = 17.4132
+   hip_rotation_l: constraint violation = 37.6876
+   hip_flexion_l: constraint violation = -37.6052
+   knee_flexion_r: constraint violation = 4.97804
+   knee_flexion_l: constraint violation = 283.078
+   ankle_dorsiflexion_r: constraint violation = 101.774
+   ankle_dorsiflexion_l: constraint violation = -9708.62
+
+[2024-11-05 15:07:30.326] [cout] [info] time = 0.431 Performance = 0.0 Constraint violation = 9713.47
+[2024-11-05 15:07:30.383] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.383] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.383] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.432.
+[2024-11-05 15:07:30.383] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.17366
+   pelvis_rotation: constraint violation = -1.09471
+   pelvis_tilt: constraint violation = 2.20041
+   pelvis_tx: constraint violation = 1.14379
+   pelvis_ty: constraint violation = 9.32052
+   pelvis_tz: constraint violation = 0.667158
+   hip_adduction_r: constraint violation = -7.60005
+   hip_rotation_r: constraint violation = 17.439
+   hip_flexion_r: constraint violation = -8.49641
+   hip_adduction_l: constraint violation = 17.3609
+   hip_rotation_l: constraint violation = 38.545
+   hip_flexion_l: constraint violation = -37.5907
+   knee_flexion_r: constraint violation = 5.40003
+   knee_flexion_l: constraint violation = 283.088
+   ankle_dorsiflexion_r: constraint violation = 102.267
+   ankle_dorsiflexion_l: constraint violation = -9737.46
+
+[2024-11-05 15:07:30.383] [cout] [info] time = 0.432 Performance = 0.0 Constraint violation = 9742.3
+[2024-11-05 15:07:30.440] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.440] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.440] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.433.
+[2024-11-05 15:07:30.440] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.2645
+   pelvis_rotation: constraint violation = -1.07661
+   pelvis_tilt: constraint violation = 2.23137
+   pelvis_tx: constraint violation = 1.16596
+   pelvis_ty: constraint violation = 9.34869
+   pelvis_tz: constraint violation = 0.65471
+   hip_adduction_r: constraint violation = -7.74117
+   hip_rotation_r: constraint violation = 17.641
+   hip_flexion_r: constraint violation = -8.79311
+   hip_adduction_l: constraint violation = 17.3209
+   hip_rotation_l: constraint violation = 39.3918
+   hip_flexion_l: constraint violation = -37.579
+   knee_flexion_r: constraint violation = 5.78252
+   knee_flexion_l: constraint violation = 283.073
+   ankle_dorsiflexion_r: constraint violation = 102.793
+   ankle_dorsiflexion_l: constraint violation = -9764.07
+
+[2024-11-05 15:07:30.440] [cout] [info] time = 0.433 Performance = 0.0 Constraint violation = 9768.91
+[2024-11-05 15:07:30.496] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.496] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.496] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.434.
+[2024-11-05 15:07:30.496] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.35518
+   pelvis_rotation: constraint violation = -1.05916
+   pelvis_tilt: constraint violation = 2.26056
+   pelvis_tx: constraint violation = 1.18744
+   pelvis_ty: constraint violation = 9.3783
+   pelvis_tz: constraint violation = 0.642253
+   hip_adduction_r: constraint violation = -7.88134
+   hip_rotation_r: constraint violation = 17.8358
+   hip_flexion_r: constraint violation = -9.08
+   hip_adduction_l: constraint violation = 17.2855
+   hip_rotation_l: constraint violation = 40.2512
+   hip_flexion_l: constraint violation = -37.552
+   knee_flexion_r: constraint violation = 6.14253
+   knee_flexion_l: constraint violation = 283.043
+   ankle_dorsiflexion_r: constraint violation = 103.325
+   ankle_dorsiflexion_l: constraint violation = -9792.59
+
+[2024-11-05 15:07:30.496] [cout] [info] time = 0.434 Performance = 0.0 Constraint violation = 9797.43
+[2024-11-05 15:07:30.553] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.553] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.553] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.435.
+[2024-11-05 15:07:30.553] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.4461
+   pelvis_rotation: constraint violation = -1.04224
+   pelvis_tilt: constraint violation = 2.288
+   pelvis_tx: constraint violation = 1.20821
+   pelvis_ty: constraint violation = 9.40961
+   pelvis_tz: constraint violation = 0.62964
+   hip_adduction_r: constraint violation = -8.02107
+   hip_rotation_r: constraint violation = 18.0225
+   hip_flexion_r: constraint violation = -9.35737
+   hip_adduction_l: constraint violation = 17.2541
+   hip_rotation_l: constraint violation = 41.1257
+   hip_flexion_l: constraint violation = -37.5084
+   knee_flexion_r: constraint violation = 6.4809
+   knee_flexion_l: constraint violation = 282.998
+   ankle_dorsiflexion_r: constraint violation = 103.862
+   ankle_dorsiflexion_l: constraint violation = -9823.31
+
+[2024-11-05 15:07:30.553] [cout] [info] time = 0.435 Performance = 0.0 Constraint violation = 9828.14
+[2024-11-05 15:07:30.610] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.610] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.610] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.436.
+[2024-11-05 15:07:30.610] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.534
+   pelvis_rotation: constraint violation = -1.02723
+   pelvis_tilt: constraint violation = 2.31382
+   pelvis_tx: constraint violation = 1.22838
+   pelvis_ty: constraint violation = 9.44036
+   pelvis_tz: constraint violation = 0.617816
+   hip_adduction_r: constraint violation = -8.15631
+   hip_rotation_r: constraint violation = 18.2061
+   hip_flexion_r: constraint violation = -9.62161
+   hip_adduction_l: constraint violation = 17.2309
+   hip_rotation_l: constraint violation = 42.003
+   hip_flexion_l: constraint violation = -37.4578
+   knee_flexion_r: constraint violation = 6.78742
+   knee_flexion_l: constraint violation = 282.929
+   ankle_dorsiflexion_r: constraint violation = 104.417
+   ankle_dorsiflexion_l: constraint violation = -9853.9
+
+[2024-11-05 15:07:30.610] [cout] [info] time = 0.436 Performance = 0.0 Constraint violation = 9858.72
+[2024-11-05 15:07:30.676] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.676] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.676] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.437.
+[2024-11-05 15:07:30.676] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.61541
+   pelvis_rotation: constraint violation = -1.01545
+   pelvis_tilt: constraint violation = 2.33807
+   pelvis_tx: constraint violation = 1.24806
+   pelvis_ty: constraint violation = 9.46826
+   pelvis_tz: constraint violation = 0.607798
+   hip_adduction_r: constraint violation = -8.28278
+   hip_rotation_r: constraint violation = 18.3916
+   hip_flexion_r: constraint violation = -9.86879
+   hip_adduction_l: constraint violation = 17.2205
+   hip_rotation_l: constraint violation = 42.8695
+   hip_flexion_l: constraint violation = -37.4098
+   knee_flexion_r: constraint violation = 7.05158
+   knee_flexion_l: constraint violation = 282.827
+   ankle_dorsiflexion_r: constraint violation = 105.003
+   ankle_dorsiflexion_l: constraint violation = -9882.01
+
+[2024-11-05 15:07:30.676] [cout] [info] time = 0.437 Performance = 0.0 Constraint violation = 9886.83
+[2024-11-05 15:07:30.739] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.739] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.739] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.438.
+[2024-11-05 15:07:30.740] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.69066
+   pelvis_rotation: constraint violation = -1.00667
+   pelvis_tilt: constraint violation = 2.36069
+   pelvis_tx: constraint violation = 1.26719
+   pelvis_ty: constraint violation = 9.49353
+   pelvis_tz: constraint violation = 0.59946
+   hip_adduction_r: constraint violation = -8.40091
+   hip_rotation_r: constraint violation = 18.5781
+   hip_flexion_r: constraint violation = -10.099
+   hip_adduction_l: constraint violation = 17.2224
+   hip_rotation_l: constraint violation = 43.7259
+   hip_flexion_l: constraint violation = -37.3626
+   knee_flexion_r: constraint violation = 7.27415
+   knee_flexion_l: constraint violation = 282.69
+   ankle_dorsiflexion_r: constraint violation = 105.62
+   ankle_dorsiflexion_l: constraint violation = -9907.9
+
+[2024-11-05 15:07:30.740] [cout] [info] time = 0.438 Performance = 0.0 Constraint violation = 9912.71
+[2024-11-05 15:07:30.814] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.814] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.814] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.439.
+[2024-11-05 15:07:30.814] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.7659
+   pelvis_rotation: constraint violation = -0.998552
+   pelvis_tilt: constraint violation = 2.3815
+   pelvis_tx: constraint violation = 1.28564
+   pelvis_ty: constraint violation = 9.52037
+   pelvis_tz: constraint violation = 0.59096
+   hip_adduction_r: constraint violation = -8.51833
+   hip_rotation_r: constraint violation = 18.7561
+   hip_flexion_r: constraint violation = -10.3189
+   hip_adduction_l: constraint violation = 17.228
+   hip_rotation_l: constraint violation = 44.5953
+   hip_flexion_l: constraint violation = -37.2987
+   knee_flexion_r: constraint violation = 7.47287
+   knee_flexion_l: constraint violation = 282.534
+   ankle_dorsiflexion_r: constraint violation = 106.239
+   ankle_dorsiflexion_l: constraint violation = -9935.82
+
+[2024-11-05 15:07:30.814] [cout] [info] time = 0.439 Performance = 0.0 Constraint violation = 9940.63
+[2024-11-05 15:07:30.872] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.872] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.872] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.44.
+[2024-11-05 15:07:30.873] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.84158
+   pelvis_rotation: constraint violation = -0.99099
+   pelvis_tilt: constraint violation = 2.40052
+   pelvis_tx: constraint violation = 1.30339
+   pelvis_ty: constraint violation = 9.54908
+   pelvis_tz: constraint violation = 0.582137
+   hip_adduction_r: constraint violation = -8.63558
+   hip_rotation_r: constraint violation = 18.9249
+   hip_flexion_r: constraint violation = -10.5288
+   hip_adduction_l: constraint violation = 17.2366
+   hip_rotation_l: constraint violation = 45.4786
+   hip_flexion_l: constraint violation = -37.2172
+   knee_flexion_r: constraint violation = 7.64877
+   knee_flexion_l: constraint violation = 282.36
+   ankle_dorsiflexion_r: constraint violation = 106.859
+   ankle_dorsiflexion_l: constraint violation = -9966.08
+
+[2024-11-05 15:07:30.873] [cout] [info] time = 0.44 Performance = 0.0 Constraint violation = 9970.88
+[2024-11-05 15:07:30.927] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.927] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.927] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.441.
+[2024-11-05 15:07:30.927] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.91429
+   pelvis_rotation: constraint violation = -0.985267
+   pelvis_tilt: constraint violation = 2.41783
+   pelvis_tx: constraint violation = 1.32054
+   pelvis_ty: constraint violation = 9.57736
+   pelvis_tz: constraint violation = 0.573987
+   hip_adduction_r: constraint violation = -8.74843
+   hip_rotation_r: constraint violation = 19.0892
+   hip_flexion_r: constraint violation = -10.725
+   hip_adduction_l: constraint violation = 17.2525
+   hip_rotation_l: constraint violation = 46.3606
+   hip_flexion_l: constraint violation = -37.1275
+   knee_flexion_r: constraint violation = 7.79155
+   knee_flexion_l: constraint violation = 282.159
+   ankle_dorsiflexion_r: constraint violation = 107.494
+   ankle_dorsiflexion_l: constraint violation = -9996.33
+
+[2024-11-05 15:07:30.927] [cout] [info] time = 0.441 Performance = 0.0 Constraint violation = 10001.1
+[2024-11-05 15:07:30.984] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:30.984] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:30.984] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.442.
+[2024-11-05 15:07:30.984] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.98044
+   pelvis_rotation: constraint violation = -0.9826
+   pelvis_tilt: constraint violation = 2.43341
+   pelvis_tx: constraint violation = 1.33716
+   pelvis_ty: constraint violation = 9.60285
+   pelvis_tz: constraint violation = 0.567557
+   hip_adduction_r: constraint violation = -8.85244
+   hip_rotation_r: constraint violation = 19.2545
+   hip_flexion_r: constraint violation = -10.9034
+   hip_adduction_l: constraint violation = 17.2805
+   hip_rotation_l: constraint violation = 47.2233
+   hip_flexion_l: constraint violation = -37.0385
+   knee_flexion_r: constraint violation = 7.89063
+   knee_flexion_l: constraint violation = 281.918
+   ankle_dorsiflexion_r: constraint violation = 108.157
+   ankle_dorsiflexion_l: constraint violation = -10024.2
+
+[2024-11-05 15:07:30.984] [cout] [info] time = 0.442 Performance = 0.0 Constraint violation = 10028.9
+[2024-11-05 15:07:31.040] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:31.040] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:31.040] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.443.
+[2024-11-05 15:07:31.040] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.04042
+   pelvis_rotation: constraint violation = -0.982775
+   pelvis_tilt: constraint violation = 2.44722
+   pelvis_tx: constraint violation = 1.35318
+   pelvis_ty: constraint violation = 9.62581
+   pelvis_tz: constraint violation = 0.562705
+   hip_adduction_r: constraint violation = -8.94809
+   hip_rotation_r: constraint violation = 19.4197
+   hip_flexion_r: constraint violation = -11.064
+   hip_adduction_l: constraint violation = 17.3199
+   hip_rotation_l: constraint violation = 48.0651
+   hip_flexion_l: constraint violation = -36.9489
+   knee_flexion_r: constraint violation = 7.94697
+   knee_flexion_l: constraint violation = 281.639
+   ankle_dorsiflexion_r: constraint violation = 108.846
+   ankle_dorsiflexion_l: constraint violation = -10049.9
+
+[2024-11-05 15:07:31.040] [cout] [info] time = 0.443 Performance = 0.0 Constraint violation = 10054.6
+[2024-11-05 15:07:31.097] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:31.097] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:31.097] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.444.
+[2024-11-05 15:07:31.098] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.10059
+   pelvis_rotation: constraint violation = -0.983619
+   pelvis_tilt: constraint violation = 2.45924
+   pelvis_tx: constraint violation = 1.36856
+   pelvis_ty: constraint violation = 9.65051
+   pelvis_tz: constraint violation = 0.557522
+   hip_adduction_r: constraint violation = -9.04325
+   hip_rotation_r: constraint violation = 19.5752
+   hip_flexion_r: constraint violation = -11.2142
+   hip_adduction_l: constraint violation = 17.3614
+   hip_rotation_l: constraint violation = 48.9106
+   hip_flexion_l: constraint violation = -36.8425
+   knee_flexion_r: constraint violation = 7.97886
+   knee_flexion_l: constraint violation = 281.342
+   ankle_dorsiflexion_r: constraint violation = 109.534
+   ankle_dorsiflexion_l: constraint violation = -10077.8
+
+[2024-11-05 15:07:31.098] [cout] [info] time = 0.444 Performance = 0.0 Constraint violation = 10082.5
+[2024-11-05 15:07:31.157] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:31.157] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:31.157] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.445.
+[2024-11-05 15:07:31.157] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.16141
+   pelvis_rotation: constraint violation = -0.985047
+   pelvis_tilt: constraint violation = 2.46954
+   pelvis_tx: constraint violation = 1.38327
+   pelvis_ty: constraint violation = 9.67723
+   pelvis_tz: constraint violation = 0.551853
+   hip_adduction_r: constraint violation = -9.13845
+   hip_rotation_r: constraint violation = 19.7201
+   hip_flexion_r: constraint violation = -11.3547
+   hip_adduction_l: constraint violation = 17.4043
+   hip_rotation_l: constraint violation = 49.7598
+   hip_flexion_l: constraint violation = -36.7185
+   knee_flexion_r: constraint violation = 7.98747
+   knee_flexion_l: constraint violation = 281.03
+   ankle_dorsiflexion_r: constraint violation = 110.217
+   ankle_dorsiflexion_l: constraint violation = -10108.1
+
+[2024-11-05 15:07:31.157] [cout] [info] time = 0.445 Performance = 0.0 Constraint violation = 10112.9
+[2024-11-05 15:07:31.215] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:31.215] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:31.215] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.446.
+[2024-11-05 15:07:31.216] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.21929
+   pelvis_rotation: constraint violation = -0.988245
+   pelvis_tilt: constraint violation = 2.4781
+   pelvis_tx: constraint violation = 1.39739
+   pelvis_ty: constraint violation = 9.70361
+   pelvis_tz: constraint violation = 0.546745
+   hip_adduction_r: constraint violation = -9.22926
+   hip_rotation_r: constraint violation = 19.8597
+   hip_flexion_r: constraint violation = -11.4813
+   hip_adduction_l: constraint violation = 17.4532
+   hip_rotation_l: constraint violation = 50.5941
+   hip_flexion_l: constraint violation = -36.5861
+   knee_flexion_r: constraint violation = 7.96238
+   knee_flexion_l: constraint violation = 280.692
+   ankle_dorsiflexion_r: constraint violation = 110.91
+   ankle_dorsiflexion_l: constraint violation = -10138.5
+
+[2024-11-05 15:07:31.216] [cout] [info] time = 0.446 Performance = 0.0 Constraint violation = 10143.2
+[2024-11-05 15:07:31.276] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:31.276] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:31.276] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.447.
+[2024-11-05 15:07:31.277] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.27056
+   pelvis_rotation: constraint violation = -0.99433
+   pelvis_tilt: constraint violation = 2.48484
+   pelvis_tx: constraint violation = 1.41093
+   pelvis_ty: constraint violation = 9.72727
+   pelvis_tz: constraint violation = 0.543267
+   hip_adduction_r: constraint violation = -9.3111
+   hip_rotation_r: constraint violation = 19.9992
+   hip_flexion_r: constraint violation = -11.5896
+   hip_adduction_l: constraint violation = 17.5126
+   hip_rotation_l: constraint violation = 51.3894
+   hip_flexion_l: constraint violation = -36.4538
+   knee_flexion_r: constraint violation = 7.89291
+   knee_flexion_l: constraint violation = 280.314
+   ankle_dorsiflexion_r: constraint violation = 111.628
+   ankle_dorsiflexion_l: constraint violation = -10166.6
+
+[2024-11-05 15:07:31.277] [cout] [info] time = 0.447 Performance = 0.0 Constraint violation = 10171.3
+[2024-11-05 15:07:31.337] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:31.338] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:31.338] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.448.
+[2024-11-05 15:07:31.338] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.3156
+   pelvis_rotation: constraint violation = -1.0031
+   pelvis_tilt: constraint violation = 2.48972
+   pelvis_tx: constraint violation = 1.42385
+   pelvis_ty: constraint violation = 9.74844
+   pelvis_tz: constraint violation = 0.541286
+   hip_adduction_r: constraint violation = -9.38441
+   hip_rotation_r: constraint violation = 20.1378
+   hip_flexion_r: constraint violation = -11.6798
+   hip_adduction_l: constraint violation = 17.5815
+   hip_rotation_l: constraint violation = 52.143
+   hip_flexion_l: constraint violation = -36.3205
+   knee_flexion_r: constraint violation = 7.78013
+   knee_flexion_l: constraint violation = 279.899
+   ankle_dorsiflexion_r: constraint violation = 112.367
+   ankle_dorsiflexion_l: constraint violation = -10192.5
+
+[2024-11-05 15:07:31.338] [cout] [info] time = 0.448 Performance = 0.0 Constraint violation = 10197.2
+[2024-11-05 15:07:31.400] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:07:31.400] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:07:31.400] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.449.
+[2024-11-05 15:07:31.400] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.36085
+   pelvis_rotation: constraint violation = -1.01257
+   pelvis_tilt: constraint violation = 2.49292
+   pelvis_tx: constraint violation = 1.43616
+   pelvis_ty: constraint violation = 9.77142
+   pelvis_tz: constraint violation = 0.538881
+   hip_adduction_r: constraint violation = -9.4572
+   hip_rotation_r: constraint violation = 20.2658
+   hip_flexion_r: constraint violation = -11.7601
+   hip_adduction_l: constraint violation = 17.6513
+   hip_rotation_l: constraint violation = 52.8873
+   hip_flexion_l: constraint violation = -36.1714
+   knee_flexion_r: constraint violation = 7.64286
+   knee_flexion_l: constraint violation = 279.472
+   ankle_dorsiflexion_r: constraint violation = 113.1
+   ankle_dorsiflexion_l: constraint violation = -10220.7
+
+[2024-11-05 15:07:31.400] [cout] [info] time = 0.449 Performance = 0.0 Constraint violation = 10225.4
+[2024-11-05 15:07:31.400] [info] Printing results of investigation subject01_walk1 to StaticOptimization
+[2024-11-05 15:56:57.839] [info] Loaded model subject01 from file model\subject01_rra_adjusted.osim
+[2024-11-05 15:56:57.850] [info] AbstractTool subject01_walk1 loading model model/subject01_rra_adjusted.osim
+[2024-11-05 15:56:57.860] [info] Loaded model subject01 from file model/subject01_rra_adjusted.osim
+[2024-11-05 15:56:57.867] [info] ExternalLoads 'Ex2' was renamed and is being reset to 'externalloads'.
+[2024-11-05 15:56:57.869] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 15:56:57.883] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:56:57.883] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:56:57.885] [info] Loading coordinates from file 'assets/ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto'.
+[2024-11-05 15:56:57.886] [info] Storage: read data file = assets/ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto (nr=1201 nc=17)
+[2024-11-05 15:56:58.018] [info] Found 1201 state vectors with time stamps ranging from 0.4 to 1.599.
+[2024-11-05 15:56:58.018] [info] Executing the analyses from 0.409000 to 0.449...
+[2024-11-05 15:56:58.025] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 15:56:58.037] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:56:58.037] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:56:58.041] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 15:56:58.053] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:56:58.053] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 15:56:58.380] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.380] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.380] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.409000.
+[2024-11-05 15:56:58.380] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.606553
+   pelvis_rotation: constraint violation = -2.00269
+   pelvis_tilt: constraint violation = 1.14883
+   pelvis_tx: constraint violation = 0.491909
+   pelvis_ty: constraint violation = 8.51169
+   pelvis_tz: constraint violation = 1.17194
+   hip_adduction_r: constraint violation = -3.20487
+   hip_rotation_r: constraint violation = 12.2948
+   hip_flexion_r: constraint violation = 1.229
+   hip_adduction_l: constraint violation = 20.3267
+   hip_rotation_l: constraint violation = 19.3411
+   hip_flexion_l: constraint violation = -37.0668
+   knee_flexion_r: constraint violation = -10.6538
+   knee_flexion_l: constraint violation = 282.024
+   ankle_dorsiflexion_r: constraint violation = 96.0682
+   ankle_dorsiflexion_l: constraint violation = -9090.28
+
+[2024-11-05 15:56:58.380] [cout] [info] time = 0.409000 Performance = 0.0 Constraint violation = 9095.3
+[2024-11-05 15:56:58.380] [info] Bounds for 'hamstrings_r': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'glut_max_r': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'ilipsoas_r': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'vasti_r': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'gastroc_r': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'soleus_r': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'tibia_r': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'hamstrings_l': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'glut_max_l': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'ilipsoas_l': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'vasti_l': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'gastroc_l': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'soleus_l': 0.01 to 1.0.
+[2024-11-05 15:56:58.380] [info] Bounds for 'tibia_l': 0.01 to 1.0.
+[2024-11-05 15:56:58.442] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.442] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.442] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.41.
+[2024-11-05 15:56:58.442] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.47247
+   pelvis_rotation: constraint violation = -1.94922
+   pelvis_tilt: constraint violation = 1.20386
+   pelvis_tx: constraint violation = 0.524731
+   pelvis_ty: constraint violation = 8.54869
+   pelvis_tz: constraint violation = 1.14466
+   hip_adduction_r: constraint violation = -3.42806
+   hip_rotation_r: constraint violation = 12.5431
+   hip_flexion_r: constraint violation = 0.72406
+   hip_adduction_l: constraint violation = 20.1451
+   hip_rotation_l: constraint violation = 20.0281
+   hip_flexion_l: constraint violation = -37.1111
+   knee_flexion_r: constraint violation = -9.74708
+   knee_flexion_l: constraint violation = 282.018
+   ankle_dorsiflexion_r: constraint violation = 96.1225
+   ankle_dorsiflexion_l: constraint violation = -9115.33
+
+[2024-11-05 15:56:58.442] [cout] [info] time = 0.41 Performance = 0.0 Constraint violation = 9120.34
+[2024-11-05 15:56:58.501] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.501] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.501] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.411.
+[2024-11-05 15:56:58.502] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.33817
+   pelvis_rotation: constraint violation = -1.89632
+   pelvis_tilt: constraint violation = 1.25847
+   pelvis_tx: constraint violation = 0.557314
+   pelvis_ty: constraint violation = 8.58592
+   pelvis_tz: constraint violation = 1.11752
+   hip_adduction_r: constraint violation = -3.64973
+   hip_rotation_r: constraint violation = 12.789
+   hip_flexion_r: constraint violation = 0.223032
+   hip_adduction_l: constraint violation = 19.9651
+   hip_rotation_l: constraint violation = 20.7444
+   hip_flexion_l: constraint violation = -37.1534
+   knee_flexion_r: constraint violation = -8.85046
+   knee_flexion_l: constraint violation = 282.019
+   ankle_dorsiflexion_r: constraint violation = 96.1936
+   ankle_dorsiflexion_l: constraint violation = -9141
+
+[2024-11-05 15:56:58.502] [cout] [info] time = 0.411 Performance = 0.0 Constraint violation = 9145.99
+[2024-11-05 15:56:58.571] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.571] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.571] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.412.
+[2024-11-05 15:56:58.571] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.206942
+   pelvis_rotation: constraint violation = -1.8459
+   pelvis_tilt: constraint violation = 1.31292
+   pelvis_tx: constraint violation = 0.589862
+   pelvis_ty: constraint violation = 8.62105
+   pelvis_tz: constraint violation = 1.09142
+   hip_adduction_r: constraint violation = -3.86571
+   hip_rotation_r: constraint violation = 13.0363
+   hip_flexion_r: constraint violation = -0.269751
+   hip_adduction_l: constraint violation = 19.7905
+   hip_rotation_l: constraint violation = 21.4772
+   hip_flexion_l: constraint violation = -37.2039
+   knee_flexion_r: constraint violation = -7.97669
+   knee_flexion_l: constraint violation = 282.014
+   ankle_dorsiflexion_r: constraint violation = 96.2948
+   ankle_dorsiflexion_l: constraint violation = -9164.89
+
+[2024-11-05 15:56:58.571] [cout] [info] time = 0.412 Performance = 0.0 Constraint violation = 9169.88
+[2024-11-05 15:56:58.633] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.633] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.633] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.413.
+[2024-11-05 15:56:58.633] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = -0.0784567
+   pelvis_rotation: constraint violation = -1.79774
+   pelvis_tilt: constraint violation = 1.36713
+   pelvis_tx: constraint violation = 0.622303
+   pelvis_ty: constraint violation = 8.65437
+   pelvis_tz: constraint violation = 1.06627
+   hip_adduction_r: constraint violation = -4.07654
+   hip_rotation_r: constraint violation = 13.2849
+   hip_flexion_r: constraint violation = -0.754699
+   hip_adduction_l: constraint violation = 19.621
+   hip_rotation_l: constraint violation = 22.2271
+   hip_flexion_l: constraint violation = -37.2614
+   knee_flexion_r: constraint violation = -7.12462
+   knee_flexion_l: constraint violation = 282.006
+   ankle_dorsiflexion_r: constraint violation = 96.4251
+   ankle_dorsiflexion_l: constraint violation = -9187.32
+
+[2024-11-05 15:56:58.633] [cout] [info] time = 0.413 Performance = 0.0 Constraint violation = 9192.29
+[2024-11-05 15:56:58.694] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.694] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.694] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.414.
+[2024-11-05 15:56:58.694] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.0522866
+   pelvis_rotation: constraint violation = -1.74886
+   pelvis_tilt: constraint violation = 1.42023
+   pelvis_tx: constraint violation = 0.654104
+   pelvis_ty: constraint violation = 8.68992
+   pelvis_tz: constraint violation = 1.04066
+   hip_adduction_r: constraint violation = -4.28861
+   hip_rotation_r: constraint violation = 13.5264
+   hip_flexion_r: constraint violation = -1.23631
+   hip_adduction_l: constraint violation = 19.4521
+   hip_rotation_l: constraint violation = 23.0124
+   hip_flexion_l: constraint violation = -37.3069
+   knee_flexion_r: constraint violation = -6.27867
+   knee_flexion_l: constraint violation = 282.019
+   ankle_dorsiflexion_r: constraint violation = 96.5613
+   ankle_dorsiflexion_l: constraint violation = -9212.51
+
+[2024-11-05 15:56:58.694] [cout] [info] time = 0.414 Performance = 0.0 Constraint violation = 9217.48
+[2024-11-05 15:56:58.755] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.755] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.755] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.415.
+[2024-11-05 15:56:58.755] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.185473
+   pelvis_rotation: constraint violation = -1.69923
+   pelvis_tilt: constraint violation = 1.47218
+   pelvis_tx: constraint violation = 0.68522
+   pelvis_ty: constraint violation = 8.72791
+   pelvis_tz: constraint violation = 1.01452
+   hip_adduction_r: constraint violation = -4.50222
+   hip_rotation_r: constraint violation = 13.7607
+   hip_flexion_r: constraint violation = -1.71473
+   hip_adduction_l: constraint violation = 19.2837
+   hip_rotation_l: constraint violation = 23.8308
+   hip_flexion_l: constraint violation = -37.3395
+   knee_flexion_r: constraint violation = -5.43855
+   knee_flexion_l: constraint violation = 282.053
+   ankle_dorsiflexion_r: constraint violation = 96.7023
+   ankle_dorsiflexion_l: constraint violation = -9240.71
+
+[2024-11-05 15:56:58.755] [cout] [info] time = 0.415 Performance = 0.0 Constraint violation = 9245.66
+[2024-11-05 15:56:58.815] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.815] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.815] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.416.
+[2024-11-05 15:56:58.815] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.317993
+   pelvis_rotation: constraint violation = -1.65064
+   pelvis_tilt: constraint violation = 1.52337
+   pelvis_tx: constraint violation = 0.715934
+   pelvis_ty: constraint violation = 8.76599
+   pelvis_tz: constraint violation = 0.98874
+   hip_adduction_r: constraint violation = -4.71349
+   hip_rotation_r: constraint violation = 13.9922
+   hip_flexion_r: constraint violation = -2.18662
+   hip_adduction_l: constraint violation = 19.1193
+   hip_rotation_l: constraint violation = 24.667
+   hip_flexion_l: constraint violation = -37.3699
+   knee_flexion_r: constraint violation = -4.61505
+   knee_flexion_l: constraint violation = 282.097
+   ankle_dorsiflexion_r: constraint violation = 96.8617
+   ankle_dorsiflexion_l: constraint violation = -9269.46
+
+[2024-11-05 15:56:58.815] [cout] [info] time = 0.416 Performance = 0.0 Constraint violation = 9274.4
+[2024-11-05 15:56:58.877] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.877] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.877] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.417.
+[2024-11-05 15:56:58.877] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.446799
+   pelvis_rotation: constraint violation = -1.60481
+   pelvis_tilt: constraint violation = 1.57412
+   pelvis_tx: constraint violation = 0.746499
+   pelvis_ty: constraint violation = 8.80192
+   pelvis_tz: constraint violation = 0.964162
+   hip_adduction_r: constraint violation = -4.9186
+   hip_rotation_r: constraint violation = 14.2256
+   hip_flexion_r: constraint violation = -2.64875
+   hip_adduction_l: constraint violation = 18.9624
+   hip_rotation_l: constraint violation = 25.5091
+   hip_flexion_l: constraint violation = -37.4084
+   knee_flexion_r: constraint violation = -3.8186
+   knee_flexion_l: constraint violation = 282.139
+   ankle_dorsiflexion_r: constraint violation = 97.0526
+   ankle_dorsiflexion_l: constraint violation = -9296.42
+
+[2024-11-05 15:56:58.877] [cout] [info] time = 0.417 Performance = 0.0 Constraint violation = 9301.36
+[2024-11-05 15:56:58.937] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.937] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.937] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.418.
+[2024-11-05 15:56:58.937] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.57204
+   pelvis_rotation: constraint violation = -1.56159
+   pelvis_tilt: constraint violation = 1.6243
+   pelvis_tx: constraint violation = 0.776811
+   pelvis_ty: constraint violation = 8.83589
+   pelvis_tz: constraint violation = 0.940738
+   hip_adduction_r: constraint violation = -5.11785
+   hip_rotation_r: constraint violation = 14.4604
+   hip_flexion_r: constraint violation = -3.10093
+   hip_adduction_l: constraint violation = 18.8129
+   hip_rotation_l: constraint violation = 26.3556
+   hip_flexion_l: constraint violation = -37.4536
+   knee_flexion_r: constraint violation = -3.04915
+   knee_flexion_l: constraint violation = 282.182
+   ankle_dorsiflexion_r: constraint violation = 97.274
+   ankle_dorsiflexion_l: constraint violation = -9321.84
+
+[2024-11-05 15:56:58.937] [cout] [info] time = 0.418 Performance = 0.0 Constraint violation = 9326.77
+[2024-11-05 15:56:58.999] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:58.999] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:58.999] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.419.
+[2024-11-05 15:56:58.999] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.698659
+   pelvis_rotation: constraint violation = -1.51819
+   pelvis_tilt: constraint violation = 1.6732
+   pelvis_tx: constraint violation = 0.806452
+   pelvis_ty: constraint violation = 8.87182
+   pelvis_tz: constraint violation = 0.917073
+   hip_adduction_r: constraint violation = -5.31751
+   hip_rotation_r: constraint violation = 14.6887
+   hip_flexion_r: constraint violation = -3.54801
+   hip_adduction_l: constraint violation = 18.6659
+   hip_rotation_l: constraint violation = 27.2197
+   hip_flexion_l: constraint violation = -37.4871
+   knee_flexion_r: constraint violation = -2.29092
+   knee_flexion_l: constraint violation = 282.242
+   ankle_dorsiflexion_r: constraint violation = 97.5031
+   ankle_dorsiflexion_l: constraint violation = -9349.76
+
+[2024-11-05 15:56:58.999] [cout] [info] time = 0.419 Performance = 0.0 Constraint violation = 9354.68
+[2024-11-05 15:56:59.066] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.066] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.066] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.42.
+[2024-11-05 15:56:59.067] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.826814
+   pelvis_rotation: constraint violation = -1.47458
+   pelvis_tilt: constraint violation = 1.72077
+   pelvis_tx: constraint violation = 0.835378
+   pelvis_ty: constraint violation = 8.90987
+   pelvis_tz: constraint violation = 0.89311
+   hip_adduction_r: constraint violation = -5.51785
+   hip_rotation_r: constraint violation = 14.9102
+   hip_flexion_r: constraint violation = -3.98996
+   hip_adduction_l: constraint violation = 18.5215
+   hip_rotation_l: constraint violation = 28.0996
+   hip_flexion_l: constraint violation = -37.5079
+   knee_flexion_r: constraint violation = -1.54381
+   knee_flexion_l: constraint violation = 282.319
+   ankle_dorsiflexion_r: constraint violation = 97.7387
+   ankle_dorsiflexion_l: constraint violation = -9380.36
+
+[2024-11-05 15:56:59.067] [cout] [info] time = 0.42 Performance = 0.0 Constraint violation = 9385.27
+[2024-11-05 15:56:59.128] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.128] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.128] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.421.
+[2024-11-05 15:56:59.128] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 0.953446
+   pelvis_rotation: constraint violation = -1.43243
+   pelvis_tilt: constraint violation = 1.76733
+   pelvis_tx: constraint violation = 0.863831
+   pelvis_ty: constraint violation = 8.94777
+   pelvis_tz: constraint violation = 0.869704
+   hip_adduction_r: constraint violation = -5.71504
+   hip_rotation_r: constraint violation = 15.1293
+   hip_flexion_r: constraint violation = -4.42345
+   hip_adduction_l: constraint violation = 18.383
+   hip_rotation_l: constraint violation = 28.9836
+   hip_flexion_l: constraint violation = -37.5261
+   knee_flexion_r: constraint violation = -0.8183
+   knee_flexion_l: constraint violation = 282.401
+   ankle_dorsiflexion_r: constraint violation = 97.994
+   ankle_dorsiflexion_l: constraint violation = -9411.29
+
+[2024-11-05 15:56:59.128] [cout] [info] time = 0.421 Performance = 0.0 Constraint violation = 9416.19
+[2024-11-05 15:56:59.186] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.186] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.186] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.422.
+[2024-11-05 15:56:59.186] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.07544
+   pelvis_rotation: constraint violation = -1.39337
+   pelvis_tilt: constraint violation = 1.81313
+   pelvis_tx: constraint violation = 0.892019
+   pelvis_ty: constraint violation = 8.98327
+   pelvis_tz: constraint violation = 0.847744
+   hip_adduction_r: constraint violation = -5.90522
+   hip_rotation_r: constraint violation = 15.3507
+   hip_flexion_r: constraint violation = -4.84512
+   hip_adduction_l: constraint violation = 18.254
+   hip_rotation_l: constraint violation = 29.8604
+   hip_flexion_l: constraint violation = -37.5521
+   knee_flexion_r: constraint violation = -0.124812
+   knee_flexion_l: constraint violation = 282.48
+   ankle_dorsiflexion_r: constraint violation = 98.2825
+   ankle_dorsiflexion_l: constraint violation = -9440.21
+
+[2024-11-05 15:56:59.186] [cout] [info] time = 0.422 Performance = 0.0 Constraint violation = 9445.11
+[2024-11-05 15:56:59.249] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.249] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.249] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.423.
+[2024-11-05 15:56:59.249] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.19292
+   pelvis_rotation: constraint violation = -1.35724
+   pelvis_tilt: constraint violation = 1.85806
+   pelvis_tx: constraint violation = 0.919852
+   pelvis_ty: constraint violation = 9.01655
+   pelvis_tz: constraint violation = 0.827177
+   hip_adduction_r: constraint violation = -6.08863
+   hip_rotation_r: constraint violation = 15.5741
+   hip_flexion_r: constraint violation = -5.25476
+   hip_adduction_l: constraint violation = 18.1345
+   hip_rotation_l: constraint violation = 30.7288
+   hip_flexion_l: constraint violation = -37.5843
+   knee_flexion_r: constraint violation = 0.536762
+   knee_flexion_l: constraint violation = 282.555
+   ankle_dorsiflexion_r: constraint violation = 98.603
+   ankle_dorsiflexion_l: constraint violation = -9467.32
+
+[2024-11-05 15:56:59.249] [cout] [info] time = 0.423 Performance = 0.0 Constraint violation = 9472.22
+[2024-11-05 15:56:59.307] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.307] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.307] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.424.
+[2024-11-05 15:56:59.307] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.31093
+   pelvis_rotation: constraint violation = -1.32139
+   pelvis_tilt: constraint violation = 1.90152
+   pelvis_tx: constraint violation = 0.946995
+   pelvis_ty: constraint violation = 9.05145
+   pelvis_tz: constraint violation = 0.806562
+   hip_adduction_r: constraint violation = -6.27164
+   hip_rotation_r: constraint violation = 15.7913
+   hip_flexion_r: constraint violation = -5.65739
+   hip_adduction_l: constraint violation = 18.019
+   hip_rotation_l: constraint violation = 31.6041
+   hip_flexion_l: constraint violation = -37.6043
+   knee_flexion_r: constraint violation = 1.18227
+   knee_flexion_l: constraint violation = 282.638
+   ankle_dorsiflexion_r: constraint violation = 98.9323
+   ankle_dorsiflexion_l: constraint violation = -9496.6
+
+[2024-11-05 15:56:59.307] [cout] [info] time = 0.424 Performance = 0.0 Constraint violation = 9501.48
+[2024-11-05 15:56:59.364] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.364] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.364] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.425.
+[2024-11-05 15:56:59.365] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.4297
+   pelvis_rotation: constraint violation = -1.28575
+   pelvis_tilt: constraint violation = 1.94347
+   pelvis_tx: constraint violation = 0.973411
+   pelvis_ty: constraint violation = 9.08818
+   pelvis_tz: constraint violation = 0.785817
+   hip_adduction_r: constraint violation = -6.45456
+   hip_rotation_r: constraint violation = 16.0018
+   hip_flexion_r: constraint violation = -6.05303
+   hip_adduction_l: constraint violation = 17.9073
+   hip_rotation_l: constraint violation = 32.4869
+   hip_flexion_l: constraint violation = -37.6107
+   knee_flexion_r: constraint violation = 1.81196
+   knee_flexion_l: constraint violation = 282.726
+   ankle_dorsiflexion_r: constraint violation = 99.269
+   ankle_dorsiflexion_l: constraint violation = -9528.24
+
+[2024-11-05 15:56:59.365] [cout] [info] time = 0.425 Performance = 0.0 Constraint violation = 9533.12
+[2024-11-05 15:56:59.421] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.421] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.421] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.426.
+[2024-11-05 15:56:59.421] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.54614
+   pelvis_rotation: constraint violation = -1.25188
+   pelvis_tilt: constraint violation = 1.98417
+   pelvis_tx: constraint violation = 0.999301
+   pelvis_ty: constraint violation = 9.12449
+   pelvis_tz: constraint violation = 0.76581
+   hip_adduction_r: constraint violation = -6.63359
+   hip_rotation_r: constraint violation = 16.2103
+   hip_flexion_r: constraint violation = -6.4383
+   hip_adduction_l: constraint violation = 17.8029
+   hip_rotation_l: constraint violation = 33.3671
+   hip_flexion_l: constraint violation = -37.6137
+   knee_flexion_r: constraint violation = 2.41557
+   knee_flexion_l: constraint violation = 282.811
+   ankle_dorsiflexion_r: constraint violation = 99.6262
+   ankle_dorsiflexion_l: constraint violation = -9559.92
+
+[2024-11-05 15:56:59.421] [cout] [info] time = 0.426 Performance = 0.0 Constraint violation = 9564.79
+[2024-11-05 15:56:59.478] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.478] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.478] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.427.
+[2024-11-05 15:56:59.478] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.65705
+   pelvis_rotation: constraint violation = -1.22131
+   pelvis_tilt: constraint violation = 2.02381
+   pelvis_tx: constraint violation = 1.02483
+   pelvis_ty: constraint violation = 9.15812
+   pelvis_tz: constraint violation = 0.74747
+   hip_adduction_r: constraint violation = -6.80472
+   hip_rotation_r: constraint violation = 16.4214
+   hip_flexion_r: constraint violation = -6.80967
+   hip_adduction_l: constraint violation = 17.7098
+   hip_rotation_l: constraint violation = 34.2336
+   hip_flexion_l: constraint violation = -37.6232
+   knee_flexion_r: constraint violation = 2.98267
+   knee_flexion_l: constraint violation = 282.883
+   ankle_dorsiflexion_r: constraint violation = 100.018
+   ankle_dorsiflexion_l: constraint violation = -9589.32
+
+[2024-11-05 15:56:59.478] [cout] [info] time = 0.427 Performance = 0.0 Constraint violation = 9594.19
+[2024-11-05 15:56:59.536] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.536] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.536] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.428.
+[2024-11-05 15:56:59.536] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.76257
+   pelvis_rotation: constraint violation = -1.19385
+   pelvis_tilt: constraint violation = 2.06229
+   pelvis_tx: constraint violation = 1.04993
+   pelvis_ty: constraint violation = 9.18925
+   pelvis_tz: constraint violation = 0.730733
+   hip_adduction_r: constraint violation = -6.96823
+   hip_rotation_r: constraint violation = 16.6346
+   hip_flexion_r: constraint violation = -7.16701
+   hip_adduction_l: constraint violation = 17.628
+   hip_rotation_l: constraint violation = 35.0872
+   hip_flexion_l: constraint violation = -37.6377
+   knee_flexion_r: constraint violation = 3.51353
+   knee_flexion_l: constraint violation = 282.943
+   ankle_dorsiflexion_r: constraint violation = 100.442
+   ankle_dorsiflexion_l: constraint violation = -9616.63
+
+[2024-11-05 15:56:59.537] [cout] [info] time = 0.428 Performance = 0.0 Constraint violation = 9621.5
+[2024-11-05 15:56:59.594] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.594] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.594] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.429.
+[2024-11-05 15:56:59.594] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.86809
+   pelvis_rotation: constraint violation = -1.16694
+   pelvis_tilt: constraint violation = 2.09913
+   pelvis_tx: constraint violation = 1.07433
+   pelvis_ty: constraint violation = 9.22181
+   pelvis_tz: constraint violation = 0.714035
+   hip_adduction_r: constraint violation = -7.13085
+   hip_rotation_r: constraint violation = 16.8415
+   hip_flexion_r: constraint violation = -7.51568
+   hip_adduction_l: constraint violation = 17.5508
+   hip_rotation_l: constraint violation = 35.9479
+   hip_flexion_l: constraint violation = -37.6386
+   knee_flexion_r: constraint violation = 4.02447
+   knee_flexion_l: constraint violation = 282.997
+   ankle_dorsiflexion_r: constraint violation = 100.875
+   ankle_dorsiflexion_l: constraint violation = -9645.88
+
+[2024-11-05 15:56:59.594] [cout] [info] time = 0.429 Performance = 0.0 Constraint violation = 9650.74
+[2024-11-05 15:56:59.655] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.655] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.655] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.43.
+[2024-11-05 15:56:59.655] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 1.9739
+   pelvis_rotation: constraint violation = -1.14048
+   pelvis_tilt: constraint violation = 2.13431
+   pelvis_tx: constraint violation = 1.098
+   pelvis_ty: constraint violation = 9.25604
+   pelvis_tz: constraint violation = 0.697261
+   hip_adduction_r: constraint violation = -7.293
+   hip_rotation_r: constraint violation = 17.0414
+   hip_flexion_r: constraint violation = -7.85582
+   hip_adduction_l: constraint violation = 17.4779
+   hip_rotation_l: constraint violation = 36.8181
+   hip_flexion_l: constraint violation = -37.6245
+   knee_flexion_r: constraint violation = 4.51604
+   knee_flexion_l: constraint violation = 283.045
+   ankle_dorsiflexion_r: constraint violation = 101.314
+   ankle_dorsiflexion_l: constraint violation = -9677.31
+
+[2024-11-05 15:56:59.655] [cout] [info] time = 0.43 Performance = 0.0 Constraint violation = 9682.16
+[2024-11-05 15:56:59.713] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.713] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.713] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.431.
+[2024-11-05 15:56:59.714] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.07688
+   pelvis_rotation: constraint violation = -1.11593
+   pelvis_tilt: constraint violation = 2.16802
+   pelvis_tx: constraint violation = 1.12111
+   pelvis_ty: constraint violation = 9.28971
+   pelvis_tz: constraint violation = 0.68131
+   hip_adduction_r: constraint violation = -7.45078
+   hip_rotation_r: constraint violation = 17.239
+   hip_flexion_r: constraint violation = -8.18396
+   hip_adduction_l: constraint violation = 17.4132
+   hip_rotation_l: constraint violation = 37.6876
+   hip_flexion_l: constraint violation = -37.6052
+   knee_flexion_r: constraint violation = 4.97804
+   knee_flexion_l: constraint violation = 283.078
+   ankle_dorsiflexion_r: constraint violation = 101.774
+   ankle_dorsiflexion_l: constraint violation = -9708.62
+
+[2024-11-05 15:56:59.714] [cout] [info] time = 0.431 Performance = 0.0 Constraint violation = 9713.47
+[2024-11-05 15:56:59.773] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.774] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.774] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.432.
+[2024-11-05 15:56:59.774] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.17366
+   pelvis_rotation: constraint violation = -1.09471
+   pelvis_tilt: constraint violation = 2.20041
+   pelvis_tx: constraint violation = 1.14379
+   pelvis_ty: constraint violation = 9.32052
+   pelvis_tz: constraint violation = 0.667158
+   hip_adduction_r: constraint violation = -7.60005
+   hip_rotation_r: constraint violation = 17.439
+   hip_flexion_r: constraint violation = -8.49641
+   hip_adduction_l: constraint violation = 17.3609
+   hip_rotation_l: constraint violation = 38.545
+   hip_flexion_l: constraint violation = -37.5907
+   knee_flexion_r: constraint violation = 5.40003
+   knee_flexion_l: constraint violation = 283.088
+   ankle_dorsiflexion_r: constraint violation = 102.267
+   ankle_dorsiflexion_l: constraint violation = -9737.46
+
+[2024-11-05 15:56:59.774] [cout] [info] time = 0.432 Performance = 0.0 Constraint violation = 9742.3
+[2024-11-05 15:56:59.831] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.831] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.831] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.433.
+[2024-11-05 15:56:59.831] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.2645
+   pelvis_rotation: constraint violation = -1.07661
+   pelvis_tilt: constraint violation = 2.23137
+   pelvis_tx: constraint violation = 1.16596
+   pelvis_ty: constraint violation = 9.34869
+   pelvis_tz: constraint violation = 0.65471
+   hip_adduction_r: constraint violation = -7.74117
+   hip_rotation_r: constraint violation = 17.641
+   hip_flexion_r: constraint violation = -8.79311
+   hip_adduction_l: constraint violation = 17.3209
+   hip_rotation_l: constraint violation = 39.3918
+   hip_flexion_l: constraint violation = -37.579
+   knee_flexion_r: constraint violation = 5.78252
+   knee_flexion_l: constraint violation = 283.073
+   ankle_dorsiflexion_r: constraint violation = 102.793
+   ankle_dorsiflexion_l: constraint violation = -9764.07
+
+[2024-11-05 15:56:59.831] [cout] [info] time = 0.433 Performance = 0.0 Constraint violation = 9768.91
+[2024-11-05 15:56:59.890] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.890] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.890] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.434.
+[2024-11-05 15:56:59.890] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.35518
+   pelvis_rotation: constraint violation = -1.05916
+   pelvis_tilt: constraint violation = 2.26056
+   pelvis_tx: constraint violation = 1.18744
+   pelvis_ty: constraint violation = 9.3783
+   pelvis_tz: constraint violation = 0.642253
+   hip_adduction_r: constraint violation = -7.88134
+   hip_rotation_r: constraint violation = 17.8358
+   hip_flexion_r: constraint violation = -9.08
+   hip_adduction_l: constraint violation = 17.2855
+   hip_rotation_l: constraint violation = 40.2512
+   hip_flexion_l: constraint violation = -37.552
+   knee_flexion_r: constraint violation = 6.14253
+   knee_flexion_l: constraint violation = 283.043
+   ankle_dorsiflexion_r: constraint violation = 103.325
+   ankle_dorsiflexion_l: constraint violation = -9792.59
+
+[2024-11-05 15:56:59.890] [cout] [info] time = 0.434 Performance = 0.0 Constraint violation = 9797.43
+[2024-11-05 15:56:59.949] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:56:59.949] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:56:59.949] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.435.
+[2024-11-05 15:56:59.949] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.4461
+   pelvis_rotation: constraint violation = -1.04224
+   pelvis_tilt: constraint violation = 2.288
+   pelvis_tx: constraint violation = 1.20821
+   pelvis_ty: constraint violation = 9.40961
+   pelvis_tz: constraint violation = 0.62964
+   hip_adduction_r: constraint violation = -8.02107
+   hip_rotation_r: constraint violation = 18.0225
+   hip_flexion_r: constraint violation = -9.35737
+   hip_adduction_l: constraint violation = 17.2541
+   hip_rotation_l: constraint violation = 41.1257
+   hip_flexion_l: constraint violation = -37.5084
+   knee_flexion_r: constraint violation = 6.4809
+   knee_flexion_l: constraint violation = 282.998
+   ankle_dorsiflexion_r: constraint violation = 103.862
+   ankle_dorsiflexion_l: constraint violation = -9823.31
+
+[2024-11-05 15:56:59.949] [cout] [info] time = 0.435 Performance = 0.0 Constraint violation = 9828.14
+[2024-11-05 15:57:00.009] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.009] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.009] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.436.
+[2024-11-05 15:57:00.009] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.534
+   pelvis_rotation: constraint violation = -1.02723
+   pelvis_tilt: constraint violation = 2.31382
+   pelvis_tx: constraint violation = 1.22838
+   pelvis_ty: constraint violation = 9.44036
+   pelvis_tz: constraint violation = 0.617816
+   hip_adduction_r: constraint violation = -8.15631
+   hip_rotation_r: constraint violation = 18.2061
+   hip_flexion_r: constraint violation = -9.62161
+   hip_adduction_l: constraint violation = 17.2309
+   hip_rotation_l: constraint violation = 42.003
+   hip_flexion_l: constraint violation = -37.4578
+   knee_flexion_r: constraint violation = 6.78742
+   knee_flexion_l: constraint violation = 282.929
+   ankle_dorsiflexion_r: constraint violation = 104.417
+   ankle_dorsiflexion_l: constraint violation = -9853.9
+
+[2024-11-05 15:57:00.009] [cout] [info] time = 0.436 Performance = 0.0 Constraint violation = 9858.72
+[2024-11-05 15:57:00.078] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.078] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.078] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.437.
+[2024-11-05 15:57:00.078] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.61541
+   pelvis_rotation: constraint violation = -1.01545
+   pelvis_tilt: constraint violation = 2.33807
+   pelvis_tx: constraint violation = 1.24806
+   pelvis_ty: constraint violation = 9.46826
+   pelvis_tz: constraint violation = 0.607798
+   hip_adduction_r: constraint violation = -8.28278
+   hip_rotation_r: constraint violation = 18.3916
+   hip_flexion_r: constraint violation = -9.86879
+   hip_adduction_l: constraint violation = 17.2205
+   hip_rotation_l: constraint violation = 42.8695
+   hip_flexion_l: constraint violation = -37.4098
+   knee_flexion_r: constraint violation = 7.05158
+   knee_flexion_l: constraint violation = 282.827
+   ankle_dorsiflexion_r: constraint violation = 105.003
+   ankle_dorsiflexion_l: constraint violation = -9882.01
+
+[2024-11-05 15:57:00.078] [cout] [info] time = 0.437 Performance = 0.0 Constraint violation = 9886.83
+[2024-11-05 15:57:00.142] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.142] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.142] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.438.
+[2024-11-05 15:57:00.142] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.69066
+   pelvis_rotation: constraint violation = -1.00667
+   pelvis_tilt: constraint violation = 2.36069
+   pelvis_tx: constraint violation = 1.26719
+   pelvis_ty: constraint violation = 9.49353
+   pelvis_tz: constraint violation = 0.59946
+   hip_adduction_r: constraint violation = -8.40091
+   hip_rotation_r: constraint violation = 18.5781
+   hip_flexion_r: constraint violation = -10.099
+   hip_adduction_l: constraint violation = 17.2224
+   hip_rotation_l: constraint violation = 43.7259
+   hip_flexion_l: constraint violation = -37.3626
+   knee_flexion_r: constraint violation = 7.27415
+   knee_flexion_l: constraint violation = 282.69
+   ankle_dorsiflexion_r: constraint violation = 105.62
+   ankle_dorsiflexion_l: constraint violation = -9907.9
+
+[2024-11-05 15:57:00.142] [cout] [info] time = 0.438 Performance = 0.0 Constraint violation = 9912.71
+[2024-11-05 15:57:00.201] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.201] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.201] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.439.
+[2024-11-05 15:57:00.201] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.7659
+   pelvis_rotation: constraint violation = -0.998552
+   pelvis_tilt: constraint violation = 2.3815
+   pelvis_tx: constraint violation = 1.28564
+   pelvis_ty: constraint violation = 9.52037
+   pelvis_tz: constraint violation = 0.59096
+   hip_adduction_r: constraint violation = -8.51833
+   hip_rotation_r: constraint violation = 18.7561
+   hip_flexion_r: constraint violation = -10.3189
+   hip_adduction_l: constraint violation = 17.228
+   hip_rotation_l: constraint violation = 44.5953
+   hip_flexion_l: constraint violation = -37.2987
+   knee_flexion_r: constraint violation = 7.47287
+   knee_flexion_l: constraint violation = 282.534
+   ankle_dorsiflexion_r: constraint violation = 106.239
+   ankle_dorsiflexion_l: constraint violation = -9935.82
+
+[2024-11-05 15:57:00.201] [cout] [info] time = 0.439 Performance = 0.0 Constraint violation = 9940.63
+[2024-11-05 15:57:00.268] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.268] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.268] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.44.
+[2024-11-05 15:57:00.268] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.84158
+   pelvis_rotation: constraint violation = -0.99099
+   pelvis_tilt: constraint violation = 2.40052
+   pelvis_tx: constraint violation = 1.30339
+   pelvis_ty: constraint violation = 9.54908
+   pelvis_tz: constraint violation = 0.582137
+   hip_adduction_r: constraint violation = -8.63558
+   hip_rotation_r: constraint violation = 18.9249
+   hip_flexion_r: constraint violation = -10.5288
+   hip_adduction_l: constraint violation = 17.2366
+   hip_rotation_l: constraint violation = 45.4786
+   hip_flexion_l: constraint violation = -37.2172
+   knee_flexion_r: constraint violation = 7.64877
+   knee_flexion_l: constraint violation = 282.36
+   ankle_dorsiflexion_r: constraint violation = 106.859
+   ankle_dorsiflexion_l: constraint violation = -9966.08
+
+[2024-11-05 15:57:00.269] [cout] [info] time = 0.44 Performance = 0.0 Constraint violation = 9970.88
+[2024-11-05 15:57:00.329] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.329] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.329] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.441.
+[2024-11-05 15:57:00.329] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.91429
+   pelvis_rotation: constraint violation = -0.985267
+   pelvis_tilt: constraint violation = 2.41783
+   pelvis_tx: constraint violation = 1.32054
+   pelvis_ty: constraint violation = 9.57736
+   pelvis_tz: constraint violation = 0.573987
+   hip_adduction_r: constraint violation = -8.74843
+   hip_rotation_r: constraint violation = 19.0892
+   hip_flexion_r: constraint violation = -10.725
+   hip_adduction_l: constraint violation = 17.2525
+   hip_rotation_l: constraint violation = 46.3606
+   hip_flexion_l: constraint violation = -37.1275
+   knee_flexion_r: constraint violation = 7.79155
+   knee_flexion_l: constraint violation = 282.159
+   ankle_dorsiflexion_r: constraint violation = 107.494
+   ankle_dorsiflexion_l: constraint violation = -9996.33
+
+[2024-11-05 15:57:00.329] [cout] [info] time = 0.441 Performance = 0.0 Constraint violation = 10001.1
+[2024-11-05 15:57:00.392] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.392] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.392] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.442.
+[2024-11-05 15:57:00.392] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 2.98044
+   pelvis_rotation: constraint violation = -0.9826
+   pelvis_tilt: constraint violation = 2.43341
+   pelvis_tx: constraint violation = 1.33716
+   pelvis_ty: constraint violation = 9.60285
+   pelvis_tz: constraint violation = 0.567557
+   hip_adduction_r: constraint violation = -8.85244
+   hip_rotation_r: constraint violation = 19.2545
+   hip_flexion_r: constraint violation = -10.9034
+   hip_adduction_l: constraint violation = 17.2805
+   hip_rotation_l: constraint violation = 47.2233
+   hip_flexion_l: constraint violation = -37.0385
+   knee_flexion_r: constraint violation = 7.89063
+   knee_flexion_l: constraint violation = 281.918
+   ankle_dorsiflexion_r: constraint violation = 108.157
+   ankle_dorsiflexion_l: constraint violation = -10024.2
+
+[2024-11-05 15:57:00.392] [cout] [info] time = 0.442 Performance = 0.0 Constraint violation = 10028.9
+[2024-11-05 15:57:00.448] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.448] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.448] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.443.
+[2024-11-05 15:57:00.448] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.04042
+   pelvis_rotation: constraint violation = -0.982775
+   pelvis_tilt: constraint violation = 2.44722
+   pelvis_tx: constraint violation = 1.35318
+   pelvis_ty: constraint violation = 9.62581
+   pelvis_tz: constraint violation = 0.562705
+   hip_adduction_r: constraint violation = -8.94809
+   hip_rotation_r: constraint violation = 19.4197
+   hip_flexion_r: constraint violation = -11.064
+   hip_adduction_l: constraint violation = 17.3199
+   hip_rotation_l: constraint violation = 48.0651
+   hip_flexion_l: constraint violation = -36.9489
+   knee_flexion_r: constraint violation = 7.94697
+   knee_flexion_l: constraint violation = 281.639
+   ankle_dorsiflexion_r: constraint violation = 108.846
+   ankle_dorsiflexion_l: constraint violation = -10049.9
+
+[2024-11-05 15:57:00.448] [cout] [info] time = 0.443 Performance = 0.0 Constraint violation = 10054.6
+[2024-11-05 15:57:00.508] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.508] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.508] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.444.
+[2024-11-05 15:57:00.508] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.10059
+   pelvis_rotation: constraint violation = -0.983619
+   pelvis_tilt: constraint violation = 2.45924
+   pelvis_tx: constraint violation = 1.36856
+   pelvis_ty: constraint violation = 9.65051
+   pelvis_tz: constraint violation = 0.557522
+   hip_adduction_r: constraint violation = -9.04325
+   hip_rotation_r: constraint violation = 19.5752
+   hip_flexion_r: constraint violation = -11.2142
+   hip_adduction_l: constraint violation = 17.3614
+   hip_rotation_l: constraint violation = 48.9106
+   hip_flexion_l: constraint violation = -36.8425
+   knee_flexion_r: constraint violation = 7.97886
+   knee_flexion_l: constraint violation = 281.342
+   ankle_dorsiflexion_r: constraint violation = 109.534
+   ankle_dorsiflexion_l: constraint violation = -10077.8
+
+[2024-11-05 15:57:00.508] [cout] [info] time = 0.444 Performance = 0.0 Constraint violation = 10082.5
+[2024-11-05 15:57:00.566] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.566] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.566] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.445.
+[2024-11-05 15:57:00.567] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.16141
+   pelvis_rotation: constraint violation = -0.985047
+   pelvis_tilt: constraint violation = 2.46954
+   pelvis_tx: constraint violation = 1.38327
+   pelvis_ty: constraint violation = 9.67723
+   pelvis_tz: constraint violation = 0.551853
+   hip_adduction_r: constraint violation = -9.13845
+   hip_rotation_r: constraint violation = 19.7201
+   hip_flexion_r: constraint violation = -11.3547
+   hip_adduction_l: constraint violation = 17.4043
+   hip_rotation_l: constraint violation = 49.7598
+   hip_flexion_l: constraint violation = -36.7185
+   knee_flexion_r: constraint violation = 7.98747
+   knee_flexion_l: constraint violation = 281.03
+   ankle_dorsiflexion_r: constraint violation = 110.217
+   ankle_dorsiflexion_l: constraint violation = -10108.1
+
+[2024-11-05 15:57:00.567] [cout] [info] time = 0.445 Performance = 0.0 Constraint violation = 10112.9
+[2024-11-05 15:57:00.625] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.625] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.625] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.446.
+[2024-11-05 15:57:00.625] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.21929
+   pelvis_rotation: constraint violation = -0.988245
+   pelvis_tilt: constraint violation = 2.4781
+   pelvis_tx: constraint violation = 1.39739
+   pelvis_ty: constraint violation = 9.70361
+   pelvis_tz: constraint violation = 0.546745
+   hip_adduction_r: constraint violation = -9.22926
+   hip_rotation_r: constraint violation = 19.8597
+   hip_flexion_r: constraint violation = -11.4813
+   hip_adduction_l: constraint violation = 17.4532
+   hip_rotation_l: constraint violation = 50.5941
+   hip_flexion_l: constraint violation = -36.5861
+   knee_flexion_r: constraint violation = 7.96238
+   knee_flexion_l: constraint violation = 280.692
+   ankle_dorsiflexion_r: constraint violation = 110.91
+   ankle_dorsiflexion_l: constraint violation = -10138.5
+
+[2024-11-05 15:57:00.625] [cout] [info] time = 0.446 Performance = 0.0 Constraint violation = 10143.2
+[2024-11-05 15:57:00.684] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.684] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.684] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.447.
+[2024-11-05 15:57:00.685] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.27056
+   pelvis_rotation: constraint violation = -0.99433
+   pelvis_tilt: constraint violation = 2.48484
+   pelvis_tx: constraint violation = 1.41093
+   pelvis_ty: constraint violation = 9.72727
+   pelvis_tz: constraint violation = 0.543267
+   hip_adduction_r: constraint violation = -9.3111
+   hip_rotation_r: constraint violation = 19.9992
+   hip_flexion_r: constraint violation = -11.5896
+   hip_adduction_l: constraint violation = 17.5126
+   hip_rotation_l: constraint violation = 51.3894
+   hip_flexion_l: constraint violation = -36.4538
+   knee_flexion_r: constraint violation = 7.89291
+   knee_flexion_l: constraint violation = 280.314
+   ankle_dorsiflexion_r: constraint violation = 111.628
+   ankle_dorsiflexion_l: constraint violation = -10166.6
+
+[2024-11-05 15:57:00.685] [cout] [info] time = 0.447 Performance = 0.0 Constraint violation = 10171.3
+[2024-11-05 15:57:00.742] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.743] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.743] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.448.
+[2024-11-05 15:57:00.743] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.3156
+   pelvis_rotation: constraint violation = -1.0031
+   pelvis_tilt: constraint violation = 2.48972
+   pelvis_tx: constraint violation = 1.42385
+   pelvis_ty: constraint violation = 9.74844
+   pelvis_tz: constraint violation = 0.541286
+   hip_adduction_r: constraint violation = -9.38441
+   hip_rotation_r: constraint violation = 20.1378
+   hip_flexion_r: constraint violation = -11.6798
+   hip_adduction_l: constraint violation = 17.5815
+   hip_rotation_l: constraint violation = 52.143
+   hip_flexion_l: constraint violation = -36.3205
+   knee_flexion_r: constraint violation = 7.78013
+   knee_flexion_l: constraint violation = 279.899
+   ankle_dorsiflexion_r: constraint violation = 112.367
+   ankle_dorsiflexion_l: constraint violation = -10192.5
+
+[2024-11-05 15:57:00.743] [cout] [info] time = 0.448 Performance = 0.0 Constraint violation = 10197.2
+[2024-11-05 15:57:00.801] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Not enough degrees of freedom (status -10)
+[2024-11-05 15:57:00.801] [warning] OPTIMIZATION FAILED...
+[2024-11-05 15:57:00.801] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.449.
+[2024-11-05 15:57:00.801] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_list: constraint violation = 3.36085
+   pelvis_rotation: constraint violation = -1.01257
+   pelvis_tilt: constraint violation = 2.49292
+   pelvis_tx: constraint violation = 1.43616
+   pelvis_ty: constraint violation = 9.77142
+   pelvis_tz: constraint violation = 0.538881
+   hip_adduction_r: constraint violation = -9.4572
+   hip_rotation_r: constraint violation = 20.2658
+   hip_flexion_r: constraint violation = -11.7601
+   hip_adduction_l: constraint violation = 17.6513
+   hip_rotation_l: constraint violation = 52.8873
+   hip_flexion_l: constraint violation = -36.1714
+   knee_flexion_r: constraint violation = 7.64286
+   knee_flexion_l: constraint violation = 279.472
+   ankle_dorsiflexion_r: constraint violation = 113.1
+   ankle_dorsiflexion_l: constraint violation = -10220.7
+
+[2024-11-05 15:57:00.801] [cout] [info] time = 0.449 Performance = 0.0 Constraint violation = 10225.4
+[2024-11-05 15:57:00.801] [info] Printing results of investigation subject01_walk1 to assets/ResultsSO
+[2024-11-05 15:59:13.738] [info] AbstractTool subject01_walk1 loading model subject01.osim
+[2024-11-05 15:59:35.146] [info] AbstractTool subject01_walk1 loading model subject01.osim
+[2024-11-05 16:01:03.007] [info] AbstractTool subject01_walk1 loading model subject01_simbody_adjusted.osim
+[2024-11-05 16:01:03.028] [info] Loaded model subject01 from file subject01_simbody_adjusted.osim
+[2024-11-05 16:01:03.029] [warning] Couldn't find file 'sacrum.vtp'.
+[2024-11-05 16:01:03.029] [warning] Couldn't find file 'pelvis.vtp'.
+[2024-11-05 16:01:03.029] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2024-11-05 16:01:03.029] [warning] Couldn't find file 'femur_r.vtp'.
+[2024-11-05 16:01:03.029] [warning] Couldn't find file 'tibia_r.vtp'.
+[2024-11-05 16:01:03.029] [warning] Couldn't find file 'fibula.vtp'.
+[2024-11-05 16:01:03.029] [warning] Couldn't find file 'talus.vtp'.
+[2024-11-05 16:01:03.029] [warning] Couldn't find file 'foot.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'bofoot.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'femur_l.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'tibia_l.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'l_fibula.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'l_talus.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'l_foot.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'l_bofoot.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'hat_spine.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'hat_jaw.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'hat_skull.vtp'.
+[2024-11-05 16:01:03.030] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2024-11-05 16:01:03.039] [info] ExternalLoads 'Ex2' was renamed and is being reset to 'externalloads'.
+[2024-11-05 16:01:03.043] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 16:01:03.055] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 16:01:03.055] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 16:01:03.058] [info] Loading coordinates from file 'subject01_walk1_ik.mot'.
+[2024-11-05 16:01:03.058] [info] Storage: read data file = subject01_walk1_ik.mot (nr=73 nc=24)
+[2024-11-05 16:01:03.076] [info] Found 73 state vectors with time stamps ranging from 0.4 to 1.6.
+[2024-11-05 16:01:03.076] [info] Executing the analyses from 0.4 to 0.45...
+[2024-11-05 16:01:03.085] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 16:01:03.097] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 16:01:03.097] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 16:01:03.102] [info] Storage: read data file = subject01_walk1_grf.mot (nr=1501 nc=19)
+[2024-11-05 16:01:03.114] [info] ExternalForce::right Data source being set to subject01_walk1_grf.mot
+[2024-11-05 16:01:03.114] [info] ExternalForce::left Data source being set to subject01_walk1_grf.mot
+[2024-11-05 16:01:03.624] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Maximum iterations exceeded (status -1)
+[2024-11-05 16:01:03.624] [warning] OPTIMIZATION FAILED...
+[2024-11-05 16:01:03.624] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.4.
+[2024-11-05 16:01:03.624] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_tilt: constraint violation = 19.5247
+   pelvis_list: constraint violation = -2.08724
+   pelvis_rotation: constraint violation = 3.16448
+   pelvis_tx: constraint violation = -0.0106357
+   pelvis_ty: constraint violation = -1.23467
+   pelvis_tz: constraint violation = 0.0630328
+   hip_flexion_r: constraint violation = 1.16911
+   hip_adduction_r: constraint violation = -8.09684
+   hip_rotation_r: constraint violation = 0.263293
+   hip_flexion_l: constraint violation = -48.0404
+   hip_adduction_l: constraint violation = 2.16859
+   hip_rotation_l: constraint violation = -0.384935
+   lumbar_extension: constraint violation = 0.0502994
+   lumbar_bending: constraint violation = 0.560066
+   lumbar_rotation: constraint violation = 0.095458
+   knee_angle_r: constraint violation = 0.30139
+   knee_angle_l: constraint violation = -0.329466
+   ankle_angle_r: constraint violation = 83.4321
+   ankle_angle_l: constraint violation = 9.55108
+   subtalar_angle_r: constraint violation = -146.62
+   subtalar_angle_l: constraint violation = 4.8742
+   mtp_angle_r: constraint violation = -13.2095
+   mtp_angle_l: constraint violation = 242.138
+
+[2024-11-05 16:01:03.624] [cout] [info] time = 0.4 Performance = 4.70684 Constraint violation = 300.26
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_med1_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_med2_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_med3_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'bifemlh_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'bifemsh_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'sar_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'add_mag2_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'tfl_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'pect_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'grac_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_max1_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_max2_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_max3_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'iliacus_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'psoas_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'quad_fem_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'gem_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'peri_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'rect_fem_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'vas_int_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'med_gas_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'soleus_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'tib_post_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'tib_ant_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_med1_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_med2_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_med3_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'bifemlh_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'bifemsh_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'sar_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'add_mag2_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'tfl_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'pect_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'grac_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_max1_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_max2_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'glut_max3_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'iliacus_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'psoas_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.625] [info] Bounds for 'quad_fem_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'gem_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'peri_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'rect_fem_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'vas_int_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'med_gas_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'soleus_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'tib_post_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'tib_ant_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'ercspn_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'ercspn_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'intobl_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'intobl_l': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'extobl_r': 0.01 to 1.0.
+[2024-11-05 16:01:03.626] [info] Bounds for 'extobl_l': 0.01 to 1.0.
+[2024-11-05 16:01:04.119] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Maximum iterations exceeded (status -1)
+[2024-11-05 16:01:04.119] [warning] OPTIMIZATION FAILED...
+[2024-11-05 16:01:04.119] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.417.
+[2024-11-05 16:01:04.120] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_tilt: constraint violation = -5.60644
+   pelvis_list: constraint violation = 1.65942
+   pelvis_rotation: constraint violation = 13.3381
+   pelvis_tx: constraint violation = -0.0687325
+   pelvis_ty: constraint violation = -1.15442
+   pelvis_tz: constraint violation = -0.76292
+   hip_flexion_r: constraint violation = 10.3914
+   hip_adduction_r: constraint violation = -12.2008
+   hip_rotation_r: constraint violation = -20.997
+   hip_flexion_l: constraint violation = 7.34853
+   hip_adduction_l: constraint violation = 0.517675
+   hip_rotation_l: constraint violation = 1.97507
+   lumbar_extension: constraint violation = 10.9977
+   lumbar_bending: constraint violation = 9.05398
+   lumbar_rotation: constraint violation = -8.87519
+   knee_angle_r: constraint violation = 1.76022
+   knee_angle_l: constraint violation = -5.01129
+   ankle_angle_r: constraint violation = 228.745
+   ankle_angle_l: constraint violation = -37.5314
+   subtalar_angle_r: constraint violation = -101.053
+   subtalar_angle_l: constraint violation = 28.4755
+   mtp_angle_r: constraint violation = -413.931
+   mtp_angle_l: constraint violation = 381.163
+
+[2024-11-05 16:01:04.120] [cout] [info] time = 0.417 Performance = 1.15393 Constraint violation = 618.595
+[2024-11-05 16:01:04.584] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Maximum iterations exceeded (status -1)
+[2024-11-05 16:01:04.584] [warning] OPTIMIZATION FAILED...
+[2024-11-05 16:01:04.584] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.433.
+[2024-11-05 16:01:04.584] [warning] The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_tilt: constraint violation = 1.39185
+   pelvis_list: constraint violation = 2.38017
+   pelvis_rotation: constraint violation = -1.94535
+   pelvis_tx: constraint violation = 0.117216
+   pelvis_ty: constraint violation = 0.0556123
+   pelvis_tz: constraint violation = -0.147023
+   hip_flexion_r: constraint violation = -3.1512
+   hip_adduction_r: constraint violation = -2.26256
+   hip_rotation_r: constraint violation = -1.0134
+   hip_flexion_l: constraint violation = -1.58119
+   hip_adduction_l: constraint violation = -2.69275
+   hip_rotation_l: constraint violation = -26.5828
+   lumbar_extension: constraint violation = -0.0227392
+   lumbar_bending: constraint violation = -1.26367
+   lumbar_rotation: constraint violation = -0.086477
+   knee_angle_r: constraint violation = 3.24411
+   knee_angle_l: constraint violation = 16.911
+   ankle_angle_r: constraint violation = 223.631
+   ankle_angle_l: constraint violation = 33.451
+   subtalar_angle_r: constraint violation = -123.725
+   subtalar_angle_l: constraint violation = 46.2119
+   mtp_angle_r: constraint violation = -358.286
+   mtp_angle_l: constraint violation = 116.812
+
+[2024-11-05 16:01:04.584] [cout] [info] time = 0.433 Performance = 2.42586 Constraint violation = 460.032
+[2024-11-05 16:01:05.125] [warning] SimTK Exception thrown at InteriorPointOptimizer.cpp:265:
+  Optimizer failed: Ipopt: Maximum iterations exceeded (status -1)
+[2024-11-05 16:01:05.125] [warning] OPTIMIZATION FAILED...
+[2024-11-05 16:01:05.125] [warning] StaticOptimization.record: The optimizer could not find a solution at time = 0.45.
+[2024-11-05 16:01:05.125] [warning] The model appears too weak for static optimization.
+Try increasing the strength and/or range of the following force(s):
+   vas_int_r approaching upper bound of 1
+
+[2024-11-05 16:01:05.125] [cout] [info] time = 0.45 Performance = 5.98509 Constraint violation = 43887.7
+[2024-11-05 16:01:05.125] [info] Printing results of investigation subject01_walk1 to ResultsSO
