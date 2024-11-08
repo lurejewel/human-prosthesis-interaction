@@ -42,8 +42,8 @@ movefile('subject01_ik_marker_errors.sto','assets\'); % this .sto file is auto g
 
 %% read .mot file and play it
 
-motData = Storage('assets\subject01_walk1_ik.mot');
-rate = motData.getSize / (motData.getLastTime - motData.getFirstTime);
+motData = Storage('assets\subject01_walk1_ik.mot'); % read .mot file
+rate = motData.getSize / (motData.getLastTime - motData.getFirstTime); % avg rate
 for t = 0 : motData.getSize - 1 % for each frame/state
     stateVec = motData.getStateVector(t).getData;
     for i = 0 : stateVec.size - 1 % for each DOF
