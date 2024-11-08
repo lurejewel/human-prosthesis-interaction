@@ -1,3 +1,18 @@
+% Name: determine_gait_phase_from_motion
+% Author(s): Jin Wei, Peking U.
+% Description: The function of this script is validate the availability of
+% detecting the gait phase of each leg of the musculoskeletal model at real
+% time based on the state of the model.
+% There are five gait phases for each leg:
+% - [Early Stance]: starting from the heel strike event, and ending at the
+% time when the COM of pelvis surpasses the COM of foot (calcn).
+% - [Late Stance]: ending at the oppsite foot clearance, OR the time when
+% the COM of foot is left far behind the COM of pelvis (> 1 meter).
+% - [Liftoff]: ending at foot clearance.
+% - [Swing]: ending at the time when the COM of foot surpasses the COM of
+% pelvis.
+% - [Landing]: ending at the next heel strike.
+
 % TODO1 (Completed): 给模型加载上外力（subject01_walk1_grf.xml），读取足部的受力，判断步态阶段。
 % TODO2: 编写肌肉反射机制和优化算法。
 % TODO3: 保证能够通过读取接触力，正确且准确地实时获取地反力（正压力和摩擦力）。

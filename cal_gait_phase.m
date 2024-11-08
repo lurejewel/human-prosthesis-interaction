@@ -19,14 +19,14 @@ pelvisCOMGlobal = pelvis.findStationLocationInGround(state, pelvisCOMLocal);
 pelvisCOM = pelvisCOMGlobal.get(0);
 
 % X axis of calcn COM
-calcnL = model.getBodySet().get('calcn_l');
-calcnLCOMLocal = calcnL.getMassCenter();
-calcnLCOMGlobal = calcnL.findStationLocationInGround(state, calcnLCOMLocal);
-calcnLCOM = calcnLCOMGlobal.get(0);
 calcnR = model.getBodySet().get('calcn_r');
 calcnRCOMLocal = calcnR.getMassCenter();
 calcnRCOMGlobal = calcnR.findStationLocationInGround(state, calcnRCOMLocal);
 calcnRCOM = calcnRCOMGlobal.get(0);
+calcnL = model.getBodySet().get('calcn_l');
+calcnLCOMLocal = calcnL.getMassCenter();
+calcnLCOMGlobal = calcnL.findStationLocationInGround(state, calcnLCOMLocal);
+calcnLCOM = calcnLCOMGlobal.get(0);
 
 %% gait detection
 % [Early Stance]: GRF >= stanceTh && calcnCOM >= pelvisCOM
@@ -42,7 +42,7 @@ if grfR >= stanceTh
     if calcnRCOM >= pelvisCOM
         phaseR = 0; % Early Stance
     elseif grfL > stanceTh || calcnRCOM+1 < pelvisCOM
-        phaseR = 2; % LiftOff
+        phaseR = 2; % Liftoff
     elseif grfL < stanceTh
         phaseR = 1; % Late Stance
     end
