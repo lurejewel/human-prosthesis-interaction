@@ -1,0 +1,116 @@
+% -------------------------------------------------------------------------
+% Name: demo_predictiveForwardSimulation_humanModel.m
+% Description: Functional validation script of the predictive,
+% experimental-data-free, muscle-reflex-based musculoskeletal model.
+% Core components:
+% - [Model]: 16 DOF, 14 muscles (only lower limbs)
+% - [Gait phase detection]: calculate gait phases of each leg based on the
+% state of the model at real time
+% - [Muscle reflex mechanism]: CNS-like part where muscle excitations are
+% generated according to gait phases at real time
+% - [Optimization]: tune the muscle-reflex parameters in order that the
+% model can walk in a smooth, human-like way
+% What if...:
+% - What if GRF is calculated through foot-ground contact forces, rather
+% than gotten directly from experimental data?
+% - What if more muscles are included?
+% - What if current model is replaced with human-prosthesis model?
+% - What if we use alternative optimization methods other than CMA-ES?
+% - What if hundreds of muscles should be included?
+% - What if other periodic activities (running, swimming, etc.) are
+% considered?
+% -------------------------------------------------------------------------
+% 暂时先让模型按照实验数据运动，用于检查肌肉反射的输出结果是否正确
+
+addpath('assets\', 'model\', 'functions\')
+import org.opensim.modeling.*
+
+%% load model, motion and GRF data
+model = Model('model\coupled_human-prosthesis_model_scaledFinal.osim');
+model.setUseVisualizer(true);
+% initial muscle reflex parameters; not optimized yet
+muscleReflexParaArray = [1.14339427675597;0.683965164606834;-0.654937183750042;1.44526338204981;1               ;-2.54053931319423;-0.666188349877246;0.0496818438178654;0.109481378880035;0.388522196081861;0.266059683859970;0.748599386315988;0.543366924759648;0.598978415045811;-2.81541067233053;0.377854695673883;2.18759273326043;0.657016639688066;-0.298290360392486;0.300063335235475;1.81474706127338;0.00878201304411728;0.510662826532988;1.15502124130598;1.97028072512268;0.479041225785079;0.568851978040139;-0.188673608490112];
+
+% older version ---
+% motData = Storage('assets\subject01_walk1_ik.mot');
+% firstTime = motData.getFirstTime; % t_start = 0
+% lastTime = motData.getLastTime; % t_end = 2.5
+% frameNum = motData.getSize;
+% rate = frameNum / (lastTime - firstTime);
+% coordNum = motData.getStateVector(0).getData.size; % number of coordinates (DOFs)
+% motDataGRF = Storage('assets\subject01_walk1_grf.mot'); % GRF rate is 10x than ik rate
+
+%% specify simulation configuration
+simConfig.startTime = 0;
+simConfig.endTime = 1;
+simConfig.stepTime = 0.001;
+
+%% init modelInfo Class
+modelInfo = ModelInfo(model, simConfig, muscleReflexParaArray);
+
+%% first-frame initialization
+% this is ugly, i know :( may find better way to do this later
+[model, modelInfo] = init_first_frame(model, modelInfo); % including model.initSystem()
+% model.updVisualizer().show(modelInfo.state);
+
+%% generate muscle excitation according to muscle reflex mechanism
+
+frameIndex = 1;
+for t = modelInfo.time % time series
+    
+    % calculate ground reaction forces, including normal forces and
+    % friction forces, exerted by ground on each foot (calcn_r/l)
+    modelInfo = cal_grf(model, modelInfo, frameIndex); % [QUESTION: IS THIS UGLY AND INEFFICIENT???]
+
+    % calculate gait phase based on the state of the model
+    modelInfo = cal_gait_phase(model, modelInfo, frameIndex);
+
+    % calculate muscle excitations based on muscle states and gait phases
+    modelInfo.muscleExcitations(:,frameIndex + modelInfo.muscleReflexDelay) = cal_muscle_excitation(modelInfo, frameIndex);
+    if frameIndex <= modelInfo.muscleReflexDelay % the muscle excitations in the first 10 frames = those in the 11th frames (delay = 10 ms)
+        modelInfo.muscleExcitations(:,frameIndex) = modelInfo.muscleExcitations(:,11);
+    end
+    for i = 1 : model.updMuscles.getSize
+        model.updMuscles.get(i-1).setExcitation(modelInfo.state, modelInfo.muscleExcitations(i, frameIndex));
+    end
+    model.equilibrateMuscles(modelInfo.state);
+    % model.realizeDynamics(modelInfo.state);
+
+    % forward simulation
+    manager = Manager(model);
+    manager.initialize(modelInfo.state);
+    finalState = manager.integrate(t);
+    finalState.setTime(t);
+    model.realizeDynamics(finalState);
+    modelInfo.state = finalState;
+
+    frameIndex = frameIndex + 1;
+end
+
+% [after CMA-ES optimization (or other methods), muscleReflexParaArray is changed...]
+modelInfo.muscleReflex = muscleReflexPara_array2struct(muscleReflexParaArray); % muscle reflex parameters assignment
+
+% older version ---
+% for frameIndex = 0 : frameNum-1 % for each frame
+%     % get GRF value
+% 
+%     % grfR = motDataGRF.getStateVector(frameIndex*10).getData.get(1); % t*10: freq of grf data is 10 times higher than that of ik motion data
+%     % grfL = motDataGRF.getStateVector(frameIndex*10).getData.get(7);
+% 
+%     % assign the state from IK motion data to the model
+%     stateMotion = motData.getStateVector(frameIndex).getData; % get state vector from IK motion data
+%     for coordIndex = 0 : coordNum-1
+%         coordVal = stateMotion.get(coordIndex);
+%         if coordIndex < 3 || coordIndex > 5  % 3~5 is translational dof (pelvis_tx, pelvis_ty, pelvis_tz, no need for conversion
+%             coordVal = deg2rad(coordVal);
+%         end
+%         modelInfo.state.updQ().set(coordIndex, coordVal); % NOTE that the motion file is generated right from the model, so the order of coordiantes are matched.
+%     end
+%     model.realizeDynamics(modelInfo.state);
+% 
+%     % calculate gait phase based on the state of the model
+%     [modelInfo.phaseR, modelInfo.phaseL] = cal_gait_phase(model, modelInfo.state, [grfR, grfL]);
+% 
+%     % calculate muscle excitations based on muscle states and gait phases
+%     modelInfo = cal_muscle_excitation(model, modelInfo, simConfig);
+% end

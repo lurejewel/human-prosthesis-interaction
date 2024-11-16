@@ -1,5 +1,9 @@
-function [phaseR, phaseL] = cal_gait_phase(model, state, GRF)
+function modelInfo = cal_gait_phase(model, modelInfo, frameIndex)
 %% materials for gait phase detection
+% state, grf
+state = modelInfo.state;
+GRF = [modelInfo.grf.normalR(frameIndex), modelInfo.grf.normalL(frameIndex)];
+
 % init gait phases
 phaseR = -1;
 phaseL = -1;
@@ -71,5 +75,8 @@ end
 if phaseR == -1 || phaseL == -1
     error('invalid gait phase detected.')
 end
+
+modelInfo.phaseR(frameIndex) = phaseR;
+modelInfo.phaseL(frameIndex) = phaseL;
 
 end
