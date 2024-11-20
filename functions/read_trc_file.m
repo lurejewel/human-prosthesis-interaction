@@ -12,7 +12,7 @@ addpath('assets\', 'model\');
 import org.opensim.modeling.*
 
 %% load trc file
-trcPath = 'assets\subject01_walk1.trc';
+trcPath = '..\assets\subject01_walk1.trc';
 trc = MarkerData(trcPath); % read .trc file
 rate    = trc.getCameraRate(); % camera rate; time between the rate
 markerNum = trc.getNumMarkers(); % number of markers

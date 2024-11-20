@@ -29,7 +29,7 @@ init.pose.pelvis_list = 0;
 init.pose.pelvis_rotation = 0;
 init.pose.pelvis_tilt = -0.1029;
 init.pose.pelvis_tx = 0;
-init.pose.pelvis_ty = 1; % 0.9044;
+init.pose.pelvis_ty = 0.95; % 0.9044;
 init.pose.pelvis_tz = 0;
 init.pose.hip_adduction_r = 0;
 init.pose.hip_rotation_r = 0;
@@ -193,10 +193,12 @@ initState.updY.set(58, init.muscle_activation.tibia_l); % /forceset/tibia_l/acti
 initState.updY.set(59, init.normalized_fiber_length.tibia_l * optimalFiberLength.tib); % /forceset/tibia_l/fiber_length
 
 %% model final connection
-model.realizeDynamics(initState)
-modelInfo.state = initState;
+model.realizeDynamics(initState); % call model.realizeDynamics(state) first, then call model.equilibrateMuscles(state), according to gpt.
+model.equilibrateMuscles(initState); % after model.equilibrateMuscles(state), the realization stage of the model goes back to Velcotiy
+model.realizeDynamics(initState); % call model.realizeDynamics(state) again for Dynamics-stage realization
 
 %% assign init data to modelInfo
+modelInfo.state = initState;
 % normalized fiber force along tendon
 modelInfo.muscleFiberForcesATN(1,1) = init.normalized_fiber_force_along_tendon.hamstrings_r;
 modelInfo.muscleFiberForcesATN(2,1) = init.normalized_fiber_force_along_tendon.glut_max_r;
@@ -228,5 +230,6 @@ modelInfo.muscleFiberLengthN(11,1) = init.normalized_fiber_length.vasti_l;
 modelInfo.muscleFiberLengthN(12,1) = init.normalized_fiber_length.gastroc_l;
 modelInfo.muscleFiberLengthN(13,1) = init.normalized_fiber_length.soleus_l;
 modelInfo.muscleFiberLengthN(14,1) = init.normalized_fiber_length.tibia_l;
+
 
 end

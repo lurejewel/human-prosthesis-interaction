@@ -11,7 +11,8 @@
 classdef ModelInfo
 
     properties
-        % muscle states
+        % muscle-related information
+        muscleNames
         muscleExcitations
         muscleActivations
         muscleForces
@@ -19,6 +20,8 @@ classdef ModelInfo
         muscleFiberLengthN
         muscleReflexDelay
         muscleReflex
+        OptimalFiberLengths
+        OptimalFiberForces
         % gait phases
         phaseR
         phaseL
@@ -26,7 +29,7 @@ classdef ModelInfo
         grf
         state
         time
-            end
+    end
 
     methods
         function obj = ModelInfo(model, simConfig, muscleReflexParaArray)
@@ -35,16 +38,22 @@ classdef ModelInfo
             muscleNum = model.getMuscles.getSize;
 
             % number of points
-            npts = ceil((simConfig.endTime - simConfig.startTime) / simConfig.stepTime) + 1;
+            npts = ceil((simConfig.endTime - simConfig.startTime) / simConfig.stepTime)+1;
 
             % muslce states: excitation, activation, muscle fiber forces along tendon(or not?)
             delay = round(0.01/simConfig.stepTime); % 10 ms delay for muscle reflex mechanism to take effect
+            obj.muscleNames = cell(muscleNum, 1);
             obj.muscleReflexDelay = delay;
             obj.muscleExcitations = nan(muscleNum, npts+delay);
             obj.muscleActivations = nan(muscleNum, npts);
             obj.muscleForces = nan(muscleNum, npts);
             obj.muscleFiberForcesATN = nan(muscleNum, npts);
             obj.muscleFiberLengthN = nan(muscleNum, npts);
+
+            % muscle names
+            for muscleIndex = 0 : muscleNum-1
+                obj.muscleNames{muscleIndex+1} = char(model.getMuscles.get(muscleIndex).getName);
+            end
 
             % muscle reflex parameters
             obj.muscleReflex.tib.KL                     = muscleReflexParaArray(1);
@@ -77,6 +86,24 @@ classdef ModelInfo
             obj.muscleReflex.vas.KF2                    = muscleReflexParaArray(26);
             obj.muscleReflex.vas.C0                     = muscleReflexParaArray(27);
             obj.muscleReflex.vas_knee.pos_max           = muscleReflexParaArray(28);
+
+            % optimal fiber lengths后续可以改成数组形式
+            obj.OptimalFiberLengths.hamstrings = model.getMuscles.get('hamstrings_r').getOptimalFiberLength;
+            obj.OptimalFiberLengths.glut_max = model.getMuscles.get('glut_max_r').getOptimalFiberLength;
+            obj.OptimalFiberLengths.ilipsoas = model.getMuscles.get('ilipsoas_r').getOptimalFiberLength;
+            obj.OptimalFiberLengths.vasti = model.getMuscles.get('vasti_r').getOptimalFiberLength;
+            obj.OptimalFiberLengths.gastrocnemius = model.getMuscles.get('gastroc_r').getOptimalFiberLength;
+            obj.OptimalFiberLengths.soleus = model.getMuscles.get('soleus_r').getOptimalFiberLength;
+            obj.OptimalFiberLengths.tibia = model.getMuscles.get('tibia_r').getOptimalFiberLength;
+
+             % optimal fiber forces
+            obj.OptimalFiberForces.hamstrings = model.getMuscles.get('hamstrings_r').getMaxIsometricForce;
+            obj.OptimalFiberForces.glut_max = model.getMuscles.get('glut_max_r').getMaxIsometricForce;
+            obj.OptimalFiberForces.ilipsoas = model.getMuscles.get('ilipsoas_r').getMaxIsometricForce;
+            obj.OptimalFiberForces.vasti = model.getMuscles.get('vasti_r').getMaxIsometricForce;
+            obj.OptimalFiberForces.gastrocnemius = model.getMuscles.get('gastroc_r').getMaxIsometricForce;
+            obj.OptimalFiberForces.soleus = model.getMuscles.get('soleus_r').getMaxIsometricForce;
+            obj.OptimalFiberForces.tibia = model.getMuscles.get('tibia_r').getMaxIsometricForce;
 
             % phases
             obj.phaseR = nan(1, npts);

@@ -66,10 +66,10 @@ while ~feof(loggerFile)
     line = fgetl(loggerFile);
     disp(line)
 end
-fclose(loggerFile);
+fclose(loggerFile); 
 
 % report of average residual force
-type('assets\ResultsRRA\subject01_walk1_RRA_avgResiduals.txt','r');
+type('assets\ResultsRRA\subject01_walk1_RRA_avgResiduals.txt');
 
 %% Read .sto file and plot the force/torque profile
 forceData = Storage('assets\ResultsRRA\subject01_walk1_RRA_Actuation_force.sto');

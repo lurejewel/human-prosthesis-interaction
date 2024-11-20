@@ -54,7 +54,7 @@ end
 
 % plot
 for i = 1 : labelNum-1
-    figure(i), plot(timeVec, forceVec(:,i));
+    figure(i), plot(timeVec, forceVec(:,i), 'LineWidth',2);
     grid on, xlabel('time/s')
     ylabel(char(labels.get(i)),'Interpreter','none')
     title('inverse dynamics results: joint forces/torques')

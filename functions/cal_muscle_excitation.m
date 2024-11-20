@@ -258,7 +258,7 @@ muscleExcitations(13) = solL_exc;
 muscleExcitations(14) = tibL_exc;
 
 % 下面这两句限幅是必要的，但是在debug之后再取消注释
-% muscleExcitations(muscleExcitations > 1) = 1;
-% muscleExcitations(muscleExcitations < 0) = 0;
+muscleExcitations(muscleExcitations > 1) = 1;
+muscleExcitations(muscleExcitations < 0) = 0;
 
 end
