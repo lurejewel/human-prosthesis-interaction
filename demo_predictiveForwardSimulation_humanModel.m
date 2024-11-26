@@ -23,7 +23,7 @@ addpath('assets\', 'model\', 'functions\')
 import org.opensim.modeling.*
 
 %% load model, motion and GRF data
-model = Model('model\coupled_human-prosthesis_model_scaledFinal.osim');
+model = Model('model\coupled_human-prosthesis_model.osim');
 model.setUseVisualizer(true);
 model = add_muscle_actuator(model, PrescribedController()); % add the central controller and muscle actuators
 

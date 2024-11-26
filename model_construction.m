@@ -426,9 +426,19 @@ model.addForce(forces.ground_toe_l);
 
 clear stiffness dissipation staticFriction dynamicFriction viscousFriction transitionVelocity
 
-% coordinate constraint force
+% coordinate limit force: string + 6 double + bool
+stiffness = 2;
+upperLim = 0;
+lowerLim = -120;
+damping = 0.2;
+transition = 0.01;
 
+forces.knee_limit_r = CoordinateLimitForce('knee_flexion_r', upperLim, stiffness, lowerLim, stiffness, damping, transition, true);
+forces.knee_limit_l = CoordinateLimitForce('knee_flexion_l', upperLim, stiffness, lowerLim, stiffness, damping, transition, true);
+model.addForce(forces.knee_limit_r);
+model.addForce(forces.knee_limit_l);
 
+clear stiffness upperLim lowerLim damping transition
 %% Markers
 % markers.sternum = Marker('Sternum', bodies.torso, Vec3(0.07,0.3,0)); % construction func, para: <name>, <attached body>, <location>
 % model.addMarker(markers.sternum);
