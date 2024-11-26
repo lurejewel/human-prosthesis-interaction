@@ -426,6 +426,9 @@ model.addForce(forces.ground_toe_l);
 
 clear stiffness dissipation staticFriction dynamicFriction viscousFriction transitionVelocity
 
+% coordinate constraint force
+
+
 %% Markers
 % markers.sternum = Marker('Sternum', bodies.torso, Vec3(0.07,0.3,0)); % construction func, para: <name>, <attached body>, <location>
 % model.addMarker(markers.sternum);

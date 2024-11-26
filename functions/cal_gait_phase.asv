@@ -128,7 +128,7 @@ elseif frameIndex > 1
                 phaseL = 3;
             end
         case 3 % Swing -> Landing
-            if calcnLCOM > pelvisCOM
+            if calcnRCOM > pelvisCOM
                 phaseL = 4;
             end
         case 4 % Landing -> Early Stance
