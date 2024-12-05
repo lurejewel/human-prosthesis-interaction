@@ -43,6 +43,7 @@ muscleReflexParaArray = [1.14339427675597;0.683965164606834;-0.654937183750042;1
 simConfig.startTime = 0;
 simConfig.endTime = 1;
 simConfig.stepTime = 0.001;
+simConfig.saveSTO = true;
 
 %% init modelInfo Class
 modelInfo = ModelInfo(model, simConfig, muscleReflexParaArray);
@@ -51,7 +52,6 @@ modelInfo = ModelInfo(model, simConfig, muscleReflexParaArray);
 % this is ugly, i know :( may find better way to do this later
 [model, modelInfo] = init_first_frame(model, modelInfo); % including model.initSystem()
 % model.updVisualizer().show(modelInfo.state);
-% model.getForceSet.get('heelR_ground_contact_force').getRecordValues(modelInfo.state).get(0)
 
 %% generate muscle excitation according to muscle reflex mechanism
 
@@ -76,31 +76,56 @@ for t = modelInfo.time % time series
         brain.prescribeControlForActuator(muscleIndex, Constant(modelInfo.muscleExcitations(muscleIndex+1,frameIndex)));
     end
 
-    % for i = 1 : model.updMuscles.getSize
-    %     model.updMuscles.get(i-1).setExcitation(modelInfo.state, modelInfo.muscleExcitations(i, frameIndex));
-    % end
-    % model.equilibrateMuscles(modelInfo.state);
-    % % model.realizeDynamics(modelInfo.state);
-
     % forward simulation
     manager = Manager(model);
     manager.initialize(modelInfo.state);
     finalState = manager.integrate(t);
-    finalState.setTime(t); % maybe not necessarry
-    model.realizeDynamics(finalState); % maybe not necessarry
-    % modelInfo.state = finalState;
+    finalState.setTime(t); % might not be necessarry
+    model.realizeDynamics(finalState); % might not be necessarry
 
+    % update & record
+    modelInfo.stateHistory(:,frameIndex) = vec_2_mat(modelInfo.state.getY);
     frameIndex = frameIndex + 1;
     if frameIndex <= width(modelInfo.time)
-        modelInfo = update_MuscleInfo(model, modelInfo, finalState, frameIndex);
+        modelInfo = update_modelInfo(model, modelInfo, finalState, frameIndex);
     end
-
+    
 end
 
-plot_simulation_results(model, modelInfo, 'excitation&activation')
-plot_simulation_results(model, modelInfo, 'muscleForce')
-plot_simulation_results(model, modelInfo, 'phase')
+clear t frameIndex muscleIndex brain finalState
+
+% plot_simulation_results(model, modelInfo, 'excitation&activation')
+% plot_simulation_results(model, modelInfo, 'muscleForce')
+% plot_simulation_results(model, modelInfo, 'phase')
 
 % [after CMA-ES optimization (or other methods), muscleReflexParaArray is changed...]
 % modelInfo.muscleReflex = muscleReflexPara_array2struct(muscleReflexParaArray); % muscle reflex parameters assignment
 
+%% save the states to .sto file
+
+if simConfig.saveSTO
+
+    labels = ArrayStr();
+    labels.append('time');
+    numTags = height(modelInfo.stateHistory);
+    for stateIndex = 0 : numTags-1
+        labels.append(model.getStateVariableNames.get(stateIndex));
+    end
+
+    stoFile = Storage();
+    stoFile.setName(['human0914_sim_' char(datetime("today")) '.sto']);
+    stoFile.setColumnLabels(labels);
+    
+    for frameIndex = 1 : length(modelInfo.time)
+
+        Y = mat_2_vec(modelInfo.stateHistory(:,frameIndex));
+        stateVector = StateVector(modelInfo.time(frameIndex), Y);
+        stoFile.append(stateVector);
+
+    end
+
+    stoFile.print(['human0914_sim_' char(datetime("today")) '.sto']);
+
+end
+
+clear Y labels stateIndex stateVector frameIndex numTags stoFile

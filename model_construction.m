@@ -152,41 +152,46 @@ model.addBody(bodies.torso);
 %% Joints
 % ground ~ pelvis: ground_pelvis
 spatialTransform = SpatialTransform(); % define DOF of the joint here
-spatialTransform.updTransformAxis(0).setCoordinateNames(ArrayStr('pelvis_list',1));
-spatialTransform.updTransformAxis(0).setFunction(LinearFunction(1,0)); % rx: rotate as it should be (0~5: rx, ry, rz, tx, ty, tz; x-forward, y-upward; z-rightward)
-spatialTransform.updTransformAxis(1).setCoordinateNames(ArrayStr('pelvis_rotation',1));
-spatialTransform.updTransformAxis(1).setFunction(LinearFunction(1,0));
+% spatialTransform.updTransformAxis(0).setCoordinateNames(ArrayStr('pelvis_list',1));
+% spatialTransform.updTransformAxis(0).setFunction(LinearFunction(1,0)); % rx: rotate as it should be (0~5: rx, ry, rz, tx, ty, tz; x-forward, y-upward; z-rightward)
+% spatialTransform.updTransformAxis(1).setCoordinateNames(ArrayStr('pelvis_rotation',1));
+% spatialTransform.updTransformAxis(1).setFunction(LinearFunction(1,0));
+spatialTransform.updTransformAxis(0).setFunction(Constant(0));
+spatialTransform.updTransformAxis(1).setFunction(Constant(0));
 spatialTransform.updTransformAxis(2).setCoordinateNames(ArrayStr('pelvis_tilt',1)); % funny thing is that the coordinate will NOT be created unless you name it
 spatialTransform.updTransformAxis(2).setFunction(LinearFunction(1,0)); % rz: rotate as it should be
 spatialTransform.updTransformAxis(3).setCoordinateNames(ArrayStr('pelvis_tx',1));
 spatialTransform.updTransformAxis(3).setFunction(LinearFunction(1,0));
 spatialTransform.updTransformAxis(4).setCoordinateNames(ArrayStr('pelvis_ty',1));
 spatialTransform.updTransformAxis(4).setFunction(LinearFunction(1,0));
-spatialTransform.updTransformAxis(5).setCoordinateNames(ArrayStr('pelvis_tz',1));
-spatialTransform.updTransformAxis(5).setFunction(LinearFunction(1,0));
+% spatialTransform.updTransformAxis(5).setCoordinateNames(ArrayStr('pelvis_tz',1));
+% spatialTransform.updTransformAxis(5).setFunction(LinearFunction(1,0));
+spatialTransform.updTransformAxis(5).setFunction(Constant(0));
 joints.ground_pelvis = CustomJoint('ground_pelvis', ground, Vec3(0), Vec3(0), bodies.pelvis, Vec3(0), Vec3(0), spatialTransform); % construction function of CustomJoint, para: <name>, <parent body/frame>, <location in parent>, <orientation in parent>, <child body/frame>, <location in child>, <orientation in parent>, <spatial transform>
 
 model.addJoint(joints.ground_pelvis);
-coords.pelvis_list = model.updCoordinateSet().get('pelvis_list'); % stretch coordinate set from the model. `upd` means writable; any changes in coords.pelvis_tilt will be synchronized in the model
-coords.pelvis_list.setRange([deg2rad(-90), deg2rad(90)]);
-coords.pelvis_rotation = model.updCoordinateSet().get('pelvis_rotation');
-coords.pelvis_rotation.setRange([deg2rad(-90), deg2rad(90)]);
+% coords.pelvis_list = model.updCoordinateSet().get('pelvis_list'); % stretch coordinate set from the model. `upd` means writable; any changes in coords.pelvis_tilt will be synchronized in the model
+% coords.pelvis_list.setRange([deg2rad(-90), deg2rad(90)]);
+% coords.pelvis_rotation = model.updCoordinateSet().get('pelvis_rotation');
+% coords.pelvis_rotation.setRange([deg2rad(-90), deg2rad(90)]);
 coords.pelvis_tilt = model.updCoordinateSet().get('pelvis_tilt');
 coords.pelvis_tilt.setRange([deg2rad(-90), deg2rad(90)]);
 coords.pelvis_tx = model.updCoordinateSet().get('pelvis_tx');
 coords.pelvis_tx.setRange([-5 5]);
 coords.pelvis_ty = model.updCoordinateSet().get('pelvis_ty');
-coords.pelvis_ty.setDefaultValue(0.95);
+coords.pelvis_ty.setDefaultValue(0.93);
 coords.pelvis_ty.setRange([-1 2]);
-coords.pelvis_tz = model.updCoordinateSet().get('pelvis_tz');
-coords.pelvis_tz.setRange([-3 3]);
+% coords.pelvis_tz = model.updCoordinateSet().get('pelvis_tz');
+% coords.pelvis_tz.setRange([-3 3]);
 
 % pelvis ~ right thigh: hip_r
 spatialTransform = SpatialTransform();
-spatialTransform.updTransformAxis(0).setCoordinateNames(ArrayStr('hip_adduction_r',1));
-spatialTransform.updTransformAxis(0).setFunction(LinearFunction(1,0));
-spatialTransform.updTransformAxis(1).setCoordinateNames(ArrayStr('hip_rotation_r',1));
-spatialTransform.updTransformAxis(1).setFunction(LinearFunction(1,0));
+% spatialTransform.updTransformAxis(0).setCoordinateNames(ArrayStr('hip_adduction_r',1));
+% spatialTransform.updTransformAxis(0).setFunction(LinearFunction(1,0));
+% spatialTransform.updTransformAxis(1).setCoordinateNames(ArrayStr('hip_rotation_r',1));
+% spatialTransform.updTransformAxis(1).setFunction(LinearFunction(1,0));
+spatialTransform.updTransformAxis(0).setFunction(Constant(0));
+spatialTransform.updTransformAxis(1).setFunction(Constant(0));
 spatialTransform.updTransformAxis(2).setCoordinateNames(ArrayStr('hip_flexion_r',1));
 spatialTransform.updTransformAxis(2).setFunction(LinearFunction(1,0));
 spatialTransform.updTransformAxis(3).setFunction(Constant(0));
@@ -195,19 +200,21 @@ spatialTransform.updTransformAxis(5).setFunction(Constant(0));
 joints.hip_r = CustomJoint('hip_r', bodies.pelvis, Vec3(-0.0707,-0.0661,0.0835), Vec3(0), bodies.femur_r, Vec3(0), Vec3(0), spatialTransform);
 
 model.addJoint(joints.hip_r);
-coords.hip_adduction_r = model.updCoordinateSet().get('hip_adduction_r');
-coords.hip_adduction_r.setRange([deg2rad(-120), deg2rad(120)]);
-coords.hip_rotation_r = model.updCoordinateSet().get('hip_rotation_r');
-coords.hip_rotation_r.setRange([deg2rad(-120), deg2rad(120)]);
+% coords.hip_adduction_r = model.updCoordinateSet().get('hip_adduction_r');
+% coords.hip_adduction_r.setRange([deg2rad(-120), deg2rad(120)]);
+% coords.hip_rotation_r = model.updCoordinateSet().get('hip_rotation_r');
+% coords.hip_rotation_r.setRange([deg2rad(-120), deg2rad(120)]);
 coords.hip_flexion_r = model.updCoordinateSet().get('hip_flexion_r');
 coords.hip_flexion_r.setRange([deg2rad(-120), deg2rad(120)]);
 
 % pelvis ~ right thigh: hip_l
 spatialTransform = SpatialTransform();
-spatialTransform.updTransformAxis(0).setCoordinateNames(ArrayStr('hip_adduction_l',1));
-spatialTransform.updTransformAxis(0).setFunction(LinearFunction(1,0));
-spatialTransform.updTransformAxis(1).setCoordinateNames(ArrayStr('hip_rotation_l',1));
-spatialTransform.updTransformAxis(1).setFunction(LinearFunction(1,0));
+% spatialTransform.updTransformAxis(0).setCoordinateNames(ArrayStr('hip_adduction_l',1));
+% spatialTransform.updTransformAxis(0).setFunction(LinearFunction(1,0));
+% spatialTransform.updTransformAxis(1).setCoordinateNames(ArrayStr('hip_rotation_l',1));
+% spatialTransform.updTransformAxis(1).setFunction(LinearFunction(1,0));
+spatialTransform.updTransformAxis(0).setFunction(Constant(0));
+spatialTransform.updTransformAxis(1).setFunction(Constant(0));
 spatialTransform.updTransformAxis(2).setCoordinateNames(ArrayStr('hip_flexion_l',1));
 spatialTransform.updTransformAxis(2).setFunction(LinearFunction(1,0));
 spatialTransform.updTransformAxis(3).setFunction(Constant(0));
@@ -216,10 +223,10 @@ spatialTransform.updTransformAxis(5).setFunction(Constant(0));
 joints.hip_l = CustomJoint('hip_l', bodies.pelvis, Vec3(-0.0707,-0.0661,-0.0835), Vec3(0), bodies.femur_l, Vec3(0), Vec3(0), spatialTransform);
 
 model.addJoint(joints.hip_l);
-coords.hip_adduction_l = model.updCoordinateSet().get('hip_adduction_l');
-coords.hip_adduction_l.setRange([deg2rad(-120), deg2rad(120)]);
-coords.hip_rotation_l = model.updCoordinateSet().get('hip_rotation_l');
-coords.hip_rotation_l.setRange([deg2rad(-120), deg2rad(120)]);
+% coords.hip_adduction_l = model.updCoordinateSet().get('hip_adduction_l');
+% coords.hip_adduction_l.setRange([deg2rad(-120), deg2rad(120)]);
+% coords.hip_rotation_l = model.updCoordinateSet().get('hip_rotation_l');
+% coords.hip_rotation_l.setRange([deg2rad(-120), deg2rad(120)]);
 coords.hip_flexion_l = model.updCoordinateSet().get('hip_flexion_l');
 coords.hip_flexion_l.setRange([deg2rad(-120), deg2rad(120)]);
 
@@ -428,7 +435,7 @@ clear stiffness dissipation staticFriction dynamicFriction viscousFriction trans
 
 % coordinate limit force: string + 6 double + bool
 stiffness = 2;
-upperLim = 0;
+upperLim = -5;
 lowerLim = -120;
 damping = 0.2;
 transition = 0.01;
@@ -439,6 +446,7 @@ model.addForce(forces.knee_limit_r);
 model.addForce(forces.knee_limit_l);
 
 clear stiffness upperLim lowerLim damping transition
+
 %% Markers
 % markers.sternum = Marker('Sternum', bodies.torso, Vec3(0.07,0.3,0)); % construction func, para: <name>, <attached body>, <location>
 % model.addMarker(markers.sternum);

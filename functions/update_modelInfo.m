@@ -1,4 +1,4 @@
-function modelInfo = update_MuscleInfo(model, modelInfo, state, frameIndex)
+function modelInfo = update_modelInfo(model, modelInfo, state, frameIndex)
 % Name: update_MuscleInfo
 % Description: update the muscle-related information in the Class modelInfo
 %   for the muscle excitation in the next loop. The recorded information
@@ -13,7 +13,7 @@ function modelInfo = update_MuscleInfo(model, modelInfo, state, frameIndex)
 %% state
 modelInfo.state = state;
 
-%% muscleFiberForceATN后续可以改成数组形式
+%% muscleFiberForceATN 后续可以改成数组形式
 muscles = model.getMuscles;
 optForces = modelInfo.OptimalFiberForces;
 modelInfo.muscleFiberForcesATN(1, frameIndex) = muscles.get('hamstrings_r').getFiberForce(state) / optForces.hamstrings;
@@ -64,7 +64,7 @@ modelInfo.muscleActivations(12, frameIndex) = muscles.get('gastroc_l').getActiva
 modelInfo.muscleActivations(13, frameIndex) = muscles.get('soleus_l').getActivation(state);
 modelInfo.muscleActivations(14, frameIndex) = muscles.get('tibia_l').getActivation(state);
 
-%% muscleForces(along tendon)
+%% muscleForces (along tendon)
 modelInfo.muscleForces(1, frameIndex) = muscles.get('hamstrings_r').getFiberForceAlongTendon(state);
 modelInfo.muscleForces(2, frameIndex) = muscles.get('glut_max_r').getFiberForceAlongTendon(state);
 modelInfo.muscleForces(3, frameIndex) = muscles.get('ilipsoas_r').getFiberForceAlongTendon(state);

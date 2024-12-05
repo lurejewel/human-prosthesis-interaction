@@ -25,17 +25,17 @@ function [model, modelInfo] = init_first_frame(model, modelInfo)
 % knee_flexion_l, ankle_dorsiflexion_r, ankle_dorsiflexion_l
 
 % coordinate position （用数组表示是不是更利于后面赋值？）
-init.pose.pelvis_list = 0;
-init.pose.pelvis_rotation = 0;
+% init.pose.pelvis_list = 0;
+% init.pose.pelvis_rotation = 0;
 init.pose.pelvis_tilt = -0.1029;
 init.pose.pelvis_tx = 0;
-init.pose.pelvis_ty = 0.95; % 0.9044;
-init.pose.pelvis_tz = 0;
-init.pose.hip_adduction_r = 0;
-init.pose.hip_rotation_r = 0;
+init.pose.pelvis_ty = 0.9; % 0.9044;
+% init.pose.pelvis_tz = 0;
+% init.pose.hip_adduction_r = 0;
+% init.pose.hip_rotation_r = 0;
 init.pose.hip_flexion_r = -0.2363;
-init.pose.hip_adduction_l = 0;
-init.pose.hip_rotation_l = 0;
+% init.pose.hip_adduction_l = 0;
+% init.pose.hip_rotation_l = 0;
 init.pose.hip_flexion_l = 0.4395;
 init.pose.knee_flexion_r = -0.0950;
 init.pose.knee_flexion_l = -0.1229;
@@ -43,17 +43,17 @@ init.pose.ankle_dorsiflexion_r = 0.0551;
 init.pose.ankle_dorsiflexion_l = -0.0787;
 
 % coordinate velocity
-init.velocity.pelvis_list = 0;
-init.velocity.pelvis_rotation = 0;
+% init.velocity.pelvis_list = 0;
+% init.velocity.pelvis_rotation = 0;
 init.velocity.pelvis_tilt = 0.0724;
 init.velocity.pelvis_tx = 1.1476;
 init.velocity.pelvis_ty = -0.0185;
-init.velocity.pelvis_tz = 0;
-init.velocity.hip_adduction_r = 0;
-init.velocity.hip_rotation_r = 0;
+% init.velocity.pelvis_tz = 0;
+% init.velocity.hip_adduction_r = 0;
+% init.velocity.hip_rotation_r = 0;
 init.velocity.hip_flexion_r = -0.4484;
-init.velocity.hip_adduction_l = 0;
-init.velocity.hip_rotation_l = 0;
+% init.velocity.hip_adduction_l = 0;
+% init.velocity.hip_rotation_l = 0;
 init.velocity.hip_flexion_l = -2.6960;
 init.velocity.knee_flexion_r = -1.5861;
 init.velocity.knee_flexion_l = 3.3155;
@@ -119,39 +119,59 @@ init.normalized_fiber_length.tibia_l = 0.8371;
 initState = model.initSystem();
 
 % pose & velocity
-initState.updY.set(0, init.pose.pelvis_list); % /jointset/ground_pelvis/pelvis_list/value	
-initState.updY.set(1, init.pose.pelvis_rotation); % /jointset/ground_pelvis/pelvis_rotation/value	
-initState.updY.set(2, init.pose.pelvis_tilt); % /jointset/ground_pelvis/pelvis_tilt/value	
-initState.updY.set(3, init.pose.pelvis_tx); % /jointset/ground_pelvis/pelvis_tx/value	
-initState.updY.set(4, init.pose.pelvis_ty); % /jointset/ground_pelvis/pelvis_ty/value	
-initState.updY.set(5, init.pose.pelvis_tz); % /jointset/ground_pelvis/pelvis_tz/value	
-initState.updY.set(6, init.pose.hip_adduction_r); % /jointset/hip_r/hip_adduction_r/value	
-initState.updY.set(7, init.pose.hip_rotation_r); % /jointset/hip_r/hip_rotation_r/value	
-initState.updY.set(8, init.pose.hip_flexion_r); % /jointset/hip_r/hip_flexion_r/value	
-initState.updY.set(9, init.pose.hip_adduction_l); % /jointset/hip_l/hip_adduction_l/value	
-initState.updY.set(10, init.pose.hip_rotation_l); % /jointset/hip_l/hip_rotation_l/value	
-initState.updY.set(11, init.pose.hip_flexion_l); % /jointset/hip_l/hip_flexion_l/value	
-initState.updY.set(12, init.pose.knee_flexion_r); % /jointset/knee_r/knee_flexion_r/value	
-initState.updY.set(13, init.pose.knee_flexion_l); % /jointset/knee_l/knee_flexion_l/value	
-initState.updY.set(14, init.pose.ankle_dorsiflexion_r); % /jointset/ankle_r/ankle_dorsiflexion_r/value	
-initState.updY.set(15, init.pose.ankle_dorsiflexion_l); % /jointset/ankle_l/ankle_dorsiflexion_l/value	
+initState.updY.set(0, init.pose.pelvis_tilt); % /jointset/ground_pelvis/pelvis_tilt/value	
+initState.updY.set(1, init.pose.pelvis_tx); % /jointset/ground_pelvis/pelvis_tx/value	
+initState.updY.set(2, init.pose.pelvis_ty); % /jointset/ground_pelvis/pelvis_ty/value	
+initState.updY.set(3, init.pose.hip_flexion_r); % /jointset/hip_r/hip_flexion_r/value	
+initState.updY.set(4, init.pose.hip_flexion_l); % /jointset/hip_l/hip_flexion_l/value	
+initState.updY.set(5, init.pose.knee_flexion_r); % /jointset/knee_r/knee_flexion_r/value	
+initState.updY.set(6, init.pose.knee_flexion_l); % /jointset/knee_l/knee_flexion_l/value	
+initState.updY.set(7, init.pose.ankle_dorsiflexion_r); % /jointset/ankle_r/ankle_dorsiflexion_r/value	
+initState.updY.set(8, init.pose.ankle_dorsiflexion_l); % /jointset/ankle_l/ankle_dorsiflexion_l/value	
 
-initState.updY.set(16, init.velocity.pelvis_list); % /jointset/ground_pelvis/pelvis_list/speed	
-initState.updY.set(17, init.velocity.pelvis_rotation); % /jointset/ground_pelvis/pelvis_rotation/speed	
-initState.updY.set(18, init.velocity.pelvis_tilt); % /jointset/ground_pelvis/pelvis_tilt/speed	
-initState.updY.set(19, init.velocity.pelvis_tx); % /jointset/ground_pelvis/pelvis_tx/speed	
-initState.updY.set(20, init.velocity.pelvis_ty); % /jointset/ground_pelvis/pelvis_ty/speed	
-initState.updY.set(21, init.velocity.pelvis_tz); % /jointset/ground_pelvis/pelvis_tz/speed	
-initState.updY.set(22, init.velocity.hip_adduction_r); % /jointset/hip_r/hip_adduction_r/speed	
-initState.updY.set(23, init.velocity.hip_rotation_r); % /jointset/hip_r/hip_rotation_r/speed	
-initState.updY.set(24, init.velocity.hip_flexion_r); % /jointset/hip_r/hip_flexion_r/speed	
-initState.updY.set(25, init.velocity.hip_adduction_l); % /jointset/hip_l/hip_adduction_l/speed	
-initState.updY.set(26, init.velocity.hip_rotation_l); % /jointset/hip_l/hip_rotation_l/speed	
-initState.updY.set(27, init.velocity.hip_flexion_l); % /jointset/hip_l/hip_flexion_l/speed	
-initState.updY.set(28, init.velocity.knee_flexion_r); % /jointset/knee_r/knee_flexion_r/speed	
-initState.updY.set(29, init.velocity.knee_flexion_l); % /jointset/knee_l/knee_flexion_l/speed	
-initState.updY.set(30, init.velocity.ankle_dorsiflexion_r); % /jointset/ankle_r/ankle_dorsiflexion_r/speed	
-initState.updY.set(31, init.velocity.ankle_dorsiflexion_l); % /jointset/ankle_l/ankle_dorsiflexion_l/speed	
+initState.updY.set(9, init.velocity.pelvis_tilt); % /jointset/ground_pelvis/pelvis_tilt/speed	
+initState.updY.set(10, init.velocity.pelvis_tx); % /jointset/ground_pelvis/pelvis_tx/speed	
+initState.updY.set(11, init.velocity.pelvis_ty); % /jointset/ground_pelvis/pelvis_ty/speed	
+initState.updY.set(12, init.velocity.hip_flexion_r); % /jointset/hip_r/hip_flexion_r/speed	
+initState.updY.set(13, init.velocity.hip_flexion_l); % /jointset/hip_l/hip_flexion_l/speed	
+initState.updY.set(14, init.velocity.knee_flexion_r); % /jointset/knee_r/knee_flexion_r/speed	
+initState.updY.set(15, init.velocity.knee_flexion_l); % /jointset/knee_l/knee_flexion_l/speed	
+initState.updY.set(16, init.velocity.ankle_dorsiflexion_r); % /jointset/ankle_r/ankle_dorsiflexion_r/speed	
+initState.updY.set(17, init.velocity.ankle_dorsiflexion_l); % /jointset/ankle_l/ankle_dorsiflexion_l/speed
+% older code (considering 3D DOFs)
+% initState.updY.set(0, init.pose.pelvis_list); % /jointset/ground_pelvis/pelvis_list/value	
+% initState.updY.set(1, init.pose.pelvis_rotation); % /jointset/ground_pelvis/pelvis_rotation/value	
+% initState.updY.set(2, init.pose.pelvis_tilt); % /jointset/ground_pelvis/pelvis_tilt/value	
+% initState.updY.set(3, init.pose.pelvis_tx); % /jointset/ground_pelvis/pelvis_tx/value	
+% initState.updY.set(4, init.pose.pelvis_ty); % /jointset/ground_pelvis/pelvis_ty/value	
+% initState.updY.set(5, init.pose.pelvis_tz); % /jointset/ground_pelvis/pelvis_tz/value	
+% initState.updY.set(6, init.pose.hip_adduction_r); % /jointset/hip_r/hip_adduction_r/value	
+% initState.updY.set(7, init.pose.hip_rotation_r); % /jointset/hip_r/hip_rotation_r/value	
+% initState.updY.set(8, init.pose.hip_flexion_r); % /jointset/hip_r/hip_flexion_r/value	
+% initState.updY.set(9, init.pose.hip_adduction_l); % /jointset/hip_l/hip_adduction_l/value	
+% initState.updY.set(10, init.pose.hip_rotation_l); % /jointset/hip_l/hip_rotation_l/value	
+% initState.updY.set(11, init.pose.hip_flexion_l); % /jointset/hip_l/hip_flexion_l/value	
+% initState.updY.set(12, init.pose.knee_flexion_r); % /jointset/knee_r/knee_flexion_r/value	
+% initState.updY.set(13, init.pose.knee_flexion_l); % /jointset/knee_l/knee_flexion_l/value	
+% initState.updY.set(14, init.pose.ankle_dorsiflexion_r); % /jointset/ankle_r/ankle_dorsiflexion_r/value	
+% initState.updY.set(15, init.pose.ankle_dorsiflexion_l); % /jointset/ankle_l/ankle_dorsiflexion_l/value	
+% 
+% initState.updY.set(16, init.velocity.pelvis_list); % /jointset/ground_pelvis/pelvis_list/speed	
+% initState.updY.set(17, init.velocity.pelvis_rotation); % /jointset/ground_pelvis/pelvis_rotation/speed	
+% initState.updY.set(18, init.velocity.pelvis_tilt); % /jointset/ground_pelvis/pelvis_tilt/speed	
+% initState.updY.set(19, init.velocity.pelvis_tx); % /jointset/ground_pelvis/pelvis_tx/speed	
+% initState.updY.set(20, init.velocity.pelvis_ty); % /jointset/ground_pelvis/pelvis_ty/speed	
+% initState.updY.set(21, init.velocity.pelvis_tz); % /jointset/ground_pelvis/pelvis_tz/speed	
+% initState.updY.set(22, init.velocity.hip_adduction_r); % /jointset/hip_r/hip_adduction_r/speed	
+% initState.updY.set(23, init.velocity.hip_rotation_r); % /jointset/hip_r/hip_rotation_r/speed	
+% initState.updY.set(24, init.velocity.hip_flexion_r); % /jointset/hip_r/hip_flexion_r/speed	
+% initState.updY.set(25, init.velocity.hip_adduction_l); % /jointset/hip_l/hip_adduction_l/speed	
+% initState.updY.set(26, init.velocity.hip_rotation_l); % /jointset/hip_l/hip_rotation_l/speed	
+% initState.updY.set(27, init.velocity.hip_flexion_l); % /jointset/hip_l/hip_flexion_l/speed	
+% initState.updY.set(28, init.velocity.knee_flexion_r); % /jointset/knee_r/knee_flexion_r/speed	
+% initState.updY.set(29, init.velocity.knee_flexion_l); % /jointset/knee_l/knee_flexion_l/speed	
+% initState.updY.set(30, init.velocity.ankle_dorsiflexion_r); % /jointset/ankle_r/ankle_dorsiflexion_r/speed	
+% initState.updY.set(31, init.velocity.ankle_dorsiflexion_l); % /jointset/ankle_l/ankle_dorsiflexion_l/speed	
 
 % muscle activation & fiber length
 optimalFiberLength.ham = model.getMuscles.get(0).getOptimalFiberLength;
@@ -162,35 +182,35 @@ optimalFiberLength.gas = model.getMuscles.get(4).getOptimalFiberLength;
 optimalFiberLength.sol = model.getMuscles.get(5).getOptimalFiberLength;
 optimalFiberLength.tib = model.getMuscles.get(6).getOptimalFiberLength;
 
-initState.updY.set(32, init.muscle_activation.hamstrings_r); % /forceset/hamstrings_r/activation	
-initState.updY.set(33, init.normalized_fiber_length.hamstrings_r * optimalFiberLength.ham); % /forceset/hamstrings_r/fiber_length	
-initState.updY.set(34, init.muscle_activation.glut_max_r); % /forceset/glut_max_r/activation	
-initState.updY.set(35, init.normalized_fiber_length.glut_max_r * optimalFiberLength.glu); % /forceset/glut_max_r/fiber_length	
-initState.updY.set(36, init.muscle_activation.ilipsoas_r); % /forceset/ilipsoas_r/activation
-initState.updY.set(37, init.normalized_fiber_length.ilipsoas_r * optimalFiberLength.ili); % /forceset/ilipsoas_r/fiber_length	
-initState.updY.set(38, init.muscle_activation.vasti_r); % /forceset/vasti_r/activation	
-initState.updY.set(39, init.normalized_fiber_length.vasti_r * optimalFiberLength.vas); % /forceset/vasti_r/fiber_length	
-initState.updY.set(40, init.muscle_activation.gastroc_r); % /forceset/gastroc_r/activation	
-initState.updY.set(41, init.normalized_fiber_length.gastroc_r * optimalFiberLength.gas); % /forceset/gastroc_r/fiber_length	
-initState.updY.set(42, init.muscle_activation.soleus_r); % /forceset/soleus_r/activation	
-initState.updY.set(43, init.normalized_fiber_length.soleus_r * optimalFiberLength.sol); % /forceset/soleus_r/fiber_length	
-initState.updY.set(44, init.muscle_activation.tibia_r); % /forceset/tibia_r/activation	
-initState.updY.set(45, init.normalized_fiber_length.tibia_r * optimalFiberLength.tib); % /forceset/tibia_r/fiber_length	
+initState.updY.set(18, init.muscle_activation.hamstrings_r); % /forceset/hamstrings_r/activation	
+initState.updY.set(19, init.normalized_fiber_length.hamstrings_r * optimalFiberLength.ham); % /forceset/hamstrings_r/fiber_length	
+initState.updY.set(20, init.muscle_activation.glut_max_r); % /forceset/glut_max_r/activation	
+initState.updY.set(21, init.normalized_fiber_length.glut_max_r * optimalFiberLength.glu); % /forceset/glut_max_r/fiber_length	
+initState.updY.set(22, init.muscle_activation.ilipsoas_r); % /forceset/ilipsoas_r/activation
+initState.updY.set(23, init.normalized_fiber_length.ilipsoas_r * optimalFiberLength.ili); % /forceset/ilipsoas_r/fiber_length	
+initState.updY.set(24, init.muscle_activation.vasti_r); % /forceset/vasti_r/activation	
+initState.updY.set(25, init.normalized_fiber_length.vasti_r * optimalFiberLength.vas); % /forceset/vasti_r/fiber_length	
+initState.updY.set(26, init.muscle_activation.gastroc_r); % /forceset/gastroc_r/activation	
+initState.updY.set(27, init.normalized_fiber_length.gastroc_r * optimalFiberLength.gas); % /forceset/gastroc_r/fiber_length	
+initState.updY.set(28, init.muscle_activation.soleus_r); % /forceset/soleus_r/activation	
+initState.updY.set(29, init.normalized_fiber_length.soleus_r * optimalFiberLength.sol); % /forceset/soleus_r/fiber_length	
+initState.updY.set(30, init.muscle_activation.tibia_r); % /forceset/tibia_r/activation	
+initState.updY.set(31, init.normalized_fiber_length.tibia_r * optimalFiberLength.tib); % /forceset/tibia_r/fiber_length	
 
-initState.updY.set(46, init.muscle_activation.hamstrings_l); % /forceset/hamstrings_l/activation	
-initState.updY.set(47, init.normalized_fiber_length.hamstrings_l * optimalFiberLength.ham); % /forceset/hamstrings_l/fiber_length	
-initState.updY.set(48, init.muscle_activation.glut_max_l); % /forceset/glut_max_l/activation	
-initState.updY.set(49, init.normalized_fiber_length.glut_max_l * optimalFiberLength.glu); % /forceset/glut_max_l/fiber_length	
-initState.updY.set(50, init.muscle_activation.ilipsoas_l); % /forceset/ilipsoas_l/activation	
-initState.updY.set(51, init.normalized_fiber_length.ilipsoas_l * optimalFiberLength.ili); % /forceset/ilipsoas_l/fiber_length	
-initState.updY.set(52, init.muscle_activation.vasti_l); % /forceset/vasti_l/activation	
-initState.updY.set(53, init.normalized_fiber_length.vasti_l * optimalFiberLength.vas); % /forceset/vasti_l/fiber_length	
-initState.updY.set(54, init.muscle_activation.gastroc_l); % /forceset/gastroc_l/activation	
-initState.updY.set(55, init.normalized_fiber_length.gastroc_l * optimalFiberLength.gas); % /forceset/gastroc_l/fiber_length	
-initState.updY.set(56, init.muscle_activation.soleus_l); % /forceset/soleus_l/activation	
-initState.updY.set(57, init.normalized_fiber_length.soleus_l * optimalFiberLength.sol); % /forceset/soleus_l/fiber_length	
-initState.updY.set(58, init.muscle_activation.tibia_l); % /forceset/tibia_l/activation	
-initState.updY.set(59, init.normalized_fiber_length.tibia_l * optimalFiberLength.tib); % /forceset/tibia_l/fiber_length
+initState.updY.set(32, init.muscle_activation.hamstrings_l); % /forceset/hamstrings_l/activation	
+initState.updY.set(33, init.normalized_fiber_length.hamstrings_l * optimalFiberLength.ham); % /forceset/hamstrings_l/fiber_length	
+initState.updY.set(34, init.muscle_activation.glut_max_l); % /forceset/glut_max_l/activation	
+initState.updY.set(35, init.normalized_fiber_length.glut_max_l * optimalFiberLength.glu); % /forceset/glut_max_l/fiber_length	
+initState.updY.set(36, init.muscle_activation.ilipsoas_l); % /forceset/ilipsoas_l/activation	
+initState.updY.set(37, init.normalized_fiber_length.ilipsoas_l * optimalFiberLength.ili); % /forceset/ilipsoas_l/fiber_length	
+initState.updY.set(38, init.muscle_activation.vasti_l); % /forceset/vasti_l/activation	
+initState.updY.set(39, init.normalized_fiber_length.vasti_l * optimalFiberLength.vas); % /forceset/vasti_l/fiber_length	
+initState.updY.set(40, init.muscle_activation.gastroc_l); % /forceset/gastroc_l/activation	
+initState.updY.set(41, init.normalized_fiber_length.gastroc_l * optimalFiberLength.gas); % /forceset/gastroc_l/fiber_length	
+initState.updY.set(42, init.muscle_activation.soleus_l); % /forceset/soleus_l/activation	
+initState.updY.set(43, init.normalized_fiber_length.soleus_l * optimalFiberLength.sol); % /forceset/soleus_l/fiber_length	
+initState.updY.set(44, init.muscle_activation.tibia_l); % /forceset/tibia_l/activation	
+initState.updY.set(45, init.normalized_fiber_length.tibia_l * optimalFiberLength.tib); % /forceset/tibia_l/fiber_length
 
 %% model final connection
 model.realizeDynamics(initState); % call model.realizeDynamics(state) first, then call model.equilibrateMuscles(state), according to gpt.

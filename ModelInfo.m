@@ -28,6 +28,7 @@ classdef ModelInfo
         % others
         grf
         state
+        stateHistory
         time
     end
 
@@ -114,6 +115,10 @@ classdef ModelInfo
             obj.grf.normalL = nan(1, npts);
             obj.grf.frictionR = nan(1, npts);
             obj.grf.frictionL = nan(1, npts);
+
+            % state history
+            model.initSystem(); % this is a must before calling model.getNumStateVariables()
+            obj.stateHistory = nan(model.getNumStateVariables, npts);
 
             % time series
             obj.time = simConfig.startTime : simConfig.stepTime : simConfig.endTime;

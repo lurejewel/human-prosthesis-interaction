@@ -8,11 +8,12 @@
 % Note 3: the xyz definition in MATLAB plotting tool is not consistent with
 % that in .trc file, so adjustment is needed.
 % -------------------------------------------------------------------------
-addpath('assets\', 'model\');
+addpath('..\assets\', '..\model\');
 import org.opensim.modeling.*
 
 %% load trc file
-trcPath = '..\assets\subject01_walk1.trc';
+% trcPath = '..\assets\subject01_walk1.trc';
+trcPath = 'D:\OneDrive\Jin Wei\PKU\Humanoid Robots\OpenSim Trial\data\20241126-奔跑数据-发JW\GWL\run_2p2_01.trc';
 trc = MarkerData(trcPath); % read .trc file
 rate    = trc.getCameraRate(); % camera rate; time between the rate
 markerNum = trc.getNumMarkers(); % number of markers

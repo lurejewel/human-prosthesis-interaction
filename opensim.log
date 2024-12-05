@@ -21550,3 +21550,330 @@ Try appending the model with additional force(s) or locking joint(s) to reduce t
 [2024-11-26 13:48:43.480] [info] 'tibia_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
 [2024-11-26 13:48:43.511] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
 [2024-11-26 13:50:42.775] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 15:23:40.647] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.648] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.648] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.649] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.649] [error] Mesh l_pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.650] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2024-11-26 15:23:40.650] [error] Mesh femur.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.650] [warning] Couldn't find file 'femur.vtp'.
+[2024-11-26 15:23:40.651] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.651] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.651] [error] Mesh fibula.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.651] [warning] Couldn't find file 'fibula.vtp'.
+[2024-11-26 15:23:40.656] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.657] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.657] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.658] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.658] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.658] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.658] [error] Mesh l_femur.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.658] [warning] Couldn't find file 'l_femur.vtp'.
+[2024-11-26 15:23:40.659] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.659] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.659] [error] Mesh l_fibula.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.659] [warning] Couldn't find file 'l_fibula.vtp'.
+[2024-11-26 15:23:40.660] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.660] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.660] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.660] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.660] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.661] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.661] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.661] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.661] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.661] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.661] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.662] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.662] [error] Mesh hat_ribs.vtp not connected to model...ignoring
+[2024-11-26 15:23:40.662] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2024-11-26 15:23:40.730] [info] 'hamstrings_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.731] [info] 'glut_max_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.733] [info] 'ilipsoas_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.734] [info] 'vasti_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.735] [info] 'gastroc_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.736] [info] 'soleus_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.738] [info] 'tibia_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.739] [info] 'hamstrings_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.740] [info] 'glut_max_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.742] [info] 'ilipsoas_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.744] [info] 'vasti_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.746] [info] 'gastroc_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.748] [info] 'soleus_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:23:40.750] [info] 'tibia_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.146] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.147] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.147] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.147] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.147] [error] Mesh l_pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.147] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2024-11-26 15:27:30.148] [error] Mesh femur.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.148] [warning] Couldn't find file 'femur.vtp'.
+[2024-11-26 15:27:30.149] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.149] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.149] [error] Mesh fibula.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.149] [warning] Couldn't find file 'fibula.vtp'.
+[2024-11-26 15:27:30.150] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.150] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.150] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.151] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.151] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.151] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.152] [error] Mesh l_femur.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.152] [warning] Couldn't find file 'l_femur.vtp'.
+[2024-11-26 15:27:30.152] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.153] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.153] [error] Mesh l_fibula.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.153] [warning] Couldn't find file 'l_fibula.vtp'.
+[2024-11-26 15:27:30.154] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.154] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.154] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.155] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.155] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.155] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.155] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.156] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.156] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.156] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.156] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.156] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.156] [error] Mesh hat_ribs.vtp not connected to model...ignoring
+[2024-11-26 15:27:30.157] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2024-11-26 15:27:30.168] [info] 'hamstrings_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.169] [info] 'glut_max_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.171] [info] 'ilipsoas_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.172] [info] 'vasti_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.173] [info] 'gastroc_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.174] [info] 'soleus_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.175] [info] 'tibia_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.176] [info] 'hamstrings_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.177] [info] 'glut_max_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.178] [info] 'ilipsoas_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.179] [info] 'vasti_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.180] [info] 'gastroc_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.181] [info] 'soleus_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.183] [info] 'tibia_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:27:30.222] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 15:29:48.659] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.660] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.660] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.660] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.660] [error] Mesh l_pelvis.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.660] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2024-11-26 15:29:48.661] [error] Mesh femur.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.661] [warning] Couldn't find file 'femur.vtp'.
+[2024-11-26 15:29:48.662] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.662] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.662] [error] Mesh fibula.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.662] [warning] Couldn't find file 'fibula.vtp'.
+[2024-11-26 15:29:48.663] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.663] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.664] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.664] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.664] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.664] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.665] [error] Mesh l_femur.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.665] [warning] Couldn't find file 'l_femur.vtp'.
+[2024-11-26 15:29:48.665] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.665] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.666] [error] Mesh l_fibula.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.666] [warning] Couldn't find file 'l_fibula.vtp'.
+[2024-11-26 15:29:48.666] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.667] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.667] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.667] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.667] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.667] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.667] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.668] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.668] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.668] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.668] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.668] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.668] [error] Mesh hat_ribs.vtp not connected to model...ignoring
+[2024-11-26 15:29:48.668] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2024-11-26 15:29:48.677] [info] 'hamstrings_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.678] [info] 'glut_max_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.680] [info] 'ilipsoas_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.681] [info] 'vasti_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.682] [info] 'gastroc_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.683] [info] 'soleus_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.684] [info] 'tibia_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.685] [info] 'hamstrings_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.686] [info] 'glut_max_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.687] [info] 'ilipsoas_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.688] [info] 'vasti_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.690] [info] 'gastroc_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.691] [info] 'soleus_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.693] [info] 'tibia_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 15:29:48.726] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 15:31:26.923] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 15:36:05.033] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:04:40.542] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:08:06.401] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.401] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.401] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.402] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.402] [error] Mesh l_pelvis.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.402] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2024-11-26 16:08:06.402] [error] Mesh femur.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.403] [warning] Couldn't find file 'femur.vtp'.
+[2024-11-26 16:08:06.403] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.403] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.403] [error] Mesh fibula.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.403] [warning] Couldn't find file 'fibula.vtp'.
+[2024-11-26 16:08:06.408] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.408] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.408] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.409] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.409] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.409] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.409] [error] Mesh l_femur.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.410] [warning] Couldn't find file 'l_femur.vtp'.
+[2024-11-26 16:08:06.410] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.410] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.410] [error] Mesh l_fibula.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.410] [warning] Couldn't find file 'l_fibula.vtp'.
+[2024-11-26 16:08:06.411] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.411] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.411] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.411] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.411] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.411] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.412] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.412] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.412] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.412] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.412] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.412] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.412] [error] Mesh hat_ribs.vtp not connected to model...ignoring
+[2024-11-26 16:08:06.412] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2024-11-26 16:08:06.458] [info] 'hamstrings_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.459] [info] 'glut_max_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.460] [info] 'ilipsoas_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.461] [info] 'vasti_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.462] [info] 'gastroc_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.462] [info] 'soleus_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.463] [info] 'tibia_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.464] [info] 'hamstrings_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.465] [info] 'glut_max_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.466] [info] 'ilipsoas_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.467] [info] 'vasti_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.469] [info] 'gastroc_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.470] [info] 'soleus_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.471] [info] 'tibia_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:08:06.516] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:08:12.250] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:15:42.263] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:18:52.581] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:19:11.524] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:23:49.782] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.782] [error] Mesh sacrum.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.782] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.783] [error] Mesh pelvis.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.783] [error] Mesh l_pelvis.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.783] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2024-11-26 16:23:49.784] [error] Mesh femur.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.784] [warning] Couldn't find file 'femur.vtp'.
+[2024-11-26 16:23:49.784] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.784] [error] Mesh tibia_r.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.785] [error] Mesh fibula.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.785] [warning] Couldn't find file 'fibula.vtp'.
+[2024-11-26 16:23:49.785] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.786] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.786] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.786] [error] Mesh talus.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.786] [error] Mesh foot.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.787] [error] Mesh bofoot.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.787] [error] Mesh l_femur.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.787] [warning] Couldn't find file 'l_femur.vtp'.
+[2024-11-26 16:23:49.788] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.788] [error] Mesh tibia_l.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.788] [error] Mesh l_fibula.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.788] [warning] Couldn't find file 'l_fibula.vtp'.
+[2024-11-26 16:23:49.789] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.789] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.790] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.790] [error] Mesh l_talus.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.790] [error] Mesh l_foot.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.790] [error] Mesh l_bofoot.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.791] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.791] [error] Mesh hat_spine.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.791] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.791] [error] Mesh hat_jaw.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.791] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.791] [error] Mesh hat_skull.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.791] [error] Mesh hat_ribs.vtp not connected to model...ignoring
+[2024-11-26 16:23:49.791] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2024-11-26 16:23:49.803] [info] 'hamstrings_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.804] [info] 'glut_max_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.805] [info] 'ilipsoas_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.807] [info] 'vasti_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.808] [info] 'gastroc_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.808] [info] 'soleus_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.810] [info] 'tibia_r' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.810] [info] 'hamstrings_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.811] [info] 'glut_max_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.813] [info] 'ilipsoas_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.814] [info] 'vasti_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.815] [info] 'gastroc_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.816] [info] 'soleus_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.817] [info] 'tibia_l' Parameter update for the damped-model: ActiveForceLengthCurve minimum value was 0.1 but is now 0.0.
+[2024-11-26 16:23:49.844] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:23:58.231] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:26:03.155] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:26:24.564] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-11-26 16:30:19.037] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 15:54:22.608] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 15:54:53.523] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 17:00:09.522] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 17:41:45.585] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 17:43:15.551] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 17:50:55.530] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 17:52:10.899] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 17:53:24.145] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 17:54:57.011] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 17:56:59.593] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 18:10:12.007] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-02 18:16:10.076] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 10:05:21.337] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 10:21:30.675] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 10:43:13.170] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 10:55:27.535] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 10:59:32.178] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 11:00:11.462] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 11:04:39.464] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 11:17:33.671] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 11:18:52.432] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 11:19:33.894] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 11:20:48.176] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 16:40:24.059] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-03 19:39:02.895] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-04 10:26:19.660] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 10:28:27.107] [info] Loaded model subject01 from file model\coupled_human-prosthesis_model_scaledFinal.osim
+[2024-12-04 11:01:30.371] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:01:46.933] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:01:46.983] [info] Loaded model subject01 from file model\coupled_human-prosthesis_model_scaledFinal.osim
+[2024-12-04 11:02:53.049] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:02:53.093] [info] Loaded model subject01 from file model\coupled_human-prosthesis_model_scaledFinal.osim
+[2024-12-04 11:08:00.206] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:08:00.245] [info] Loaded model subject01 from file model\coupled_human-prosthesis_model_scaledFinal.osim
+[2024-12-04 11:08:15.656] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:08:15.687] [info] Loaded model subject01 from file model\coupled_human-prosthesis_model_scaledFinal.osim
+[2024-12-04 11:08:29.722] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:08:29.763] [info] Loaded model subject01 from file model\coupled_human-prosthesis_model_scaledFinal.osim
+[2024-12-04 11:09:51.249] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:09:51.307] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-04 11:13:30.948] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:13:30.991] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-04 11:22:39.531] [info] Storage: read data file = human0914_sim_2024-12-03.sto (nr=1001 nc=49)
+[2024-12-04 11:22:39.560] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-05 17:53:14.467] [error] IO.OpenInputFile(const string&,openmode mode): failed to open inverse_dynamics2p14.sto.
+[2024-12-05 17:53:25.388] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
+[2024-12-05 17:58:38.483] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
+[2024-12-05 17:59:01.285] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
+[2024-12-05 18:01:19.325] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
+[2024-12-05 18:01:42.733] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
+[2024-12-05 18:09:06.354] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
+[2024-12-05 18:36:06.569] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
