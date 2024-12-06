@@ -23,7 +23,7 @@
 %
 % -------------------------------------------------------------------------
 
-function muscleExcitations = cal_muscle_excitation(modelInfo, frameIndex)
+function muscleExcitations = cal_muscle_excitation(modelInfo, state, frameIndex)
 %% Load gait phases
 phaseR  = modelInfo.phaseR(frameIndex);
 phaseL  = modelInfo.phaseL(frameIndex);
@@ -81,12 +81,12 @@ KF_glu              = modelInfo.muscleReflex.glu.KF;
 KF_ham_glu          = modelInfo.muscleReflex.ham_glu.KF;
 
 %% Load coordinate pose & velocity needed in muscle reflex mechanism
-pq                  = modelInfo.state.getQ.get(0);
-pqV                 = modelInfo.state.getU.get(0);
-kneeR               = modelInfo.state.getQ.get(5);
-kneeRV              = modelInfo.state.getU.get(5);
-kneeL               = modelInfo.state.getQ.get(6);
-kneeLV              = modelInfo.state.getU.get(6);
+pq                  = state.getQ.get(0);
+pqV                 = state.getU.get(0);
+kneeR               = state.getQ.get(5);
+kneeRV              = state.getU.get(5);
+kneeL               = state.getQ.get(6);
+kneeLV              = state.getU.get(6);
 
 %% Calculate muscle excitations based on muscle reflex mechanism
 % 注意现在还是左右腿参数相同的。之后要换成左右腿参数独立

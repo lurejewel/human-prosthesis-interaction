@@ -1,7 +1,7 @@
-function modelInfo = cal_gait_phase(model, modelInfo, frameIndex)
+function modelInfo = cal_gait_phase(model, modelInfo, state, frameIndex)
 %% materials for gait phase detection
 % state, grf
-state = modelInfo.state;
+% state = modelInfo.state;
 GRF = [modelInfo.grf.normalR(frameIndex), modelInfo.grf.normalL(frameIndex)];
 
 % init gait phases

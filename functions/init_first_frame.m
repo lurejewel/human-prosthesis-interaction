@@ -1,4 +1,4 @@
-function [model, modelInfo] = init_first_frame(model, modelInfo)
+function [model, modelInfo, initState] = init_first_frame(model, modelInfo)
 % Name: init_first_frame
 % Description: initialize model states, including coordinate position/ 
 %   velocity, muscle activation, muscle fiber length, muscle force, etc.
@@ -218,7 +218,7 @@ model.equilibrateMuscles(initState); % after model.equilibrateMuscles(state), th
 model.realizeDynamics(initState); % call model.realizeDynamics(state) again for Dynamics-stage realization
 
 %% assign init data to modelInfo
-modelInfo.state = initState;
+% modelInfo.state = initState;
 % normalized fiber force along tendon
 modelInfo.muscleFiberForcesATN(1,1) = init.normalized_fiber_force_along_tendon.hamstrings_r;
 modelInfo.muscleFiberForcesATN(2,1) = init.normalized_fiber_force_along_tendon.glut_max_r;

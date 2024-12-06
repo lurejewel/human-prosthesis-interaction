@@ -27,7 +27,7 @@ classdef ModelInfo
         phaseL
         % others
         grf
-        state
+        % state
         stateHistory
         time
     end

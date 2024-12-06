@@ -11,7 +11,7 @@ function modelInfo = update_modelInfo(model, modelInfo, state, frameIndex)
 % Author(s): Jin Wei, Peking U.
 
 %% state
-modelInfo.state = state;
+% modelInfo.state = state;
 
 %% muscleFiberForceATN 后续可以改成数组形式
 muscles = model.getMuscles;

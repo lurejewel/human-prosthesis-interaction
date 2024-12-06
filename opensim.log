@@ -21877,3 +21877,26 @@ Try appending the model with additional force(s) or locking joint(s) to reduce t
 [2024-12-05 18:01:42.733] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
 [2024-12-05 18:09:06.354] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
 [2024-12-05 18:36:06.569] [info] Storage: read data file = inverse_dynamics2p14.sto (nr=86 nc=19)
+[2024-12-06 09:59:21.023] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 09:59:32.106] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 10:02:49.784] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 10:03:43.383] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 10:05:19.902] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 10:23:11.501] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 10:25:37.112] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 11:09:51.225] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 11:10:01.122] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 11:10:21.945] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 11:14:29.389] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 11:18:40.529] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 11:24:34.164] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 11:25:47.347] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:22:35.453] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:23:36.888] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:25:31.008] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:26:14.959] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:28:36.232] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:28:45.664] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:28:54.383] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:29:03.017] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-06 13:29:12.193] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
