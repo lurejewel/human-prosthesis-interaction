@@ -21900,3 +21900,32 @@ Try appending the model with additional force(s) or locking joint(s) to reduce t
 [2024-12-06 13:28:54.383] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
 [2024-12-06 13:29:03.017] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
 [2024-12-06 13:29:12.193] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 16:05:56.860] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 16:06:37.143] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 16:06:57.192] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 16:09:08.084] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 16:50:54.731] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 16:51:26.133] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 18:59:05.672] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:01:32.828] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:01:52.426] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:02:16.186] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:02:42.515] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:04:44.734] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:05:23.765] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:07:13.598] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:07:25.191] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:07:33.964] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-09 19:07:41.213] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-10 15:15:11.497] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-10 15:19:29.911] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-10 15:22:45.209] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-10 15:24:37.169] [info] Storage: read data file = human0914_sim_2024-12-10.sto (nr=5001 nc=49)
+[2024-12-10 15:24:37.199] [info] Loaded model coupled_human-prosthesis_model from file model/coupled_human-prosthesis_model.osim
+[2024-12-10 15:25:06.010] [info] Storage: read data file = human0914_sim_2024-12-10.sto (nr=5001 nc=49)
+[2024-12-10 15:25:06.044] [info] Loaded model coupled_human-prosthesis_model from file model/coupled_human-prosthesis_model.osim
+[2024-12-10 15:27:54.262] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim
+[2024-12-10 15:27:59.235] [error] IO.OpenFile(const string&,const string&): failed to open assets/ResultsMuscleReflexBasedForwardDynamics/human0914_sim_2024-12-10.sto.
+[2024-12-10 15:29:32.740] [error] IO.OpenFile(const string&,const string&): failed to open assets\ResultsMuscleReflexBasedForwardDynamics\human0914_sim_2024-12-10.sto.
+[2024-12-10 15:42:05.959] [error] IO.OpenFile(const string&,const string&): failed to open aaa/sss.sto.
+[2024-12-11 14:17:19.937] [info] Loaded model coupled_human-prosthesis_model from file model\coupled_human-prosthesis_model.osim

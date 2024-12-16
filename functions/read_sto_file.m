@@ -15,7 +15,6 @@ state = model.initSystem();
 
 % store data, which can be plot in MATLAB if needed.
 for frameIndex = 1 : npts
-
     stateVector = stoFile.getStateVector(frameIndex-1);
     time(frameIndex) = stateVector.getTime;
     for labelIndex = 1 : numLabels-1

@@ -2,15 +2,18 @@
 % Name: ModelInfo.m
 % Description: definition of modelInfo Class.
 % Member variables:
-% 
+%
 % Member functions:
 % - ModelInfo(): construction function.
-% - 
+% -
 % -------------------------------------------------------------------------
 
 classdef ModelInfo
 
     properties
+        % model information
+        mass
+        g
         % muscle-related information
         muscleNames
         muscleExcitations
@@ -57,36 +60,7 @@ classdef ModelInfo
             end
 
             % muscle reflex parameters
-            obj.muscleReflex.tib.KL                     = muscleReflexParaArray(1);
-            obj.muscleReflex.tib.L0                     = muscleReflexParaArray(2);
-            obj.muscleReflex.tib_sol.KF                 = muscleReflexParaArray(3);
-            obj.muscleReflex.sol.KF                     = muscleReflexParaArray(4);
-            obj.muscleReflex.gas.KF                     = muscleReflexParaArray(5);
-            obj.muscleReflex.ili_pelvis_tilt.KP         = muscleReflexParaArray(6);
-            obj.muscleReflex.ili_pelvis_tilt.KV         = muscleReflexParaArray(7);
-            obj.muscleReflex.ili_pelvis_tilt.C0         = muscleReflexParaArray(8);
-            obj.muscleReflex.ili.C0                     = muscleReflexParaArray(9);
-            obj.muscleReflex.ili.KL                     = muscleReflexParaArray(10);
-            obj.muscleReflex.ili.L0                     = muscleReflexParaArray(11);
-            obj.muscleReflex.ili_pelvis_tilt.P02        = muscleReflexParaArray(12);
-            obj.muscleReflex.ili_pelvis_tilt.KP2        = muscleReflexParaArray(13);
-            obj.muscleReflex.ili_pelvis_tilt.KV2        = muscleReflexParaArray(14);
-            obj.muscleReflex.ili_ham.KL                 = muscleReflexParaArray(15);
-            obj.muscleReflex.ili_ham.L0                 = muscleReflexParaArray(16);
-            obj.muscleReflex.ham_pelvis_tilt.KP         = muscleReflexParaArray(17);
-            obj.muscleReflex.ham_pelvis_tilt.KV         = muscleReflexParaArray(18);
-            obj.muscleReflex.ham_pelvis_tilt.C0         = muscleReflexParaArray(19);
-            % obj.muscleReflex.ham.KF                     = muscleReflexParaArray(20);
-            obj.muscleReflex.ham_glu.KF                 = muscleReflexParaArray(20);
-            obj.muscleReflex.glu_pelvis_tilt.KP         = muscleReflexParaArray(21);
-            obj.muscleReflex.glu_pelvis_tilt.KV         = muscleReflexParaArray(22);
-            obj.muscleReflex.glu_pelvis_tilt.C0         = muscleReflexParaArray(23);
-            obj.muscleReflex.glu.KF                     = muscleReflexParaArray(24);
-            % obj.muscleReflex.glu.C0                     = muscleReflexParaArray(25);
-            obj.muscleReflex.vas.KF1                    = muscleReflexParaArray(25); % 26 -> 25
-            obj.muscleReflex.vas.KF2                    = muscleReflexParaArray(26);
-            obj.muscleReflex.vas.C0                     = muscleReflexParaArray(27);
-            obj.muscleReflex.vas_knee.pos_max           = muscleReflexParaArray(28);
+            obj.muscleReflex = obj.read_muscleReflex_array(muscleReflexParaArray);
 
             % optimal fiber lengths后续可以改成数组形式
             obj.OptimalFiberLengths.hamstrings = model.getMuscles.get('hamstrings_r').getOptimalFiberLength;
@@ -97,7 +71,7 @@ classdef ModelInfo
             obj.OptimalFiberLengths.soleus = model.getMuscles.get('soleus_r').getOptimalFiberLength;
             obj.OptimalFiberLengths.tibia = model.getMuscles.get('tibia_r').getOptimalFiberLength;
 
-             % optimal fiber forces
+            % optimal fiber forces
             obj.OptimalFiberForces.hamstrings = model.getMuscles.get('hamstrings_r').getMaxIsometricForce;
             obj.OptimalFiberForces.glut_max = model.getMuscles.get('glut_max_r').getMaxIsometricForce;
             obj.OptimalFiberForces.ilipsoas = model.getMuscles.get('ilipsoas_r').getMaxIsometricForce;
@@ -117,13 +91,55 @@ classdef ModelInfo
             obj.grf.frictionL = nan(1, npts);
 
             % state history
-            model.initSystem(); % this is a must before calling model.getNumStateVariables()
+            state = model.initSystem(); % this is a must before calling model.getNumStateVariables()
             obj.stateHistory = nan(model.getNumStateVariables, npts);
 
             % time series
             obj.time = simConfig.startTime : simConfig.stepTime : simConfig.endTime;
 
+            % basic model information
+            obj.mass = model.getTotalMass(state);
+            obj.g = -model.getGravity.get(1);
+            
         end
+
+        function muscleReflex = read_muscleReflex_array(~, muscleReflexParaArray)
+            % Name: read_muscleReflex_array
+            % Description: convert the muscle-reflex parameters from array 
+            % form to struct form.
+            muscleReflex.tib.KL                     = muscleReflexParaArray(1);
+            muscleReflex.tib.L0                     = muscleReflexParaArray(2);
+            muscleReflex.tib_sol.KF                 = muscleReflexParaArray(3);
+            muscleReflex.sol.KF                     = muscleReflexParaArray(4);
+            muscleReflex.gas.KF                     = muscleReflexParaArray(5);
+            muscleReflex.ili_pelvis_tilt.KP         = muscleReflexParaArray(6);
+            muscleReflex.ili_pelvis_tilt.KV         = muscleReflexParaArray(7);
+            muscleReflex.ili_pelvis_tilt.C0         = muscleReflexParaArray(8);
+            muscleReflex.ili.C0                     = muscleReflexParaArray(9);
+            muscleReflex.ili.KL                     = muscleReflexParaArray(10);
+            muscleReflex.ili.L0                     = muscleReflexParaArray(11);
+            muscleReflex.ili_pelvis_tilt.P02        = muscleReflexParaArray(12);
+            muscleReflex.ili_pelvis_tilt.KP2        = muscleReflexParaArray(13);
+            muscleReflex.ili_pelvis_tilt.KV2        = muscleReflexParaArray(14);
+            muscleReflex.ili_ham.KL                 = muscleReflexParaArray(15);
+            muscleReflex.ili_ham.L0                 = muscleReflexParaArray(16);
+            muscleReflex.ham_pelvis_tilt.KP         = muscleReflexParaArray(17);
+            muscleReflex.ham_pelvis_tilt.KV         = muscleReflexParaArray(18);
+            muscleReflex.ham_pelvis_tilt.C0         = muscleReflexParaArray(19);
+            % muscleReflex.ham.KF                     = muscleReflexParaArray(20);
+            muscleReflex.ham_glu.KF                 = muscleReflexParaArray(20);
+            muscleReflex.glu_pelvis_tilt.KP         = muscleReflexParaArray(21);
+            muscleReflex.glu_pelvis_tilt.KV         = muscleReflexParaArray(22);
+            muscleReflex.glu_pelvis_tilt.C0         = muscleReflexParaArray(23);
+            muscleReflex.glu.KF                     = muscleReflexParaArray(24);
+            % muscleReflex.glu.C0                     = muscleReflexParaArray(25);
+            muscleReflex.vas.KF1                    = muscleReflexParaArray(25); % 26 -> 25
+            muscleReflex.vas.KF2                    = muscleReflexParaArray(26);
+            muscleReflex.vas.C0                     = muscleReflexParaArray(27);
+            muscleReflex.vas_knee.pos_max           = muscleReflexParaArray(28);
+
+        end
+
     end
 
 end

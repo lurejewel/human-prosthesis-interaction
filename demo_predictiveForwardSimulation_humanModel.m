@@ -28,28 +28,23 @@ model = Model('model\coupled_human-prosthesis_model.osim');
 model.setUseVisualizer(0);
 model = add_muscle_actuator(model, PrescribedController()); % add the central controller and muscle actuators
 
-% initial muscle reflex parameters; not optimized yet
-muscleReflexParaArray = [1.14339427675597;0.683965164606834;-0.654937183750042;1.44526338204981;1               ;-2.54053931319423;-0.666188349877246;0.0496818438178654;0.109481378880035;0.388522196081861;0.266059683859970;0.748599386315988;0.543366924759648;0.598978415045811;-2.81541067233053;0.377854695673883;2.18759273326043;0.657016639688066;-0.298290360392486;0.300063335235475;1.81474706127338;0.00878201304411728;0.510662826532988;1.15502124130598;1.97028072512268;0.479041225785079;0.568851978040139;-0.188673608490112];
-
-% older version ---
-% motData = Storage('assets\subject01_walk1_ik.mot');
-% firstTime = motData.getFirstTime; % t_start = 0
-% lastTime = motData.getLastTime; % t_end = 2.5
-% frameNum = motData.getSize;
-% rate = frameNum / (lastTime - firstTime);
-% coordNum = motData.getStateVector(0).getData.size; % number of coordinates (DOFs)
-% motDataGRF = Storage('assets\subject01_walk1_grf.mot'); % GRF rate is 10x than ik rate
-
 %% specify simulation configuration
 simConfig.startTime = 0;
-simConfig.endTime = 1;
-simConfig.stepTime = 0.001;
+simConfig.endTime = 10;
+simConfig.stepTime = 0.002;
 simConfig.saveSTO = 0; % 1 = true, 0 = false
+simConfig.speed = 1.0; % desired walking speed
 
-%% init modelInfo Class
-modelInfo = ModelInfo(model, simConfig, muscleReflexParaArray);
+%% specify optimization configuration
+% initial muscle reflex parameters; not optimized yet
+muscleReflexParaArray = [1.14339427675597;0.683965164606834;-0.654937183750042;1.44526338204981;1               ;-2.54053931319423;-0.666188349877246;0.0496818438178654;0.109481378880035;0.388522196081861;0.266059683859970;0.748599386315988;0.543366924759648;0.598978415045811;-2.81541067233053;0.377854695673883;2.18759273326043;0.657016639688066;-0.298290360392486;0.300063335235475;1.81474706127338;0.00878201304411728;0.510662826532988;1.15502124130598;1.97028072512268;0.479041225785079;0.568851978040139;-0.188673608490112];
+sigma = 0.02; % deviation
+stage = 1; % 1 or 2, for the 2-stage CMA-ES optimization (1 by default)
+optConfig = CMAES_optimization(muscleReflexParaArray, sigma, stage);
+clear sigma stage speed
 
 %% first-frame initialization
+modelInfo = ModelInfo(model, simConfig, muscleReflexParaArray);
 % this is ugly, i know :( may find better way to do this later
 [model, modelInfo, state] = init_first_frame(model, modelInfo); % including model.initSystem()
 % model.updVisualizer().show(modelInfo.state);
@@ -69,8 +64,8 @@ for t = modelInfo.time % time series
 
     % calculate muscle excitations based on muscle states and gait phases
     modelInfo.muscleExcitations(:,frameIndex + modelInfo.muscleReflexDelay) = cal_muscle_excitation(modelInfo, state, frameIndex);
-    if frameIndex <= modelInfo.muscleReflexDelay % the muscle excitations in the first 10 frames = those in the 11th frames (delay = 10 ms)
-        modelInfo.muscleExcitations(:,frameIndex) = modelInfo.muscleExcitations(:,11);
+    if frameIndex <= modelInfo.muscleReflexDelay % the muscle excitations in the first few frames = the frames right after the delay (10 frames if delay=10ms)
+        modelInfo.muscleExcitations(:,frameIndex) = modelInfo.muscleExcitations(:,modelInfo.muscleReflexDelay+1);
     end
     brain = model.updControllerSet.get(0);
     brain = PrescribedController.safeDownCast(brain);
@@ -93,6 +88,21 @@ for t = modelInfo.time % time series
         modelInfo = update_modelInfo(model, modelInfo, state, frameIndex);
     end
 
+    if model.getCoordinateSet.get('pelvis_ty').getValue(state) < 0.6
+        disp('model fell down.');
+        break;
+    end
+
+end
+
+fit = measure_simResults(t, optConfig, simConfig, modelInfo);
+
+% stage 1 -> stage 2
+if optConfig.hyperPara.stage == 1 && (fit < -simConfig.endTime*simConfig.speed || t == simConfig.endTime)
+    disp(['stage 1 optimization completed, fit: ' num2str(fit)]);
+    optConfig.hyperPara.stage = 2;
+    fit = measure_simResults(t, optConfig, simConfig, modelInfo);
+    disp(['stage 2 fit: ' num2str(fit)]);
 end
 
 clear t frameIndex muscleIndex brain finalState state
@@ -103,7 +113,11 @@ toc
 % plot_simulation_results(model, modelInfo, 'phase')
 
 % [after CMA-ES optimization (or other methods), muscleReflexParaArray is changed...]
+% 对于CMAES这个方法，最后别忘了optConfig.optPara = mean(这lambda个参数值）
+% QUESTION：是否可以把均值到均值的步长，改为最优到最优的步长？
+% 考虑到最优到最优步长很可能为零，会出现什么后果？是否有解决方法？
 % modelInfo.muscleReflex = muscleReflexPara_array2struct(muscleReflexParaArray); % muscle reflex parameters assignment
+
 
 %% save the states to .sto file
 
@@ -127,9 +141,9 @@ if simConfig.saveSTO
         stoFile.append(stateVector);
 
     end
-
     stoFile.print(['human0914_sim_' char(datetime("today")) '.sto']);
-
+    read_sto_file('model/coupled_human-prosthesis_model.osim', ['human0914_sim_' char(datetime("today")) '.sto'], 1);
 end
+
 
 clear Y labels stateIndex stateVector frameIndex numTags stoFile
