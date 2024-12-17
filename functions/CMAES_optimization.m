@@ -129,7 +129,7 @@ classdef CMAES_optimization < Base_optimization
         end
 
         function xxx = update(obj)
-             继续写pseudo code
+             % 继续写pseudo code
             % fit
 
         end

@@ -132,11 +132,11 @@ if simConfig.saveSTO
     for stateIndex = 0 : state.getNQ-1
         labels.append([char(model.getCoordinateSet.get(stateIndex)) '/value']);
     end
-    for stateIndex = 0 : state.getNQ-1
+    for stateIndex = stateIndex+1 : state.getNQ + state.getNU-1
         labels.append([char(model.getCoordinateSet.get(stateIndex)) '/speed']);
     end
-    for stateIndex = state.getNQ + state.getNU : state.getNQ + state.getNU + state.getNZ-1
-        labels.append([char(model.getStateVariableNames.get(stateIndex))]); % NOTE that the order of state in Model class is not the same as that in State class
+    for stateIndex = stateIndex+1 : state.getNQ + state.getNU + state.getNZ-1
+        labels.append([char(model.getStateVariableNames.get(stateIndex))]); % NOTE that the order of state in Model class is not the same as that in State class!
     end
 
     stoFile = Storage();

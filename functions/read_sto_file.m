@@ -48,5 +48,13 @@ switch nargout
     case 2
         varargout{1} = time;
         varargout{2} = data;
+    case 3
+        varargout{1} = time;
+        varargout{2} = data;
+        labelNames = nan(numLabels, 1);
+        for i = 0 : numLabels
+            labelNames(i+1) = labels.get(i);
+        end
+        varargout{3} = labelNames;
 
 end
