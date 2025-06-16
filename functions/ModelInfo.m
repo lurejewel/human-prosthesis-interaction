@@ -37,6 +37,7 @@ classdef ModelInfo
 
     methods
         function obj = ModelInfo(model, simConfig, muscleReflexParaArray)
+            % Description: init parameters in the class
 
             % number of muscles
             muscleNum = model.getMuscles.getSize;
@@ -62,7 +63,7 @@ classdef ModelInfo
             % muscle reflex parameters
             obj.muscleReflex = obj.read_muscleReflex_array(muscleReflexParaArray);
 
-            % optimal fiber lengths后续可以改成数组形式
+            % optimal fiber lengths后续可以改成数组+muscleNameMap的形式
             obj.OptimalFiberLengths.hamstrings = model.getMuscles.get('hamstrings_r').getOptimalFiberLength;
             obj.OptimalFiberLengths.glut_max = model.getMuscles.get('glut_max_r').getOptimalFiberLength;
             obj.OptimalFiberLengths.ilipsoas = model.getMuscles.get('ilipsoas_r').getOptimalFiberLength;
@@ -99,14 +100,14 @@ classdef ModelInfo
 
             % basic model information
             obj.mass = model.getTotalMass(state);
-            obj.g = -model.getGravity.get(1);
+            obj.g = abs(model.getGravity.get(1));
             
         end
 
         function muscleReflex = read_muscleReflex_array(~, muscleReflexParaArray)
-            % Name: read_muscleReflex_array
             % Description: convert the muscle-reflex parameters from array 
             % form to struct form.
+            % 后面可以考虑用数组代替，方便debug和调优
             muscleReflex.tib.KL                     = muscleReflexParaArray(1);
             muscleReflex.tib.L0                     = muscleReflexParaArray(2);
             muscleReflex.tib_sol.KF                 = muscleReflexParaArray(3);

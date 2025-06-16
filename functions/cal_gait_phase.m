@@ -12,7 +12,7 @@ phaseL = -1;
 BW = -model.getTotalMass(state) * model.getGravity.get(1); % body weight (N)
 stanceTh = 0.23137978; % for heel strike detection
 
-% Normal GRF (暂时先通过地反力文件读取，后期改为接触力反算的形式)
+% Normal GRF
 grfR = GRF(1)/BW; % normal component of GRF, right-foot side
 grfL = GRF(2)/BW; % left-foot side
 
@@ -22,7 +22,7 @@ pelvisCOMLocal = pelvis.getMassCenter();
 pelvisCOMGlobal = pelvis.findStationLocationInGround(state, pelvisCOMLocal);
 pelvisCOM = pelvisCOMGlobal.get(0);
 
-% X axis of calcn COM
+% X-axis of calcn COM
 calcnR = model.getBodySet().get('calcn_r');
 calcnRCOMLocal = calcnR.getMassCenter();
 calcnRCOMGlobal = calcnR.findStationLocationInGround(state, calcnRCOMLocal);
@@ -34,9 +34,7 @@ calcnLCOM = calcnLCOMGlobal.get(0);
 
 %% gait detection
 
-
 if frameIndex == 1
-
 % first frame:
 % [Early Stance]: GRF >= stanceTh && calcnCOM >= pelvisCOM
 % [Late Stance]:  GRF >= stanceTh && calcnCOM < pelvisCOM && opposite GRF <

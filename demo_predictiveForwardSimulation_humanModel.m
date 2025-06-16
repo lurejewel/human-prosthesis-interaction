@@ -1,5 +1,6 @@
 % -------------------------------------------------------------------------
 % Name: demo_predictiveForwardSimulation_humanModel.m
+% Author(s): Jin Wei, Peking U. wjin24@stu.pku.edu.cn
 % Description: Functional validation script of the predictive,
 % experimental-data-free, muscle-reflex-based musculoskeletal model.
 % Core components:
@@ -11,21 +12,25 @@
 % - [Optimization]: tune the muscle-reflex parameters in order that the
 % model can walk in a smooth, human-like way
 % What if...:
-% - What if more muscles are included?
+% - What if more muscles are included? -> What if hundreds of muscles are
+% included?
 % - What if current model is replaced with human-prosthesis model?
 % - What if we use alternative optimization methods other than CMA-ES?
-% - What if hundreds of muscles should be included?
 % - What if other periodic activities (running, swimming, etc.) are
 % considered?
 % -------------------------------------------------------------------------
-
+% 目前的问题：
+% 1. 膝关节过伸比较严重，是否能够施加强约束？
+% 2. CMAES参数更新代码尚未完成；CMAES部分未验证
+% 3. 增加独立的处理模块：导入\导出数据；显示trc数据；显示mot数据，etc.
+% 4. 反射参数换成Map映射的赋值形式
 clear all; close all; clc
 addpath('assets\', 'model\', 'functions\')
 import org.opensim.modeling.*
 
-%% load model, motion and GRF data
+%% load model
 model = Model('model\coupled_human-prosthesis_model.osim');
-model.setUseVisualizer(0);
+model.setUseVisualizer(0); % display animation in real-time. set to 1(true) to activate, or 0(false) to deactivate.
 model = add_muscle_actuator(model, PrescribedController()); % add the central controller and muscle actuators
 
 %% specify simulation configuration
@@ -67,25 +72,24 @@ for t = modelInfo.time % time series
     if frameIndex <= modelInfo.muscleReflexDelay % the muscle excitations in the first few frames = the frames right after the delay (10 frames if delay=10ms)
         modelInfo.muscleExcitations(:,frameIndex) = modelInfo.muscleExcitations(:,modelInfo.muscleReflexDelay+1);
     end
+
+    % assign muscle excitations (control signals) through brain (controller) to muscles (actuators)
     brain = model.updControllerSet.get(0);
     brain = PrescribedController.safeDownCast(brain);
     for muscleIndex = 0 : model.getMuscles.getSize - 1
         brain.prescribeControlForActuator(muscleIndex, Constant(modelInfo.muscleExcitations(muscleIndex+1,frameIndex)));
     end
 
-    % forward simulation
+    % forward simulation 这里的逻辑对吗？需要单独检查一下
     manager = Manager(model);
     manager.initialize(state);
-    finalState = manager.integrate(t);
-    finalState.setTime(t);
-    %%% ↓DEBUG↓ %%%
-    pelvis_ty(frameIndex) = model.getCoordinateSet.get('pelvis_ty').getValue(finalState);
-    %%% ↑DEBUG↑ %%%
+    finalState = manager.integrate(t); % 这里是从哪个初始状态（是否会因为model.initialize而清零），向前推进了多少时间？
+    finalState.setTime(t); 
 
     % update & record
     state = finalState;
     model.realizeDynamics(state);
-    modelInfo.stateHistory(:,frameIndex) = vec_2_mat(state.getY);
+    % modelInfo.stateHistory(:,frameIndex) = vec_2_mat(state.getY);
     frameIndex = frameIndex + 1;
     if frameIndex <= width(modelInfo.time)
         modelInfo = update_modelInfo(model, modelInfo, state, frameIndex);
@@ -132,7 +136,7 @@ if simConfig.saveSTO
     for stateIndex = 0 : state.getNQ-1
         labels.append([char(model.getCoordinateSet.get(stateIndex)) '/value']);
     end
-    for stateIndex = 0 : state.getNQ-1
+    for stateIndex = 0 : state.getNU-1
         labels.append([char(model.getCoordinateSet.get(stateIndex)) '/speed']);
     end
     for stateIndex = state.getNQ + state.getNU : state.getNQ + state.getNU + state.getNZ-1
@@ -144,12 +148,11 @@ if simConfig.saveSTO
     stoFile.setColumnLabels(labels);
 
     for frameIndex = 1 : length(modelInfo.time)
-
         Y = mat_2_vec(modelInfo.stateHistory(:,frameIndex));
         stateVector = StateVector(modelInfo.time(frameIndex), Y);
         stoFile.append(stateVector);
-
     end
+
     stoFile.print(['human0914_sim_' char(datetime("today")) '.sto']);
     read_sto_file('model/coupled_human-prosthesis_model.osim', ['human0914_sim_' char(datetime("today")) '.sto'], 1);
 end

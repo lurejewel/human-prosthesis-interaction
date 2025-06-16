@@ -231,15 +231,30 @@ coords.hip_flexion_l = model.updCoordinateSet().get('hip_flexion_l');
 coords.hip_flexion_l.setRange([deg2rad(-120), deg2rad(120)]);
 
 % right thigh ~ right shank: knee_r
-joints.knee_r = PinJoint('knee_r', bodies.femur_r, Vec3(0,-0.396,0), Vec3(0), bodies.tibia_r, Vec3(0), Vec3(0));
-joints.knee_r.upd_coordinates(0).setRange([deg2rad(-120), deg2rad(10)])
-joints.knee_r.upd_coordinates(0).setName('knee_flexion_r');
+% joints.knee_r = PinJoint('knee_r', bodies.femur_r, Vec3(0,-0.396,0), Vec3(0), bodies.tibia_r, Vec3(0), Vec3(0));
+% joints.knee_r.upd_coordinates(0).setRange([deg2rad(-120), deg2rad(10)])
+% joints.knee_r.upd_coordinates(0).setName('knee_flexion_r');
+% joints.knee_r.upd_coordinates(0).setDefaultClamped(true);
+% model.addJoint(joints.knee_r);
+spatialTransform = spatialTransform();
+spatialTransform.updTransformAxis(0).setFunction(Constant(0));
+spatialTransform.updTransformAxis(1).setFunction(Constant(0));
+spatialTransform.updTransformAxis(2).setCoordinateNames(ArrayStr('knee_flexion_r',1));
+spatialTransform.updTransformAxis(2).setFunction(LinearFunction(1,0));
+spatialTransform.updTransformAxis(3).setFunction(Constant(0));
+spatialTransform.updTransformAxis(4).setFunction(Constant(0));
+spatialTransform.updTransformAxis(5).setFunction(Constant(0));
+joints.knee_r = CustomJoint('knee_r', bodies.femur_r, Vec3(0,-0.396,0), Vec3(0), bodies.tibia_r, Vec3(0), Vec3(0), spatialTransform);
+
 model.addJoint(joints.knee_r);
+coords.knee_flexion_r = model.updCoordinateSet().get('knee_flexion_r');
+coords.knee_flexion_r.setRange([deg2rad(-120), deg2rad(10)]);
 
 % left thigh ~ left shank: knee_l
 joints.knee_l = PinJoint('knee_l', bodies.femur_l, Vec3(0,-0.396,0), Vec3(0), bodies.tibia_l, Vec3(0), Vec3(0));
 joints.knee_l.upd_coordinates(0).setRange([deg2rad(-120), deg2rad(10)])
 joints.knee_l.upd_coordinates(0).setName('knee_flexion_l');
+joints.knee_l.upd_coordinates(0).setDefaultClamped(true);
 model.addJoint(joints.knee_l);
 
 % right shank ~ right foot: ankle_r
@@ -434,7 +449,7 @@ model.addForce(forces.ground_toe_l);
 clear stiffness dissipation staticFriction dynamicFriction viscousFriction transitionVelocity
 
 % coordinate limit force: string + 6 double + bool
-stiffness = 2;
+stiffness = 10;
 upperLim = -5;
 lowerLim = -120;
 damping = 0.2;
@@ -446,6 +461,32 @@ model.addForce(forces.knee_limit_r);
 model.addForce(forces.knee_limit_l);
 
 clear stiffness upperLim lowerLim damping transition
+
+%% Constraints
+% % knee flexion/extension constraint
+% constraintFunction = SimmSpline();
+% constraintFunction.addPoint(deg2rad(-120), deg2rad(-120)); % lower bound
+% constraintFunction.addPoint(deg2rad(10), deg2rad(10)); % upper bound
+% 
+% constraint.kneeConstraint_r = CoordinateCouplerConstraint();
+% constraint.kneeConstraint_r.setName('knee_flexion_r_constraint');
+% constraint.kneeConstraint_r.setFunction(constraintFunction);
+% independentCoordinateName = ArrayStr();
+% independentCoordinateName.append('knee_flexion_r');
+% constraint.kneeConstraint_r.setIndependentCoordinateNames(independentCoordinateName);
+% constraint.kneeConstraint_r.setDependentCoordinateName('knee_flexion_r');
+% model.addConstraint(constraint.kneeConstraint_r);
+% 
+% constraint.kneeConstraint_l = CoordinateCouplerConstraint();
+% constraint.kneeConstraint_l.setName('knee_flexion_l_constraint');
+% constraint.kneeConstraint_l.setFunction(constraintFunction);
+% independentCoordinateName = ArrayStr();
+% independentCoordinateName.append('knee_flexion_l')
+% constraint.kneeConstraint_l.setIndependentCoordinateNames(independentCoordinateName);
+% constraint.kneeConstraint_l.setDependentCoordinateName('knee_flexion_l');
+% model.addConstraint(constraint.kneeConstraint_l);
+% 
+% clear constraintFunction
 
 %% Markers
 % markers.sternum = Marker('Sternum', bodies.torso, Vec3(0.07,0.3,0)); % construction func, para: <name>, <attached body>, <location>

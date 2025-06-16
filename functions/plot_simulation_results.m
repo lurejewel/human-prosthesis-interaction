@@ -38,8 +38,10 @@ switch dataCategory
     case 'phase'
         figure, plot(time, modelInfo.phaseR, 'LineWidth',2);
         xlabel('time/s'), grid on, title('gait phase of the right leg');
+        ylabel('0-ES; 1-LS; 2-LO; 3-SW; 4-LD')
         figure, plot(time, modelInfo.phaseL, 'LineWidth',2);
         xlabel('time/s'), grid on, title('gait phase of the left leg');
+        ylabel('0-ES; 1-LS; 2-LO; 3-SW; 4-LD')
 
     case 'grf'
         figure, plot(time, modelInfo.grf.normalR, 'LineWidth',2);

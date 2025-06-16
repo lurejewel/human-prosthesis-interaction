@@ -110,19 +110,17 @@ classdef CMAES_optimization < Base_optimization
         end
 
         function [xvec, zvec] = generate_parameters(obj, iteration)
-            % Name: generate_parameters
             % Description: generate muscle reflex parameters with lambda
             % loops.
             % Output:
             % - [paraVector] an nPara x lambda matrix. paraVector is
             % where the muscle reflex parameters are placed in order:
-            % [paras1 | paras2 | ... | parasN].
+            % [para1 | para2 | ... | paraN].
 
-            zvec = randn(obj.optParaNum, obj.intrinsicPara.lambda); % deviation/exploration according to the covariance matrix C
-            xvec = zeros(obj.optParaNum, obj.intrinsicPara.lambda);
-            for loop = 1 : opt.intrinsicPara.lambda
-                xvec(:,loop) = obj.optPara.xmean + obj.intrinsicPara.sigma * (obj.intrinsicPara.B * obj.intrinsicPara.D * zvec(:,loop)); % add mutation
-            end
+            % deviation/exploration according to the covariance matrix C
+            zvec = randn(obj.optParaNum, obj.intrinsicPara.lambda); % random initialization of noise
+            xvec = obj.optPara.xmean + obj.hyperPara.sigma * obj.intrinsicPara.B * obj.intrinsicPara.D * zvec; % add mutation
+            
             if iteration == 1 % for the 1st iteration: no noise added to the 1st particle
                 xvec(:,1) = obj.optPara.xmean;
             end

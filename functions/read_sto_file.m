@@ -13,7 +13,7 @@ time = nan(npts, 1);
 data = nan(npts, numLabels-1);
 state = model.initSystem();
 
-% store data, which can be plot in MATLAB if needed.
+% store data, which can be plot in MATLAB if needed (showVideo = 0/1).
 for frameIndex = 1 : npts
     stateVector = stoFile.getStateVector(frameIndex-1);
     time(frameIndex) = stateVector.getTime;
