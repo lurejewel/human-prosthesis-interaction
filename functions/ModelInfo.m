@@ -8,21 +8,23 @@
 % -
 % -------------------------------------------------------------------------
 
-classdef ModelInfo
+classdef ModelInfo < handle
 
     properties
         % model information
-        mass
-        g
+        mass % total mass of the model
+        % g
         % muscle-related information
         muscleNames
         muscleExcitations
         muscleActivations
         muscleForces
-        muscleFiberForcesATN % ATN: along tendon, normalized
+        muscleFiberForcesATN % AT: along tendon; N: normalized
         muscleFiberLengthN
-        muscleReflexDelay
-        muscleReflex
+        muscleReflexDelay % tiem delay of electrical signals from the central nervous system to the muscle fibers
+        muscleReflexParam % structure of muscle reflex parameters
+        arx % array of muscle reflex parameters
+        arz
         OptimalFiberLengths
         OptimalFiberForces
         % gait phases
@@ -32,7 +34,11 @@ classdef ModelInfo
         grf
         % state
         stateHistory
-        time
+        timeSeries
+        lastTime % the instant when model falls down; equals the simConfig.endTime if the model can walk stably
+        stage % =1/2 for the 2-stage optimization
+        g % number of generations
+        gMax % maximum number of generation        
     end
 
     methods
@@ -43,7 +49,7 @@ classdef ModelInfo
             muscleNum = model.getMuscles.getSize;
 
             % number of points
-            npts = ceil((simConfig.endTime - simConfig.startTime) / simConfig.stepTime)+1;
+            npts = ceil(simConfig.endTime / simConfig.stepTime)+1;
 
             % muslce states: excitation, activation, muscle fiber forces along tendon(or not?)
             delay = round(0.01/simConfig.stepTime); % 10 ms delay for muscle reflex mechanism to take effect
@@ -61,7 +67,7 @@ classdef ModelInfo
             end
 
             % muscle reflex parameters
-            obj.muscleReflex = obj.read_muscleReflex_array(muscleReflexParaArray);
+            obj.read_muscleReflex_array(muscleReflexParaArray);
 
             % optimal fiber lengths后续可以改成数组+muscleNameMap的形式
             obj.OptimalFiberLengths.hamstrings = model.getMuscles.get('hamstrings_r').getOptimalFiberLength;
@@ -95,19 +101,25 @@ classdef ModelInfo
             state = model.initSystem(); % this is a must before calling model.getNumStateVariables()
             obj.stateHistory = nan(model.getNumStateVariables, npts);
 
-            % time series
-            obj.time = simConfig.startTime : simConfig.stepTime : simConfig.endTime;
+            % time series, last time, stage
+            obj.timeSeries = 0 : simConfig.stepTime : simConfig.endTime;
+            obj.lastTime = -1;
+            obj.stage = 1;
+            obj.g = 1;
+            obj.gMax = 3;
 
             % basic model information
             obj.mass = model.getTotalMass(state);
-            obj.g = abs(model.getGravity.get(1));
+            % obj.g = abs(model.getGravity.get(1));
             
         end
 
-        function muscleReflex = read_muscleReflex_array(~, muscleReflexParaArray)
+        function read_muscleReflex_array(obj, muscleReflexParaArray)
             % Description: convert the muscle-reflex parameters from array 
             % form to struct form.
-            % 后面可以考虑用数组代替，方便debug和调优
+            % 后面可以考虑用数组+containers.map代替，方便debug和调优（该函数后续删去）
+            obj.arx = muscleReflexParaArray;
+
             muscleReflex.tib.KL                     = muscleReflexParaArray(1);
             muscleReflex.tib.L0                     = muscleReflexParaArray(2);
             muscleReflex.tib_sol.KF                 = muscleReflexParaArray(3);
@@ -139,7 +151,31 @@ classdef ModelInfo
             muscleReflex.vas.C0                     = muscleReflexParaArray(27);
             muscleReflex.vas_knee.pos_max           = muscleReflexParaArray(28);
 
+            obj.muscleReflexParam = muscleReflex;
+
         end
+
+        function reset_record(obj)
+            
+            obj.muscleExcitations(:) = nan;
+            obj.muscleActivations(:) = nan;
+            obj.muscleForces(:) = nan;
+            obj.stateHistory(:) = nan;
+            obj.grf.normalR(:) = nan;
+            obj.grf.normalL(:) = nan;
+            obj.grf.frictionR(:) = nan;
+            obj.grf.frictionL(:) = nan;
+
+            f = obj.muscleFiberForcesATN(:,1);
+            obj.muscleFiberForcesATN(:) = nan;
+            obj.muscleFiberForcesATN(:,1) = f;
+            
+            l = obj.muscleFiberLengthN(:,1);
+            obj.muscleFiberLengthN(:) = nan;
+            obj.muscleFiberLengthN(:,1) = l;
+
+        end
+
 
     end
 

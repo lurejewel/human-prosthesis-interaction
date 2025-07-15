@@ -31,7 +31,7 @@ state = model.initSystem();
 
 % configure static optimization tool
 % soTool = StaticOptimization(); % configure so tool\
-soTool = AnalyzeTool('so_setup.xml');
+soTool = AnalyzeTool('so_setup.xml'); % 注意：还要加SO_Actuators.xml，示例xml配置文件中未添加。
 % soTool.setModel(model);
 % soTool.set
 soTool.run(); % RUN SO

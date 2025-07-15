@@ -4,20 +4,17 @@ classdef CMAES_optimization < Base_optimization
     % Evolutionary Strategy (CMA-ES). Parameters are muscle-reflex coefficients
     % in the musculoskeletal model.
     % PROPERTY TREE:
-    % - optPara
-    % | - xmean: Nx1 (N = #dimensions)
-    % | - zmean: Nx1
-    % | - xvec: Nxlambda (lambda = #particles)
-    % | - zvec: Nxlambda
     % - optParaNum: int
     % - optParaRecord
     % | - bestFit: 1xK (K <= #iterations)
     % | - bestPara: NxK
     % | - bestIter: 1xK
-    % - hyperPara
+    % - core
+    % | - xmean: Nx1 (N = #dimensions)
+    % | - zmean: Nx1
+    % | - arx: Nxlambda (lambda = #particles)
+    % | - arz: Nxlambda
     % | - sigma: double (usually 0.01 or 0.02)
-    % | - stage: int (1 or 2)
-    % - intrinsicPara
     % | - cc: double
     % | - cs: double
     % | - c1: double
@@ -44,24 +41,27 @@ classdef CMAES_optimization < Base_optimization
     % - <double>x_ = min_max(obj, <double>x, <double>lowerTh, <double>upperTh)
 
     properties
-        % optPara % inherented from Parent Class
         % optParaNum % inherented from Parent Class
         % optParaRecord % inherented from Parent Class
-        % hyperPara % inherented from Parent Class
-        % intrinsicPara % inherented from Parent Class
-        fitnessForCurrentIteration
-        fitnessWithNoiseForCurrentIteration
+        % core % inherented from Parent Class
+
+        % fitnesses
+        fitForCurrentIter % lambdax1 double (is this really necessarry?)
+        fitWithNoiseForCurrentIter % lambdax1 double (is this really necessarry?)
+        recordOfBig3 % 3x1 struct
+        recordForBestParticle % 1x1 struct
+        arx
+        arz
     end
 
     methods
-        function obj = CMAES_optimization(optParaInput, sigma, stage)
+        function obj = CMAES_optimization(optParaInput, sigma)
             % Name: CMAES_optimization
             % Description: construction method.
 
             % read input parameters
-            obj.optPara.xmean = optParaInput; % parameters (treated as mean value of a vector of random variables) to be optimized
-            obj.hyperPara.sigma = sigma; % describes the step length of the optimizaiton
-            obj.hyperPara.stage = stage; % this is a 2-stage optimization
+            obj.core.xmean = optParaInput; % parameters (treated as mean value of a vector of random variables) to be optimized
+            obj.core.sigma = sigma; % describes the step length of the optimizaiton
 
             % calculate hyper parameters
             % 1. selection of points
@@ -85,53 +85,126 @@ classdef CMAES_optimization < Base_optimization
             C = B * D * (B*D)'; % covariance matrix
             chiN = nPara^0.5*(1-1/(4*nPara)+1/(21*nPara^2)); % expected length of a N(0,I)
 
-            % assign hyper & intrinsic parameters
-            obj.intrinsicPara.cc = cc;
-            obj.intrinsicPara.cs = cs;
-            obj.intrinsicPara.c1 = c1;
-            obj.intrinsicPara.cmu = cmu;
-            obj.intrinsicPara.mu = mu;
-            obj.intrinsicPara.mueff = mueff;
-            obj.intrinsicPara.lambda = lambda;
-            obj.intrinsicPara.damps = damps;
-            obj.intrinsicPara.pc = pc;
-            obj.intrinsicPara.ps = ps;
-            obj.intrinsicPara.B = B;
-            obj.intrinsicPara.C = C;
-            obj.intrinsicPara.D = D;
-            obj.intrinsicPara.chiN = chiN;
-            obj.intrinsicPara.noise = 0.05;
-            obj.intrinsicPara.weights = weights;
+            % assign parameters
+            obj.core.cc = cc;
+            obj.core.cs = cs;
+            obj.core.c1 = c1;
+            obj.core.cmu = cmu;
+            obj.core.mu = mu;
+            obj.core.mueff = mueff;
+            obj.core.lambda = lambda;
+            obj.core.damps = damps;
+            obj.core.pc = pc;
+            obj.core.ps = ps;
+            obj.core.B = B;
+            obj.core.C = C;
+            obj.core.D = D;
+            obj.core.chiN = chiN;
+            obj.core.noise = 0.05;
+            obj.core.weights = weights;
 
             obj.optParaNum = nPara;
-            obj.fitnessForCurrentIteration = nan(lambda, 1);
-            obj.fitnessWithNoiseForCurrentIteration = nan(lambda, 1);
+            obj.fitForCurrentIter = nan(1, lambda);
+            obj.fitWithNoiseForCurrentIter = nan(1, lambda);
+            obj.recordOfBig3 = struct('fit', {999,999,999},...  % 'para', {}, ...
+                'arx', {optParaInput, optParaInput, optParaInput}, ...
+                'arz', {zeros(nPara,1), zeros(nPara,1), zeros(nPara,1)});
+            % obj.recordOfBig3.fit  = 999*ones(1, 3);
+            % obj.recordOfBig3.para = ;
+            % obj.recordOfBig3.arx = ;
+            % obj.recordOfBig3.arz = ;
+            obj.recordForBestParticle = struct('fit', 999, 'modelInfo', []);
+            % obj.recordForBestParticle.arx = optParaInput;
+            % obj.recordForBestParticle.modelInfo = [];
 
         end
 
-        function [xvec, zvec] = generate_parameters(obj, iteration)
+        function [arx, arz] = generate_parameters(obj, g)
             % Description: generate muscle reflex parameters with lambda
             % loops.
             % Output:
-            % - [paraVector] an nPara x lambda matrix. paraVector is
-            % where the muscle reflex parameters are placed in order:
+            % - [arx] an nPara x lambda matrix. arx is where the muscle
+            % reflex parameters are placed in order:
             % [para1 | para2 | ... | paraN].
 
             % deviation/exploration according to the covariance matrix C
-            zvec = randn(obj.optParaNum, obj.intrinsicPara.lambda); % random initialization of noise
-            xvec = obj.optPara.xmean + obj.hyperPara.sigma * obj.intrinsicPara.B * obj.intrinsicPara.D * zvec; % add mutation
-            
-            if iteration == 1 % for the 1st iteration: no noise added to the 1st particle
-                xvec(:,1) = obj.optPara.xmean;
+            arz = randn(obj.optParaNum, obj.core.lambda); % random initialization of noise
+            arx = obj.core.xmean + obj.core.sigma * obj.core.B * obj.core.D * arz; % add mutation
+
+            % for the 1st iteration: no noise added to the 1st particle
+            if g == 1
+                arx(:,1) = obj.core.xmean;
             end
+
+            % clip the parameters
+            for i = 1 : obj.core.lambda
+                arx(:,i) = obj.fix_parameters(arx(:,i));
+            end
+
+            obj.arx = arx;
+            obj.arz = arz;
+
         end
 
-        function xxx = update(obj)
-             % 继续写pseudo code
-            % fit
+        function update_elite_fit(obj, fit, modelInfo)
+            % fitnesses to be updated:
+            % - obj.recordOfBig3: 3x1 struct
+            % - obj.recordForBestParticle: 1x1 struct
+
+            if fit < obj.recordOfBig3(end).fit % greater than the elite
+                obj.recordOfBig3(end).fit = fit;
+                obj.recordOfBig3(end).arx = modelInfo.arx;
+                obj.recordOfBig3(end).arz = modelInfo.arz;
+                % sort the big 3
+                [~, idx] =  sort([obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit]);
+                obj.recordOfBig3 = obj.recordOfBig3(idx);
+
+                if fit < obj.recordForBestParticle.fit % greater than the best
+                    obj.recordForBestParticle.fit = fit;
+                    obj.recordForBestParticle.modelInfo = modelInfo;
+                end
+                disp(['fitness of elite particles: ', num2str([obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit])]);
+            end
+
+        end
+
+        function update_core(obj, fits, g)
+            % 后续sigma和noise可能会修改为与g（准确来说，是与优化停滞的代数）相关
+
+            % update fits for the generation
+            obj.fitForCurrentIter = fits;
+            obj.fitWithNoiseForCurrentIter = fits + obj.core.noise * randn(height(fits), width(fits));
+            fits_all = [fits, obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit];
+            arx_all = [obj.arx, obj.recordOfBig3(1).arx, obj.recordOfBig3(2).arx, obj.recordOfBig3(3).arx];
+            arz_all = [obj.arz, obj.recordOfBig3(1).arz, obj.recordOfBig3(2).arz, obj.recordOfBig3(3).arz];
+            [~, idx] = sort(fits_all);
+            obj.core.xmean = arx_all(:, idx(1:obj.core.mu)) * obj.core.weights;
+            zmean = arz_all(:, idx(1:obj.core.mu)) * obj.core.weights;
+
+            % cumulation: update evolution paths
+            obj.core.ps = (1-obj.core.cs) * obj.core.ps + (sqrt(obj.core.cs*(2-obj.core.cs)*obj.core.mueff)) * (obj.core.B * zmean);
+            hsig = norm(obj.core.ps)/sqrt(1-(1-obj.core.cs)^(2*g/obj.core.lambda))/obj.core.chiN < 1.4+2/(obj.optParaNum+1);
+            obj.core.pc = (1-obj.core.cc)*obj.core.pc + hsig * sqrt(obj.core.cc*(2-obj.core.cc)*obj.core.mueff) * (obj.core.B*obj.core.D*zmean);
+
+            % adapt covariance matrix C
+            obj.core.C = (1-obj.core.c1-obj.core.cmu) * obj.core.C ... % regard old matrix
+                + obj.core.c1 * (obj.core.pc*obj.core.pc' ... % plus rand one update
+                + (1-hsig)*obj.core.cc*(2-obj.core.cc)*obj.core.C) ... % minor correction
+                + obj.core.cmu ... % plus rank mu update
+                * (obj.core.B * obj.core.D * arz_all(:, idx(1:obj.core.mu))) ...
+                * diag(obj.core.weights) * (obj.core.B*obj.core.D*arz_all(:,idx(1:obj.core.mu)))';
+
+            % adapt step-size sigma
+            obj.core.sigma = obj.core.sigma * exp((obj.core.cs/obj.core.damps)*(norm(obj.core.ps)/obj.core.chiN-1));
+
+            % update B & D from C
+            obj.core.C = triu(obj.core.C) + triu(obj.core.C, 1)'; % enforce symmetry
+            [B, D] = eig(obj.core.C); % eigen decomposition, B == normalized eigenvectors
+            obj.core.B = B;
+            obj.core.D = diag(sqrt(diag(D))); % D contains standard deviations now
 
         end
 
     end
-end
 
+end

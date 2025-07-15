@@ -14,7 +14,7 @@ function modelInfo = update_modelInfo(model, modelInfo, state, frameIndex)
 % modelInfo.state = state;
 modelInfo.stateHistory(:,frameIndex-1) = vec_2_mat(state.getY);
 
-%% muscleFiberForceATN 后续可以改成数组形式
+%% muscleFiberForceATN 后续改成数组形式
 muscles = model.getMuscles;
 optForces = modelInfo.OptimalFiberForces;
 modelInfo.muscleFiberForcesATN(1, frameIndex) = muscles.get('hamstrings_r').getFiberForceAlongTendon(state) / optForces.hamstrings;
@@ -64,7 +64,7 @@ modelInfo.muscleActivations(12, frameIndex) = muscles.get('gastroc_l').getActiva
 modelInfo.muscleActivations(13, frameIndex) = muscles.get('soleus_l').getActivation(state);
 modelInfo.muscleActivations(14, frameIndex) = muscles.get('tibia_l').getActivation(state);
 
-%% muscleForces (along tendon)
+%% muscleForces
 modelInfo.muscleForces(1, frameIndex) = muscles.get('hamstrings_r').getFiberForce(state);
 modelInfo.muscleForces(2, frameIndex) = muscles.get('glut_max_r').getFiberForce(state);
 modelInfo.muscleForces(3, frameIndex) = muscles.get('ilipsoas_r').getFiberForce(state);
