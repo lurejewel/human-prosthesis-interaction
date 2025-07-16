@@ -1,4 +1,8 @@
 *.asv
 *.log
+*.vtp
+*.SLDPRT
+*.STL
+*.SLDASM
 assets/ResultsRRA/
 assets/ResultsSO/
