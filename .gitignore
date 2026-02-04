@@ -4,6 +4,9 @@
 *.SLDPRT
 *.STL
 *.SLDASM
+*.sto
+*.xml
+TOOL_*.m
 opensim.log
 bestfits_*.mat
 bestPara_*.mat
