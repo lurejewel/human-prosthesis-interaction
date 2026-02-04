@@ -28,7 +28,7 @@
 % [muscles]
 % - hamstrings: hamstrings_r/l
 % - glutues maximum: glut_max_r/l
-% - ilipsoas: ilipsoas_r/l
+% - iliopsoas: iliopsoas_r/l
 % - vastus: vasti_r/l
 % - gastrocnemius: gastroc_r/l
 % - soleus: soleus_r/l
@@ -292,12 +292,12 @@ muscles.glut_max_r.addNewPathPoint('glut_max2_r-P4', bodies.femur_r, Vec3(-0.015
 model.addForce(muscles.glut_max_r);
 
 % iliopsoas_r
-muscles.ilipsoas_r = Millard2012EquilibriumMuscle('ilipsoas_r', 2342, 0.1, 0.163, deg2rad(8));
-muscles.ilipsoas_r.addNewPathPoint('psoas_r-P1', bodies.pelvis, Vec3(-0.0647,0.0887,0.0289));
-muscles.ilipsoas_r.addNewPathPoint('psoas_r-P2', bodies.pelvis, Vec3(-0.03,-0.01,0.076));
-muscles.ilipsoas_r.addNewPathPoint('psoas_r-P4', bodies.femur_r, Vec3(0.033,-0.035,0.0038));
-muscles.ilipsoas_r.addNewPathPoint('psoas_r-P5', bodies.femur_r, Vec3(-0.0188,-0.0597,0.0104));
-model.addForce(muscles.ilipsoas_r);
+muscles.iliopsoas_r = Millard2012EquilibriumMuscle('iliopsoas_r', 2342, 0.1, 0.163, deg2rad(8));
+muscles.iliopsoas_r.addNewPathPoint('psoas_r-P1', bodies.pelvis, Vec3(-0.0647,0.0887,0.0289));
+muscles.iliopsoas_r.addNewPathPoint('psoas_r-P2', bodies.pelvis, Vec3(-0.03,-0.01,0.076));
+muscles.iliopsoas_r.addNewPathPoint('psoas_r-P4', bodies.femur_r, Vec3(0.033,-0.035,0.0038));
+muscles.iliopsoas_r.addNewPathPoint('psoas_r-P5', bodies.femur_r, Vec3(-0.0188,-0.0597,0.0104));
+model.addForce(muscles.iliopsoas_r);
 
 % vasti_r
 muscles.vasti_r = Millard2012EquilibriumMuscle('vasti_r', 4530, 0.087, 0.136, deg2rad(30));
@@ -341,12 +341,12 @@ muscles.glut_max_l.addNewPathPoint('glut_max2_l-P4', bodies.femur_l, Vec3(-0.015
 model.addForce(muscles.glut_max_l);
 
 % iliopsoas_l
-muscles.ilipsoas_l = Millard2012EquilibriumMuscle('ilipsoas_l', 2342, 0.1, 0.163, deg2rad(8));
-muscles.ilipsoas_l.addNewPathPoint('psoas_l-P1', bodies.pelvis, Vec3(-0.0647,0.0887,-0.0289));
-muscles.ilipsoas_l.addNewPathPoint('psoas_l-P2', bodies.pelvis, Vec3(-0.03,-0.01,-0.076));
-muscles.ilipsoas_l.addNewPathPoint('psoas_l-P4', bodies.femur_l, Vec3(0.033,-0.035,-0.0038));
-muscles.ilipsoas_l.addNewPathPoint('psoas_l-P5', bodies.femur_l, Vec3(-0.0188,-0.0597,-0.0104));
-model.addForce(muscles.ilipsoas_l);
+muscles.iliopsoas_l = Millard2012EquilibriumMuscle('iliopsoas_l', 2342, 0.1, 0.163, deg2rad(8));
+muscles.iliopsoas_l.addNewPathPoint('psoas_l-P1', bodies.pelvis, Vec3(-0.0647,0.0887,-0.0289));
+muscles.iliopsoas_l.addNewPathPoint('psoas_l-P2', bodies.pelvis, Vec3(-0.03,-0.01,-0.076));
+muscles.iliopsoas_l.addNewPathPoint('psoas_l-P4', bodies.femur_l, Vec3(0.033,-0.035,-0.0038));
+muscles.iliopsoas_l.addNewPathPoint('psoas_l-P5', bodies.femur_l, Vec3(-0.0188,-0.0597,-0.0104));
+model.addForce(muscles.iliopsoas_l);
 
 % vasti_l
 muscles.vasti_l = Millard2012EquilibriumMuscle('vasti_l', 4530, 0.087, 0.136, deg2rad(30));

@@ -5,3 +5,13 @@
 [2024-10-25 16:21:05.566] [info] Loaded model coupled_human-prosthesis_model from file E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\model\coupled_human-prosthesis_model.osim
 [2024-10-25 16:22:03.874] [info] Loaded model subject01 from file E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\model\coupled_human-prosthesis_model_scaledFinal.osim
 [2024-10-25 16:22:32.927] [info] Storage: read data file = E:\OneDrive\Jin Wei\PKU\Human-prosthesis interaction\assets\subject01_static_output.mot (nr=1 nc=55)
+[2026-01-19 15:32:45.436] [info] Updating Model file from 40000 to latest format...
+[2026-01-19 15:32:45.454] [info] Loaded model 3DGaitModel2354 from file E:\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\model\NOT YET TO USE\gait2354_simbody.osim
+[2026-01-20 13:00:00.804] [info] Updating Model file from 40000 to latest format...
+[2026-01-20 13:00:00.825] [info] Loaded model 3DGaitModel2354 from file E:\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\model\NOT YET TO USE\gait2354_simbody.osim
+[2026-01-20 13:00:15.233] [info] Loaded model model_display from file E:\OneDrive\Jin Wei\PKU\Musculoskeletal model 2D-3D expansion\muscle_length_calculation\model_display_new.osim
+[2026-01-22 09:31:07.038] [info] Updating Model file from 40000 to latest format...
+[2026-01-22 09:31:07.053] [info] Loaded model 3DGaitModel2354 from file E:\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\model\NOT YET TO USE\gait2354_simbody.osim
+[2026-01-22 09:31:07.969] [info] Loaded model model_display from file E:\OneDrive\Jin Wei\PKU\Musculoskeletal model 2D-3D expansion\muscle_length_calculation\model_display_new.osim
+[2026-01-22 09:32:22.808] [info] Loaded model coupled_human-prosthesis_model from file E:\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\model\coupled_human-prosthesis_model.osim
+[2026-01-22 09:32:49.790] [info] Storage: read data file = E:\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\sim_result_2026-01-22_09-30-47.sto (nr=2000 nc=49)

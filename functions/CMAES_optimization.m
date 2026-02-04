@@ -34,7 +34,7 @@ classdef CMAES_optimization < Base_optimization
     % - fitnessForCurrentIteration: lambdax1
     % - fitnessWithNoiseForCurrentIteration: lambdax1
     % METHODS:
-    % - CMAES_optimization(<Nx1>para, <double>sigma, <int>stage)
+    % - CMAES_optimization(<Nx1>para, <double>sigma)
     % - [<Nxlambda>xvec, <Nxlambda>zvec] = generate_parameters(<obj, <int>iteration)
     % - xxx = update(obj)
     % - <Nx1>fixedPara = fix_parameters(obj, <Nx1>para)
@@ -42,20 +42,21 @@ classdef CMAES_optimization < Base_optimization
 
     properties
         % optParaNum % inherented from Parent Class
-        % optParaRecord % inherented from Parent Class
+        % optParaRecord % inherented from Parent Class 这个目前没有被用到？
         % core % inherented from Parent Class
 
         % fitnesses
-        fitForCurrentIter % lambdax1 double (is this really necessarry?)
-        fitWithNoiseForCurrentIter % lambdax1 double (is this really necessarry?)
         recordOfBig3 % 3x1 struct
         recordForBestParticle % 1x1 struct
         arx
         arz
+        gMax % maximum #generation possible for optimization
+        nParticles % #particle to be simulated and evaluated within each worker (batch)
+
     end
 
     methods
-        function obj = CMAES_optimization(optParaInput, sigma)
+        function obj = CMAES_optimization(optParaInput, sigma, Nworkers)
             % Name: CMAES_optimization
             % Description: construction method.
 
@@ -104,18 +105,14 @@ classdef CMAES_optimization < Base_optimization
             obj.core.weights = weights;
 
             obj.optParaNum = nPara;
-            obj.fitForCurrentIter = nan(1, lambda);
-            obj.fitWithNoiseForCurrentIter = nan(1, lambda);
             obj.recordOfBig3 = struct('fit', {999,999,999},...  % 'para', {}, ...
                 'arx', {optParaInput, optParaInput, optParaInput}, ...
                 'arz', {zeros(nPara,1), zeros(nPara,1), zeros(nPara,1)});
-            % obj.recordOfBig3.fit  = 999*ones(1, 3);
-            % obj.recordOfBig3.para = ;
-            % obj.recordOfBig3.arx = ;
-            % obj.recordOfBig3.arz = ;
-            obj.recordForBestParticle = struct('fit', 999, 'modelInfo', []);
-            % obj.recordForBestParticle.arx = optParaInput;
-            % obj.recordForBestParticle.modelInfo = [];
+            obj.recordForBestParticle = struct('fit', 999, 'arx', []);
+
+            obj.gMax = 1000;
+            obj.nParticles = floor(lambda/Nworkers) * ones(Nworkers,1);
+            obj.nParticles(1 : mod(lambda,Nworkers)) = obj.nParticles(1 : mod(lambda,Nworkers)) + 1;
 
         end
 
@@ -132,7 +129,7 @@ classdef CMAES_optimization < Base_optimization
             arx = obj.core.xmean + obj.core.sigma * obj.core.B * obj.core.D * arz; % add mutation
 
             % for the 1st iteration: no noise added to the 1st particle
-            if g == 1
+            if g == 0
                 arx(:,1) = obj.core.xmean;
             end
 
@@ -146,35 +143,40 @@ classdef CMAES_optimization < Base_optimization
 
         end
 
-        function update_elite_fit(obj, fit, modelInfo)
+        function update_elite_fit(obj, fits, arx, arz)
             % fitnesses to be updated:
             % - obj.recordOfBig3: 3x1 struct
             % - obj.recordForBestParticle: 1x1 struct
 
-            if fit < obj.recordOfBig3(end).fit % greater than the elite
-                obj.recordOfBig3(end).fit = fit;
-                obj.recordOfBig3(end).arx = modelInfo.arx;
-                obj.recordOfBig3(end).arz = modelInfo.arz;
-                % sort the big 3
-                [~, idx] =  sort([obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit]);
-                obj.recordOfBig3 = obj.recordOfBig3(idx);
+            for k = 1 : length(fits)
+                fit = fits(k);
 
-                if fit < obj.recordForBestParticle.fit % greater than the best
-                    obj.recordForBestParticle.fit = fit;
-                    obj.recordForBestParticle.modelInfo = modelInfo;
+                if fit < obj.recordOfBig3(end).fit % greater than the elite
+                    obj.recordOfBig3(end).fit = fit;
+                    obj.recordOfBig3(end).arx = arx(:,k);
+                    obj.recordOfBig3(end).arz = arz(:,k);
+                    % sort the big 3
+                    [~, idx] =  sort([obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit]);
+                    obj.recordOfBig3 = obj.recordOfBig3(idx);
+
+                    if fit < obj.recordForBestParticle.fit % greater than the best
+                        obj.recordForBestParticle.fit = fit;
+                        obj.recordForBestParticle.arx = arx(:,k);
+
+                    end
+                    disp(['fitness of elite particles: ', num2str([obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit])]);
                 end
-                disp(['fitness of elite particles: ', num2str([obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit])]);
             end
+
 
         end
 
         function update_core(obj, fits, g)
-            % 后续sigma和noise可能会修改为与g（准确来说，是与优化停滞的代数）相关
+            % TODO: 后续sigma和noise可能会修改为与g（准确来说，是与优化停滞的代数）相关
 
             % update fits for the generation
-            obj.fitForCurrentIter = fits;
-            obj.fitWithNoiseForCurrentIter = fits + obj.core.noise * randn(height(fits), width(fits));
-            fits_all = [fits, obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit];
+            fitsWithNoiseForCurrentIter = fits + obj.core.noise * randn(height(fits), width(fits));
+            fits_all = [fitsWithNoiseForCurrentIter', obj.recordOfBig3(1).fit, obj.recordOfBig3(2).fit, obj.recordOfBig3(3).fit];
             arx_all = [obj.arx, obj.recordOfBig3(1).arx, obj.recordOfBig3(2).arx, obj.recordOfBig3(3).arx];
             arz_all = [obj.arz, obj.recordOfBig3(1).arz, obj.recordOfBig3(2).arz, obj.recordOfBig3(3).arz];
             [~, idx] = sort(fits_all);

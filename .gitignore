@@ -4,5 +4,10 @@
 *.SLDPRT
 *.STL
 *.SLDASM
+opensim.log
+bestfits_*.mat
+bestPara_*.mat
+computation*.mat
 assets/ResultsRRA/
 assets/ResultsSO/
+old/

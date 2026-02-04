@@ -1148,7 +1148,7 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<Millard2012EquilibriumMuscle name="ilipsoas_r">
+				<Millard2012EquilibriumMuscle name="iliopsoas_r">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0.01</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -1200,12 +1200,12 @@
 					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
 					<pennation_angle_at_optimal>0.13962634015954636</pennation_angle_at_optimal>
 					<!--Active-force-length curve.-->
-					<ActiveForceLengthCurve name="ilipsoas_r_ActiveForceLengthCurve">
+					<ActiveForceLengthCurve name="iliopsoas_r_ActiveForceLengthCurve">
 						<!--Minimum value of the active-force-length curve-->
 						<minimum_value>0</minimum_value>
 					</ActiveForceLengthCurve>
 					<!--Force-velocity curve.-->
-					<ForceVelocityCurve name="ilipsoas_r_ForceVelocityCurve">
+					<ForceVelocityCurve name="iliopsoas_r_ForceVelocityCurve">
 						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
 						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
 						<!--Curve slope just before reaching concentric_slope_at_vmax-->
@@ -1220,11 +1220,11 @@
 						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
 					</ForceVelocityCurve>
 					<!--Passive-force-length curve.-->
-					<FiberForceLengthCurve name="ilipsoas_r_FiberForceLengthCurve">
+					<FiberForceLengthCurve name="iliopsoas_r_FiberForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</FiberForceLengthCurve>
 					<!--Tendon-force-length curve.-->
-					<TendonForceLengthCurve name="ilipsoas_r_TendonForceLengthCurve">
+					<TendonForceLengthCurve name="iliopsoas_r_TendonForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
@@ -1666,7 +1666,7 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<Millard2012EquilibriumMuscle name="ilipsoas_l">
+				<Millard2012EquilibriumMuscle name="iliopsoas_l">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0.01</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -1718,12 +1718,12 @@
 					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
 					<pennation_angle_at_optimal>0.13962634015954636</pennation_angle_at_optimal>
 					<!--Active-force-length curve.-->
-					<ActiveForceLengthCurve name="ilipsoas_l_ActiveForceLengthCurve">
+					<ActiveForceLengthCurve name="iliopsoas_l_ActiveForceLengthCurve">
 						<!--Minimum value of the active-force-length curve-->
 						<minimum_value>0</minimum_value>
 					</ActiveForceLengthCurve>
 					<!--Force-velocity curve.-->
-					<ForceVelocityCurve name="ilipsoas_l_ForceVelocityCurve">
+					<ForceVelocityCurve name="iliopsoas_l_ForceVelocityCurve">
 						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
 						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
 						<!--Curve slope just before reaching concentric_slope_at_vmax-->
@@ -1738,11 +1738,11 @@
 						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
 					</ForceVelocityCurve>
 					<!--Passive-force-length curve.-->
-					<FiberForceLengthCurve name="ilipsoas_l_FiberForceLengthCurve">
+					<FiberForceLengthCurve name="iliopsoas_l_FiberForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</FiberForceLengthCurve>
 					<!--Tendon-force-length curve.-->
-					<TendonForceLengthCurve name="ilipsoas_l_TendonForceLengthCurve">
+					<TendonForceLengthCurve name="iliopsoas_l_TendonForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>

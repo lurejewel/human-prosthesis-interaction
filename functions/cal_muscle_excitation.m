@@ -23,74 +23,139 @@
 %
 % -------------------------------------------------------------------------
 
-function muscleExcitations = cal_muscle_excitation(modelInfo, state, frameIndex)
+function muscleExcitations = cal_muscle_excitation(modelInfo, frameIndex)
+map = modelInfo.st.model.map;
 %% Load gait phases
-phaseR  = modelInfo.phaseR(frameIndex);
-phaseL  = modelInfo.phaseL(frameIndex);
-
+phaseR  = modelInfo.dy.phase.r(frameIndex);
+phaseL  = modelInfo.dy.phase.l(frameIndex);
 %% Load normalized fiber length and force along tendon
 % hamR_FN = modelInfo.muscleFiberForcesATN(1, frameIndex);
-gluR_FN = modelInfo.muscleFiberForcesATN(2, frameIndex);
-vasR_FN = modelInfo.muscleFiberForcesATN(4, frameIndex);
-gasR_FN = modelInfo.muscleFiberForcesATN(5, frameIndex);
-solR_FN = modelInfo.muscleFiberForcesATN(6, frameIndex);
+gluR_FN = modelInfo.dy.muscle.fATN(2, frameIndex);
+vasR_FN = modelInfo.dy.muscle.fATN(4, frameIndex);
+gasR_FN = modelInfo.dy.muscle.fATN(5, frameIndex);
+solR_FN = modelInfo.dy.muscle.fATN(6, frameIndex);
 % hamL_FN = modelInfo.muscleFiberForcesATN(8, frameIndex);
-gluL_FN = modelInfo.muscleFiberForcesATN(9, frameIndex);
-vasL_FN = modelInfo.muscleFiberForcesATN(11, frameIndex);
-gasL_FN = modelInfo.muscleFiberForcesATN(12, frameIndex);
-solL_FN = modelInfo.muscleFiberForcesATN(13, frameIndex);
+gluL_FN = modelInfo.dy.muscle.fATN(9, frameIndex);
+vasL_FN = modelInfo.dy.muscle.fATN(11, frameIndex);
+gasL_FN = modelInfo.dy.muscle.fATN(12, frameIndex);
+solL_FN = modelInfo.dy.muscle.fATN(13, frameIndex);
 
-hamR_LN = modelInfo.muscleFiberLengthN(1, frameIndex);
-iliR_LN = modelInfo.muscleFiberLengthN(3, frameIndex);
-tibR_LN = modelInfo.muscleFiberLengthN(7, frameIndex);
-hamL_LN = modelInfo.muscleFiberLengthN(8, frameIndex);
-iliL_LN = modelInfo.muscleFiberLengthN(10, frameIndex);
-tibL_LN = modelInfo.muscleFiberLengthN(14, frameIndex);
+hamR_LN = modelInfo.dy.muscle.lCEN(1, frameIndex);
+iliR_LN = modelInfo.dy.muscle.lCEN(3, frameIndex);
+tibR_LN = modelInfo.dy.muscle.lCEN(7, frameIndex);
+hamL_LN = modelInfo.dy.muscle.lCEN(8, frameIndex);
+iliL_LN = modelInfo.dy.muscle.lCEN(10, frameIndex);
+tibL_LN = modelInfo.dy.muscle.lCEN(14, frameIndex);
 
 %% Load muscle reflex parameters
-KL_tib              = modelInfo.muscleReflexParam.tib.KL;
-L0_tib              = modelInfo.muscleReflexParam.tib.L0;
-KF_tib_sol          = modelInfo.muscleReflexParam.tib_sol.KF;
-KF_sol              = modelInfo.muscleReflexParam.sol.KF;
-KF_gas              = modelInfo.muscleReflexParam.gas.KF;
-KF1_vas             = modelInfo.muscleReflexParam.vas.KF1;
-KF2_vas             = modelInfo.muscleReflexParam.vas.KF2;
-C0_vas              = modelInfo.muscleReflexParam.vas.C0;
-Max_vas_knee        = modelInfo.muscleReflexParam.vas_knee.pos_max;
-KP_ham_pq           = modelInfo.muscleReflexParam.ham_pelvis_tilt.KP;
-KV_ham_pq           = modelInfo.muscleReflexParam.ham_pelvis_tilt.KV;
-C0_ham_pq           = modelInfo.muscleReflexParam.ham_pelvis_tilt.C0;
-KP_glu_pq           = modelInfo.muscleReflexParam.glu_pelvis_tilt.KP;
-KV_glu_pq           = modelInfo.muscleReflexParam.glu_pelvis_tilt.KV;
-C0_glu_pq           = modelInfo.muscleReflexParam.glu_pelvis_tilt.C0;
-KP_ili_pq           = modelInfo.muscleReflexParam.ili_pelvis_tilt.KP;
-KV_ili_pq           = modelInfo.muscleReflexParam.ili_pelvis_tilt.KV;
-C0_ili_pq           = modelInfo.muscleReflexParam.ili_pelvis_tilt.C0;
-C0_ili              = modelInfo.muscleReflexParam.ili.C0;
-% C0_glu              = modelInfo.muscleReflexParam.glu.C0;
-KL_ili              = modelInfo.muscleReflexParam.ili.KL;
-L0_ili              = modelInfo.muscleReflexParam.ili.L0;
+KL_tib              = modelInfo.dy.muscle.para.tib.KL;
+L0_tib              = modelInfo.dy.muscle.para.tib.L0;
+KF_tib_sol          = modelInfo.dy.muscle.para.tib_sol.KF;
+KF_sol              = modelInfo.dy.muscle.para.sol.KF;
+KF_gas              = modelInfo.dy.muscle.para.gas.KF;
+KF1_vas             = modelInfo.dy.muscle.para.vas.KF1;
+KF2_vas             = modelInfo.dy.muscle.para.vas.KF2;
+C0_vas              = modelInfo.dy.muscle.para.vas.C0;
+Max_vas_knee        = modelInfo.dy.muscle.para.vas_knee.pos_max;
+KP_ham_pq           = modelInfo.dy.muscle.para.ham_pelvis_tilt.KP;
+KV_ham_pq           = modelInfo.dy.muscle.para.ham_pelvis_tilt.KV;
+C0_ham_pq           = modelInfo.dy.muscle.para.ham_pelvis_tilt.C0;
+KP_glu_pq           = modelInfo.dy.muscle.para.glu_pelvis_tilt.KP;
+KV_glu_pq           = modelInfo.dy.muscle.para.glu_pelvis_tilt.KV;
+C0_glu_pq           = modelInfo.dy.muscle.para.glu_pelvis_tilt.C0;
+KP_ili_pq           = modelInfo.dy.muscle.para.ili_pelvis_tilt.KP;
+KV_ili_pq           = modelInfo.dy.muscle.para.ili_pelvis_tilt.KV;
+C0_ili_pq           = modelInfo.dy.muscle.para.ili_pelvis_tilt.C0;
+C0_ili              = modelInfo.dy.muscle.para.ili.C0;
+% C0_glu              = modelInfo.dy.muscle.para.glu.C0;
+KL_ili              = modelInfo.dy.muscle.para.ili.KL;
+L0_ili              = modelInfo.dy.muscle.para.ili.L0;
 P0_pq               = -0.1944;
-P0_ili_pq2          = modelInfo.muscleReflexParam.ili_pelvis_tilt.P02;
-KP2_ili_pq          = modelInfo.muscleReflexParam.ili_pelvis_tilt.KP2;
-KV2_ili_pq          = modelInfo.muscleReflexParam.ili_pelvis_tilt.KV2;
-KL_ili_ham          = modelInfo.muscleReflexParam.ili_ham.KL;
-L0_ili_ham          = modelInfo.muscleReflexParam.ili_ham.L0;
-% KF_ham              = modelInfo.muscleReflexParam.ham.KF;
-KF_glu              = modelInfo.muscleReflexParam.glu.KF;
-KF_ham_glu          = modelInfo.muscleReflexParam.ham_glu.KF;
+P0_ili_pq2          = modelInfo.dy.muscle.para.ili_pelvis_tilt.P02;
+KP2_ili_pq          = modelInfo.dy.muscle.para.ili_pelvis_tilt.KP2;
+KV2_ili_pq          = modelInfo.dy.muscle.para.ili_pelvis_tilt.KV2;
+KL_ili_ham          = modelInfo.dy.muscle.para.ili_ham.KL;
+L0_ili_ham          = modelInfo.dy.muscle.para.ili_ham.L0;
+% KF_ham              = modelInfo.dy.muscle.para.ham.KF;
+KF_glu              = modelInfo.dy.muscle.para.glu.KF;
+KF_ham_glu          = modelInfo.dy.muscle.para.ham_glu.KF;
+
+% %% Load normalized fiber length and force along tendon
+% % hamR_FN = modelInfo.muscleFiberForcesATN(1, frameIndex);
+% gluR_FN = modelInfo.muscleFiberForcesATN(2, frameIndex);改到这里了
+% vasR_FN = modelInfo.muscleFiberForcesATN(4, frameIndex);
+% gasR_FN = modelInfo.muscleFiberForcesATN(5, frameIndex);
+% solR_FN = modelInfo.muscleFiberForcesATN(6, frameIndex);
+% % hamL_FN = modelInfo.muscleFiberForcesATN(8, frameIndex);
+% gluL_FN = modelInfo.muscleFiberForcesATN(9, frameIndex);
+% vasL_FN = modelInfo.muscleFiberForcesATN(11, frameIndex);
+% gasL_FN = modelInfo.muscleFiberForcesATN(12, frameIndex);
+% solL_FN = modelInfo.muscleFiberForcesATN(13, frameIndex);
+% 
+% hamR_LN = modelInfo.muscleFiberLengthN(1, frameIndex);
+% iliR_LN = modelInfo.muscleFiberLengthN(3, frameIndex);
+% tibR_LN = modelInfo.muscleFiberLengthN(7, frameIndex);
+% hamL_LN = modelInfo.muscleFiberLengthN(8, frameIndex);
+% iliL_LN = modelInfo.muscleFiberLengthN(10, frameIndex);
+% tibL_LN = modelInfo.muscleFiberLengthN(14, frameIndex);
+% 
+% %% Load muscle reflex parameters
+% KL_tib              = modelInfo.muscleReflexParam.tib.KL;
+% L0_tib              = modelInfo.muscleReflexParam.tib.L0;
+% KF_tib_sol          = modelInfo.muscleReflexParam.tib_sol.KF;
+% KF_sol              = modelInfo.muscleReflexParam.sol.KF;
+% KF_gas              = modelInfo.muscleReflexParam.gas.KF;
+% KF1_vas             = modelInfo.muscleReflexParam.vas.KF1;
+% KF2_vas             = modelInfo.muscleReflexParam.vas.KF2;
+% C0_vas              = modelInfo.muscleReflexParam.vas.C0;
+% Max_vas_knee        = modelInfo.muscleReflexParam.vas_knee.pos_max;
+% KP_ham_pq           = modelInfo.muscleReflexParam.ham_pelvis_tilt.KP;
+% KV_ham_pq           = modelInfo.muscleReflexParam.ham_pelvis_tilt.KV;
+% C0_ham_pq           = modelInfo.muscleReflexParam.ham_pelvis_tilt.C0;
+% KP_glu_pq           = modelInfo.muscleReflexParam.glu_pelvis_tilt.KP;
+% KV_glu_pq           = modelInfo.muscleReflexParam.glu_pelvis_tilt.KV;
+% C0_glu_pq           = modelInfo.muscleReflexParam.glu_pelvis_tilt.C0;
+% KP_ili_pq           = modelInfo.muscleReflexParam.ili_pelvis_tilt.KP;
+% KV_ili_pq           = modelInfo.muscleReflexParam.ili_pelvis_tilt.KV;
+% C0_ili_pq           = modelInfo.muscleReflexParam.ili_pelvis_tilt.C0;
+% C0_ili              = modelInfo.muscleReflexParam.ili.C0;
+% % C0_glu              = modelInfo.muscleReflexParam.glu.C0;
+% KL_ili              = modelInfo.muscleReflexParam.ili.KL;
+% L0_ili              = modelInfo.muscleReflexParam.ili.L0;
+% P0_pq               = -0.1944;
+% P0_ili_pq2          = modelInfo.muscleReflexParam.ili_pelvis_tilt.P02;
+% KP2_ili_pq          = modelInfo.muscleReflexParam.ili_pelvis_tilt.KP2;
+% KV2_ili_pq          = modelInfo.muscleReflexParam.ili_pelvis_tilt.KV2;
+% KL_ili_ham          = modelInfo.muscleReflexParam.ili_ham.KL;
+% L0_ili_ham          = modelInfo.muscleReflexParam.ili_ham.L0;
+% % KF_ham              = modelInfo.muscleReflexParam.ham.KF;
+% KF_glu              = modelInfo.muscleReflexParam.glu.KF;
+% KF_ham_glu          = modelInfo.muscleReflexParam.ham_glu.KF;
 
 %% Load coordinate pose & velocity needed in muscle reflex mechanism
-pq                  = state.getQ.get(0);
-pqV                 = state.getU.get(0);
-kneeR               = state.getQ.get(5);
-kneeRV              = state.getU.get(5);
-kneeL               = state.getQ.get(6);
-kneeLV              = state.getU.get(6);
+
+if frameIndex == 1
+    pq                  = modelInfo.st.model.initPose(map('pelvis_tilt/value'));
+    pqV                 = modelInfo.st.model.initPose(map('pelvis_tilt/speed'));
+    kneeR               = modelInfo.st.model.initPose(map('knee_flexion_r/value'));
+    kneeRV              = modelInfo.st.model.initPose(map('knee_flexion_r/speed'));
+    kneeL               = modelInfo.st.model.initPose(map('knee_flexion_l/value'));
+    kneeLV              = modelInfo.st.model.initPose(map('knee_flexion_l/speed'));
+elseif frameIndex > 1
+    pq                  = modelInfo.dy.stateHistory(map('pelvis_tilt/value'),frameIndex-1);
+    pqV                 = modelInfo.dy.stateHistory(map('pelvis_tilt/speed'),frameIndex-1);
+    kneeR               = modelInfo.dy.stateHistory(map('knee_flexion_r/value'),frameIndex-1);
+    kneeRV              = modelInfo.dy.stateHistory(map('knee_flexion_r/speed'),frameIndex-1);
+    kneeL               = modelInfo.dy.stateHistory(map('knee_flexion_l/value'),frameIndex-1);
+    kneeLV              = modelInfo.dy.stateHistory(map('knee_flexion_l/speed'),frameIndex-1);
+else
+    error('invalid value of the variable frameIndex!');
+end
+
 
 %% Calculate muscle excitations based on muscle reflex mechanism
 % 注意现在还是左右腿参数相同的。之后要换成左右腿参数独立
-muscleNum = height(modelInfo.muscleExcitations);
+muscleNum = height(modelInfo.dy.muscle.exc);
 muscleExcitations = zeros(muscleNum, 1);
 hamR_exc = 0; gluR_exc = 0; iliR_exc = 0; vasR_exc = 0; gasR_exc = 0; solR_exc = 0; tibR_exc = 0;
 hamL_exc = 0; gluL_exc = 0; iliL_exc = 0; vasL_exc = 0; gasL_exc = 0; solL_exc = 0; tibL_exc = 0;

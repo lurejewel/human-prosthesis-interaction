@@ -1,51 +1,55 @@
 function modelInfo = forward_simulation(model, modelInfo, state)
 
-import org.opensim.modeling.*
-
 frameIndex = 1;
-for t = modelInfo.timeSeries % for every frame
+% initialize muscle objects
+allMuscles = cell(1, numel(modelInfo.st.muscle.names));
+muscleSet = model.getMuscles();
+for i = 1 : numel(allMuscles)
+    allMuscles{i} = muscleSet.get(i-1);
+end
+% initialize brain
+brain = org.opensim.modeling.PrescribedController.safeDownCast(model.updControllerSet.get(0));
+for muscleIndex = 0 : numel(allMuscles)-1
+    brain.prescribeControlForActuator(muscleIndex, org.opensim.modeling.Constant(0));
+end
+% initialize manager
+manager = org.opensim.modeling.Manager(model);
+manager.initialize(state);
 
-    % calculate ground reaction forces, including normal forces and
-    % friction forces, exerted by ground on each foot (calcn_r/l)
-    modelInfo = cal_grf(model, modelInfo, state, frameIndex); % [QUESTION: IS THIS UGLY AND INEFFICIENT???->May be integrated in a big Class later.]
+for t = modelInfo.st.simInfo.timeSeries % for every frame
 
-    % calculate gait phase based on the state of the model
+    % calculate ground reaction forces and gait phases
+    modelInfo = cal_grf(model, modelInfo, state, frameIndex);
     modelInfo = cal_gait_phase(model, modelInfo, state, frameIndex);
 
     % calculate muscle excitations based on muscle states and gait phases
-    modelInfo.muscleExcitations(:,frameIndex + modelInfo.muscleReflexDelay) = cal_muscle_excitation(modelInfo, state, frameIndex);
-    if frameIndex <= modelInfo.muscleReflexDelay % the muscle excitations in the first few frames = the frames right after the delay (10 frames if delay=10ms)
-        modelInfo.muscleExcitations(:,frameIndex) = modelInfo.muscleExcitations(:,modelInfo.muscleReflexDelay+1);
+    modelInfo.dy.muscle.exc(:,frameIndex + modelInfo.st.muscle.delay) = cal_muscle_excitation(modelInfo, frameIndex);
+    if frameIndex <= modelInfo.st.muscle.delay % the muscle excitations in the first few frames = the frames right after the delay
+        modelInfo.dy.muscle.exc(:,frameIndex) = modelInfo.dy.muscle.exc(:,modelInfo.st.muscle.delay+1);
     end
 
     % assign muscle excitations (control signals) through brain (controller) to muscles (actuators)
-    brain = model.updControllerSet.get(0);
-    brain = PrescribedController.safeDownCast(brain);
-    for muscleIndex = 0 : model.getMuscles.getSize - 1
-        brain.prescribeControlForActuator(muscleIndex, Constant(modelInfo.muscleExcitations(muscleIndex+1,frameIndex)));
+    for muscleIndex = 0 : numel(allMuscles)-1
+        brain.prescribeControlForActuator(muscleIndex, org.opensim.modeling.Constant(modelInfo.dy.muscle.exc(muscleIndex+1,frameIndex)));
     end
 
-    % forward simulation 这里的逻辑对吗？需要单独检查一下
-    manager = Manager(model);
-    manager.initialize(state);
-    finalState = manager.integrate(t); % 这里是从哪个初始状态（是否会因为model.initialize而清零），向前推进了多少时间？
-    finalState.setTime(t);
+    % forward simulation
+    state = manager.integrate(t);
+    state.setTime(t);
 
     % update & record
-    state = finalState;
     model.realizeDynamics(state);
-    % modelInfo.stateHistory(:,frameIndex) = vec_2_mat(state.getY);
-    frameIndex = frameIndex + 1;
-    if frameIndex <= width(modelInfo.timeSeries)
-        modelInfo = update_modelInfo(model, modelInfo, state, frameIndex);
+    if frameIndex < width(modelInfo.st.simInfo.timeSeries) % 每一帧都update modelInfo,计算开销太大
+        modelInfo = update_modelInfo(modelInfo, state, allMuscles, frameIndex);
     end
-
-    if model.getCoordinateSet.get('pelvis_ty').getValue(state) < 0.6
+ 
+    if modelInfo.dy.stateHistory(modelInfo.st.model.map('pelvis_ty/value'), frameIndex) < 0.6
         % disp(['Model fell down. Maximum distance reached: ' num2str(model.getCoordinateSet.get('pelvis_tx').getValue(state)) ' m.']);
         break;
     end
+    frameIndex = frameIndex+1;
 
 end
-modelInfo.lastTime = t;
+modelInfo.dy.lastTime = t;
 
 end

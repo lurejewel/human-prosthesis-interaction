@@ -9,10 +9,14 @@ heelLY = model.getForceSet.get('heelL_ground_contact_force').getRecordValues(sta
 toeRY  = model.getForceSet.get('toeR_ground_contact_force').getRecordValues(state).get(1);
 toeLY  = model.getForceSet.get('toeL_ground_contact_force').getRecordValues(state).get(1);
 
-modelInfo.grf.frictionR(frameIndex) = heelRX + toeRX;
-modelInfo.grf.frictionL(frameIndex) = heelLX + toeLX;
-modelInfo.grf.normalR(frameIndex) = heelRY + toeRY;
-modelInfo.grf.normalL(frameIndex) = heelLY + toeLY;
+modelInfo.dy.grf.fxr(frameIndex) = heelRX + toeRX;
+modelInfo.dy.grf.fxl(frameIndex) = heelLX + toeLX;
+modelInfo.dy.grf.fyr(frameIndex) = heelRY + toeRY;
+modelInfo.dy.grf.fyl(frameIndex) = heelLY + toeLY;
+% modelInfo.grf.frictionR(frameIndex) = heelRX + toeRX;
+% modelInfo.grf.frictionL(frameIndex) = heelLX + toeLX;
+% modelInfo.grf.normalR(frameIndex) = heelRY + toeRY;
+% modelInfo.grf.normalL(frameIndex) = heelLY + toeLY;
 
 end
 
