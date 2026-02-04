@@ -6,11 +6,9 @@
 *.SLDASM
 *.sto
 *.xml
+*.mat
 TOOL_*.m
 opensim.log
-bestfits_*.mat
-bestPara_*.mat
-computation*.mat
 assets/ResultsRRA/
 assets/ResultsSO/
 old/
