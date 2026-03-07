@@ -7,6 +7,7 @@
 *.sto
 *.xml
 *.mat
+*.json
 TOOL_*.m
 opensim.log
 assets/ResultsRRA/

@@ -4,17 +4,20 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
 %   solves in standardized space:
 %     min_beta 0.5*||yStd - XStd*beta||_2^2 + lambda1*sum_g ||beta_g||_2 + lambda2*||beta||_1
 %
-%   Required group structure is fixed as:
-%     group1: 1:7, group2: 8:14, group3: 15:17, group4: 18
+%   Group structure is inferred from p = size(X,2), where p = 2*#mus + 4:
+%     group1: 1:#mus
+%     group2: #mus+1:2*#mus
+%     group3: 2*#mus+1:2*#mus+3
+%     group4: 2*#mus+4
 %
 %   Inputs:
-%     X       - n x 18 predictor matrix
-%     y       - n x 1 response vector
+%     X       - n x p predictor matrix
+%     y       - n x 1 (or 1 x n) response vector
 %     lambda1 - group-l2 penalty weight
 %     lambda2 - l1 penalty weight
 %     opts    - optional struct with fields:
-%               maxIterOuter (default 200)
-%               maxIterInner (default 200)
+%               maxIterOuter (default 2000)
+%               maxIterInner (default 2000)
 %               tolOuter     (default 1e-6)
 %               tolInner     (default 1e-6)
 %               tol1D        (default 1e-10)
@@ -23,9 +26,9 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
 %               beta0Std     (default []) warm start in standardized scale
 %
 %   Outputs:
-%     betaOrig  - 18 x 1 coefficients on original scale
+%     betaOrig  - p x 1 coefficients on original scale
 %     intercept - scalar intercept on original scale
-%     betaStd   - 18 x 1 coefficients on standardized scale
+%     betaStd   - p x 1 coefficients on standardized scale
 %     stats     - struct with optimization traces and metadata
 
     if nargin < 5
@@ -33,17 +36,11 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
     end
     opts = apply_default_opts(opts);
 
-    validateattributes(X, {'double'}, {'2d', 'ncols', 18, 'nonempty'}, mfilename, 'X', 1);
-    validateattributes(y, {'double'}, {'column', 'nonempty'}, mfilename, 'y', 2);
-    validateattributes(lambda1, {'double'}, {'scalar', 'real', 'nonnegative'}, mfilename, 'lambda1', 3);
-    validateattributes(lambda2, {'double'}, {'scalar', 'real', 'nonnegative'}, mfilename, 'lambda2', 4);
+    y = y(:);
 
     n = size(X, 1);
-    if numel(y) ~= n
-        error('sgl_fit:DimensionMismatch', 'X and y row counts must match.');
-    end
-
-    groups = group_indices();
+    p = size(X, 2);
+    groups = group_indices(p);
 
     % ----- Preprocessing: center and scale X, center y -----
     muX = mean(X, 1);
@@ -248,12 +245,19 @@ function opts = apply_default_opts(opts)
     end
 end
 
-function groups = group_indices()
+function groups = group_indices(p)
+    nMus = (p - 4) / 2;
+    if nMus < 1 || abs(nMus - round(nMus)) > eps(max(1, nMus))
+        error('sgl_fit:InvalidPredictorCount', ...
+            'size(X,2) must satisfy p = 2*#mus + 4. Got p = %d.', p);
+    end
+    nMus = round(nMus);
+
     groups = {
-        1:7
-        8:14
-        15:17
-        18
+        1:nMus
+        (nMus + 1):(2 * nMus)
+        (2 * nMus + 1):(2 * nMus + 3)
+        (2 * nMus + 4)
     };
 end
 
