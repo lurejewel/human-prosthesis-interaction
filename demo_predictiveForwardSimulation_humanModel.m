@@ -22,8 +22,7 @@
 % 目前的问题：
 % 1. 增加独立的处理模块：导入\导出数据；显示trc数据；显示mot数据，etc.
 % 2. 反射参数换成Map映射的赋值形式
-% 3. 使用OpenSim API可能同样存在内存泄露的问题
-% 4. 目前是2D还是3D？如何改变地形（上下坡、上下台阶等）？
+% 3. 目前是2D还是3D？如何改变地形（上下坡、上下台阶等）？
 clear all; close all; clc
 addpath(genpath('assets\'), genpath('model\'), genpath('functions\'))
 % import org.opensim.modeling.*
@@ -97,7 +96,7 @@ while g <= optConfig.gMax && ( g<=100 || (g>100 && g-find(diff(bestFits(1:g))~=0
 
     fits_cell = cell(nWorkers,1); % initialize fit in cell
     % MIDDLE LOOP: for each PARALLEL worker (batch of particles)
-    parfor w = 1 : nWorkers
+    for w = 1 : nWorkers
         
         fits_local = nan(optConfig.nParticles(w),1);
         [model, modelInfo, state] = init_infra(projName, modelStaticProp);

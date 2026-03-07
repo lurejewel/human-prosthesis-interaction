@@ -56,17 +56,17 @@ classdef CMAES_optimization < Base_optimization
     end
 
     methods
-        function obj = CMAES_optimization(optParaInput, sigma, Nworkers)
+        function obj = CMAES_optimization(initPara, sigma, Nworkers)
             % Name: CMAES_optimization
             % Description: construction method.
 
             % read input parameters
-            obj.core.xmean = optParaInput; % parameters (treated as mean value of a vector of random variables) to be optimized
+            obj.core.xmean = initPara; % parameters (treated as mean value of a vector of random variables) to be optimized
             obj.core.sigma = sigma; % describes the step length of the optimizaiton
 
             % calculate hyper parameters
             % 1. selection of points
-            nPara = length(optParaInput);
+            nPara = length(initPara);
             lambda = 4 + floor(3*log(nPara)); % population size [=14 for 29 pars; =13 for 28 pars]
             mu = lambda / 2;
             weights = log(mu+1 / 2) - log(1:mu)'; % recombination weights, assigned from big to small
@@ -106,7 +106,7 @@ classdef CMAES_optimization < Base_optimization
 
             obj.optParaNum = nPara;
             obj.recordOfBig3 = struct('fit', {999,999,999},...  % 'para', {}, ...
-                'arx', {optParaInput, optParaInput, optParaInput}, ...
+                'arx', {zeros(nPara,1), zeros(nPara,1), zeros(nPara,1)}, ...
                 'arz', {zeros(nPara,1), zeros(nPara,1), zeros(nPara,1)});
             obj.recordForBestParticle = struct('fit', 999, 'arx', []);
 
