@@ -4,11 +4,10 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
 %   solves in standardized space:
 %     min_beta 0.5*||yStd - XStd*beta||_2^2 + lambda1*sum_g ||beta_g||_2 + lambda2*||beta||_1
 %
-%   Group structure is inferred from p = size(X,2), where p = 2*#mus + 4:
-%     group1: 1:#mus
-%     group2: #mus+1:2*#mus
-%     group3: 2*#mus+1:2*#mus+3
-%     group4: 2*#mus+4
+%   Group structure is inferred from p = size(X,2), where p = 3*#mus + 12:
+%     group1: 1:2*#mus
+%     group2: 2*#mus+1:3*#mus
+%     group3: 3*#mus+1:3*#mus+12
 %
 %   Inputs:
 %     X       - n x p predictor matrix
@@ -23,7 +22,7 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
 %               tol1D        (default 1e-10)
 %               maxIter1D    (default 50)
 %               verbose      (default true)
-%               beta0Std     (default []) warm start in standardized scale
+%               beta0Std     (default []) warm start in standardized space
 %
 %   Outputs:
 %     betaOrig  - p x 1 coefficients on original scale
@@ -208,13 +207,9 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
     fprintf('Overall nonzeros: %d / %d\n', nnz(betaStd), p);
     for g = 1:numel(groups)
         idx = groups{g};
-        fprintf('Group %d (cols %d:%d) nnz = %d / %d, all-zero = %d\n', ...
+        fprintf('Group %d (cols %d:%d) number of non zeros = %d / %d, all-zero = %d\n', ...
             g, idx(1), idx(end), nnzPerGroup(g), numel(idx), groupAllZero(g));
     end
-
-    fprintf('\nBeta (original scale):\n');
-    disp(betaOrig);
-    fprintf('Intercept: %.12g\n', intercept);
 
     if opts.verbose
         figure('Name', 'SGL Objective History', 'Color', 'w');
@@ -246,18 +241,17 @@ function opts = apply_default_opts(opts)
 end
 
 function groups = group_indices(p)
-    nMus = (p - 4) / 2;
+    nMus = (p - 12) / 3;
     if nMus < 1 || abs(nMus - round(nMus)) > eps(max(1, nMus))
         error('sgl_fit:InvalidPredictorCount', ...
-            'size(X,2) must satisfy p = 2*#mus + 4. Got p = %d.', p);
+            'size(X,2) must satisfy p = 3*#mus + 12. Got p = %d.', p);
     end
     nMus = round(nMus);
 
     groups = {
-        1:nMus
-        (nMus + 1):(2 * nMus)
-        (2 * nMus + 1):(2 * nMus + 3)
-        (2 * nMus + 4)
+        1:(2 * nMus)
+        (2 * nMus + 1):(3 * nMus)
+        (3 * nMus + 1):(3 * nMus + 12)
     };
 end
 

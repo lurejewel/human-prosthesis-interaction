@@ -1,4 +1,4 @@
-function [excitation, featureMatrix, featureMap] = extractStoMuscleFeatures(stoFilePath, muscleName)
+function [excitation, featureMatrix, featureMap, maskMatrix] = extractStoMuscleFeatures(stoFilePath, muscleName)
 % extractStoMuscleFeatures
 % Read a SCONE/OpenSim .sto file with OpenSim API and extract:
 % 1) T x 1 excitation of a target muscle
@@ -15,10 +15,9 @@ function [excitation, featureMatrix, featureMap] = extractStoMuscleFeatures(stoF
 %                  - all "_<side>.fiber_length_norm"
 %                  - all "_<side>.mtu_force_norm"
 %                  - side sagittal joint angles (hip/knee/ankle)
-%                  - pelvis_tilt
+%                  - side sagittal joint angular velocities with _u suffix (hip/knee/ankle)
+%                  - pelvis_tilt and pelvis_tilt_u
 %   featureMap   : containers.Map, featureMap(featureName) = column index in featureMatrix
-
-import org.opensim.modeling.*
 
 if ~(ischar(stoFilePath) || isstring(stoFilePath))
     error('stoFilePath must be a char or string path.');
@@ -34,7 +33,7 @@ if ~isfile(stoFilePath)
     error('STO file does not exist: %s', stoFilePath);
 end
 
-table = TimeSeriesTable(stoFilePath);
+table = org.opensim.modeling.TimeSeriesTable(stoFilePath);
 numRows = table.getNumRows();
 
 labels = stdVectorStringToCell(table.getColumnLabels());
@@ -63,9 +62,13 @@ end
 hipLabel = pickExistingLabel(labels, {['hip_flexion_', side], 'hip_flexion', 'hip_flexion_x'}, 'hip angle');
 kneeLabel = pickExistingLabel(labels, {['knee_angle_', side], 'knee_angle', 'knee_angle_x'}, 'knee angle');
 ankleLabel = pickExistingLabel(labels, {['ankle_angle_', side], 'ankle_angle', 'ankle_angle_x'}, 'ankle angle');
+hipULabel = pickExistingLabel(labels, {['hip_flexion_', side, '_u']}, 'hip angle velocity');
+kneeULabel = pickExistingLabel(labels, {['knee_angle_', side, '_u']}, 'knee angle velocity');
+ankleULabel = pickExistingLabel(labels, {['ankle_angle_', side, '_u']}, 'ankle angle velocity');
 pelvisLabel = pickExistingLabel(labels, {'pelvis_tilt'}, 'pelvis tilt');
+pelvisULabel = pickExistingLabel(labels, {'pelvis_tilt_u'}, 'pelvis tilt velocity');
 
-featureLabels = [fiberLabels, forceLabels, {hipLabel, kneeLabel, ankleLabel, pelvisLabel}];
+featureLabels = [fiberLabels, forceLabels, {pelvisLabel, pelvisULabel, hipLabel, hipULabel, kneeLabel, kneeULabel, ankleLabel, ankleULabel}];
 numFeatures = numel(featureLabels);
 
 featureMatrix = zeros(numRows, numFeatures);
@@ -75,10 +78,13 @@ end
 
 featureMap = containers.Map(featureLabels, num2cell(1:numFeatures));
 
+% Build mask matrix M
+maskMatrix = buildMask(numel(forceLabels));
+
 end
 
 function label = pickExistingLabel(allLabels, candidates, labelDesc)
-label = '';
+label = ''; %#ok<NASGU>
 for i = 1:numel(candidates)
     if any(strcmp(allLabels, candidates{i}))
         label = candidates{i};
