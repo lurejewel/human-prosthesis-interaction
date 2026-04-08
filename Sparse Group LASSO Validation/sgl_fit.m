@@ -4,14 +4,14 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
 %   solves in standardized space:
 %     min_beta 0.5*||yStd - XStd*beta||_2^2 + lambda1*sum_g ||beta_g||_2 + lambda2*||beta||_1
 %
-%   Group structure is inferred from p = size(X,2), where p = 3*#mus + 12:
-%     group1: 1:2*#mus
-%     group2: 2*#mus+1:3*#mus
-%     group3: 3*#mus+1:3*#mus+12
+%   Group structure is inferred from p = size(X,2), where p = 2*#mus + 8:
+%     group1: 1:#mus
+%     group2: #mus+1:2*#mus
+%     group3: 2*#mus+1:2*#mus+8
 %
 %   Inputs:
-%     X       - n x p predictor matrix
-%     y       - n x 1 (or 1 x n) response vector
+%     X       - T x p predictor matrix
+%     y       - T x 1 response vector (expected y = X * beta)
 %     lambda1 - group-l2 penalty weight
 %     lambda2 - l1 penalty weight
 %     opts    - optional struct with fields:
@@ -70,6 +70,7 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
     relChangeHist = nan(opts.maxIterOuter, 1);
     residualNormHist = nan(opts.maxIterOuter, 1);
     converged = false;
+    exitType = 'maxIterOuter';
     tiny = 1e-14;
 
     if opts.verbose
@@ -149,6 +150,13 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
 
         if relChange <= opts.tolOuter || objRel <= opts.tolOuter
             converged = true;
+            if relChange <= opts.tolOuter && objRel <= opts.tolOuter
+                exitType = 'tolOuter_relBeta_and_relObj';
+            elseif relChange <= opts.tolOuter
+                exitType = 'tolOuter_relBeta';
+            else
+                exitType = 'tolOuter_relObj';
+            end
             break;
         end
     end
@@ -198,11 +206,13 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
     stats.iters = iters;
     stats.lambda1 = lambda1;
     stats.lambda2 = lambda2;
+    stats.exitType = exitType;
 
     % ----- Required result display -----
     fprintf('\n===== SGL FIT SUMMARY =====\n');
     fprintf('Outer iterations: %d\n', iters);
     fprintf('Converged: %d\n', converged);
+    fprintf('Stop reason: %s\n', exitType);
     fprintf('Final objective: %.12g\n', objHist(end));
     fprintf('Overall nonzeros: %d / %d\n', nnz(betaStd), p);
     for g = 1:numel(groups)
@@ -220,6 +230,8 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
         grid on;
     end
 end
+
+%% functions
 
 function opts = apply_default_opts(opts)
     defaults = struct();
@@ -241,17 +253,17 @@ function opts = apply_default_opts(opts)
 end
 
 function groups = group_indices(p)
-    nMus = (p - 12) / 3;
+    nMus = (p - 8) / 2;
     if nMus < 1 || abs(nMus - round(nMus)) > eps(max(1, nMus))
         error('sgl_fit:InvalidPredictorCount', ...
-            'size(X,2) must satisfy p = 3*#mus + 12. Got p = %d.', p);
+            'size(X,2) must satisfy p = 2*#mus + 8. Got p = %d.', p);
     end
     nMus = round(nMus);
 
     groups = {
-        1:(2 * nMus)
-        (2 * nMus + 1):(3 * nMus)
-        (3 * nMus + 1):(3 * nMus + 12)
+        1:nMus
+        (nMus + 1):(2 * nMus)
+        (2 * nMus + 1):(2 * nMus + 8)
     };
 end
 

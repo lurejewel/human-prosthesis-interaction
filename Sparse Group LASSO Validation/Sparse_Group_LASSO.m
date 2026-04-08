@@ -1,6 +1,7 @@
 % Sparse Group LASSO runner script.
 % Problems:
-% - 目前的数据是全步态周期的数据。后续需要根据步态阶段，对数据进行切割和重新拼接
+% - soleus_r在swing阶段的优化效果极差，可能需要增加excitation<0.01时的不等式约束
+% - 所有的截距可能都不需要 -> 缩减mask matrix和beta的尺度
 %
 % TODO:
 % - maskMatrix需要根据肌肉特性，导入先验（重读经典论文，寻找先验依据）
@@ -14,7 +15,12 @@ close, clear, clc
 
 stoFilePath = 'UN.sto';
 muscleName = 'soleus_r';
-[yAll, XAll, XMap, M] = extractStoMuscleFeatures(stoFilePath, muscleName); % yAll: excitation of the muscle; XAll: feature matrix; XMap: feature map; M: mask matrix (composed of 0 and 1)
+[yAll, XAll, featureToIndexMap, M, phase] = extractStoMuscleFeatures(stoFilePath, muscleName); % yAll: excitation of the muscle; XAll: feature matrix; featureToIndexMap: feature->column map; M: mask matrix (composed of 0 and 1)
+% yAllStance = yAll(phase.stanceIdx, :);
+% yAllSwing = yAll(phase.swingIdx, :);
+% XAllStance = XAll(phase.stanceIdx, :);
+% XAllSwing = XAll(phase.swingIdx, :);
+% [y, X] = preprocessExcitationAndFeatures(yAllSwing, XAllSwing, 1, 0.01); % 1-step delay and remove excitation <= 0.01
 [y, X] = preprocessExcitationAndFeatures(yAll, XAll, 1, 0.01); % 1-step delay and remove excitation <= 0.01
 
 lambda1 = 0.5;
@@ -29,27 +35,40 @@ opts.tol1D = 1e-10;
 opts.maxIter1D = 50;
 opts.verbose = true;
 
-A = [X, ones(size(X,1),1)] * M; % feature matrix X (augmented), masked with the sparse matrix M
+A = X * M; % feature matrix X (augmented), masked with the sparse matrix M
 [beta, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2, opts);
 
-yPredAll = [XAll, ones(size(XAll,1),1)] * M * beta + intercept;
+% test
+% yPred = max(0.01, X * M * beta + intercept);
+% figure, plot(y), hold on, plot(yPred)
+% sqrt(mean((y - yPred).^2))
+% beta(:) = 0; beta(26) = 0.68247; beta(27) = -0.58974; beta(37) = 0.44245; intercept = 0.097071;
+% yPredAllSwing = XAllSwing * M * beta + intercept;
+% figure, plot(yAllSwing), hold on, plot(yPredAllSwing)
+% sqrt(mean((yAllSwing - yPredAllSwing).^2))
+
+
+yPredAll = XAll * M * beta + intercept;
 rmse = sqrt(mean((yAll - yPredAll).^2));
 
-fprintf('\Sparse Group LASSO algorithm run complete. Final objective = %.12g\n', stats.objHist(end));
+fprintf('Sparse Group LASSO algorithm run complete. Final objective = %.12g\n', stats.objHist(end));
 fprintf('RMSE: %.6g\n', rmse);
 % fprintf('Converged = %d, iterations = %d\n', stats.converged, stats.iters);
 
+%% results
+
 fprintf('\nNonzero muscle reflex controls:\n');
+indexToFeatureName = buildInverseFeatureMap(featureToIndexMap, size(X, 2));
 nzTol = 1e-5;
 nzIdx = find(abs(beta) > nzTol);
 if isempty(nzIdx)
-	fprintf('(none)\n');
+    fprintf('(none)\n');
 else
-	for k = 1:numel(nzIdx)
-		i = nzIdx(k);
-		[sourceName, param] = beta_index_to_fields(i, numel(beta), XMap, muscleName);
-		fprintf('%s from %s to %s: %.5g\n', param, sourceName, muscleName, beta(i));
-	end
+    for k = 1:numel(nzIdx)
+        i = nzIdx(k);
+        featureName = indexToFeatureName{i};
+        fprintf('%s -> %s: %.5g\n', featureName, muscleName, beta(i));
+    end
 end
 fprintf('prestimulation: %.5g\n', intercept);
 
@@ -60,64 +79,26 @@ xlabel('#timesteps'), ylabel('excitation')
 legend('SCONE muscle excitation', 'SGL fitting results')
 title('SGL fitting results, compared with SCONE muscle excitation')
 
-function key = reverseMap(mp, val)
-	ks = keys(mp);
-	vs = values(mp);
-	idx = find([vs{:}] == val, 1);
-	if isempty(idx)
-		error('reverseMap:KeyNotFound', 'Cannot find value %d in XMap.', val);
-	end
-	key = ks{idx};
-	dotPos = strfind(key, '.');
-	if ~isempty(dotPos)
-		key = key(1:dotPos(1)-1);
-	end
+%% functions
+function indexToFeatureName = buildInverseFeatureMap(featureToIndexMap, numFeatures)
+ks = keys(featureToIndexMap);
+vs = cell2mat(values(featureToIndexMap));
+
+if numel(ks) ~= numFeatures
+    error('buildInverseFeatureMap:CountMismatch', ...
+        'feature map size (%d) does not match numFeatures (%d).', numel(ks), numFeatures);
 end
 
-function [sourceName, param] = beta_index_to_fields(i, p, XMap, muscleName)
-	nMus = (p - 12) / 3;
-	if nMus < 1 || abs(nMus - round(nMus)) > eps(max(1, nMus))
-		error('beta_index_to_fields:InvalidLength', ...
-			'beta length must satisfy p = 3*#mus + 12. Got p = %d.', p);
-	end
-	nMus = round(nMus);
+if any(vs < 1) || any(vs > numFeatures) || any(abs(vs - round(vs)) > 0)
+    error('buildInverseFeatureMap:BadIndex', 'feature indices must be integers in [1, %d].', numFeatures);
+end
 
-	if i < 1 || i > p
-		error('beta_index_to_fields:IndexOutOfRange', 'Index %d out of range [1, %d].', i, p);
-	end
+if numel(unique(vs)) ~= numel(vs)
+    error('buildInverseFeatureMap:NonBijective', 'feature map is not one-to-one.');
+end
 
-	side = 'r';
-	if endsWith(muscleName, '_l')
-		side = 'l';
-	elseif endsWith(muscleName, '_r')
-		side = 'r';
-	end
-
-	if i <= 2 * nMus
-		n = ceil(i / 2);
-		sourceName = reverseMap(XMap, n);
-		if mod(i, 2) == 1
-			param = 'KL';
-		else
-			param = 'L0';
-		end
-	elseif i <= 3 * nMus
-		n = i - 2 * nMus;
-		sourceName = reverseMap(XMap, n);
-		param = 'KF';
-	else
-		n = i - 3 * nMus;
-		paramList = {'KP', 'P0', 'KV', 'KP', 'P0', 'KV', 'KP', 'P0', 'KV', 'KP', 'P0', 'KV'};
-		param = paramList{n};
-
-		if n <= 3
-			sourceName = 'pelvis_tilt';
-		elseif n <= 6
-			sourceName = ['hip_flexion_' side];
-		elseif n <= 9
-			sourceName = ['knee_angle_' side];
-		else
-			sourceName = ['ankle_angle_' side];
-		end
-	end
+indexToFeatureName = cell(numFeatures, 1);
+for t = 1:numel(ks)
+    indexToFeatureName{vs(t)} = ks{t};
+end
 end
