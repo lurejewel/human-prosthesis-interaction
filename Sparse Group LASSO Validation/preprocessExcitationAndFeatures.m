@@ -48,8 +48,8 @@ end
 excitationOut = excitationIn((delaySteps + 1):end);
 featureMatrixOut = featureMatrixIn(1:(end - delaySteps), :);
 
-% Remove near-zero excitation samples and keep rows aligned.
-keepMask = excitationOut > excitationThreshold;
-excitationOut = excitationOut(keepMask);
-featureMatrixOut = featureMatrixOut(keepMask, :);
+% % Remove near-zero excitation samples and keep rows aligned.
+% keepMask = excitationOut > excitationThreshold;
+% excitationOut = excitationOut(keepMask);
+% featureMatrixOut = featureMatrixOut(keepMask, :);
 end
