@@ -109,7 +109,7 @@ end
 optsCommon = struct();
 optsCommon.maxIter = 20000;
 optsCommon.tol = 1e-10;
-optsCommon.verbose = true;
+optsCommon.verbose = false;
 optsCommon.doWarmStart = false; % true;
 optsCommon.doCenter = false; % true;
 optsCommon.doScale = false; % true;
@@ -285,13 +285,12 @@ for m = 1:numTargets
 end
 
 %% ===== STEP 9: VISUALIZE FIT QUALITY =====
-figure('Name', 'Adaptive LASSO Fitting Results for Multiple Muscles', 'Color', 'w');
 for m = 1:numTargets
-    subplot(numTargets, 1, m);
+    figure('Name', sprintf('Adaptive LASSO Fitting Results: %s', muscleNames{m}), 'Color', 'w');
     plot(Y(:, m), 'LineWidth', 1.0); hold on;
     plot(YPred_adaptive(:, m), 'LineWidth', 1.0);
     plot(YPred_refit(:, m), 'LineWidth', 1.0);
-    xlim([0 size(Y, 1)]);
+    xlim([1 size(Y, 1)]);
     xlabel('#timesteps');
     ylabel('excitation');
     legend('SCONE muscle excitation', 'Adaptive LASSO', 'Post-selection OLS');
