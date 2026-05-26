@@ -366,7 +366,7 @@ if opts.verbose
     plot(generations, objHist, '-o', 'LineWidth', 1.25, 'MarkerSize', 4);
     xlabel('Generation');
     ylabel('Objective value');
-    title('Censored Sparse Group Lasso Objective History');
+    title(['Censored Sparse Group Lasso Objective History of ', opts.muscleName], 'Interpreter','none');
     grid on;
 end
 

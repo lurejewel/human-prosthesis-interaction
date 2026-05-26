@@ -1,4 +1,5 @@
-% Sparse Group LASSO runner script.
+% Sparse Group LASSO runner script, now deprecated. Run "Adaptive_LASSO.m"
+% instead.
 % ========================================================================
 % PURPOSE:
 %   Fit a lower-censored sparse-group-lasso model to predict muscle
@@ -14,19 +15,16 @@
 %   7. Visualize fit quality: predictions vs SCONE outputs
 % ========================================================================
 %
-% Problems:
-% - soleus_r在swing阶段的优化效果极差，可能需要增加excitation<0.01时的不等式约束
-% - 所有的截距可能都不需要 -> 缩减mask matrix和beta的尺度
-%
 % TODO:
 % - maskMatrix需要根据肌肉特性，导入先验（重读经典论文，寻找先验依据）
-% - 研究SGL代码，看是否需要针对性改造（权重？惩罚？）
+% - 研究SGL代码，看是否需要针对性改造（权重？惩罚？）√（改造后代码为Adaptive_LASSO.m）
 % - （soleus_r成功后）切分数据（stance-swing），对其他肌肉的控制律进行验证
 % - （所有肌肉成功后）进行正动力学验证
 % - （正动力学成功后）进行代理模型研究（对应Annuals Review of Biomedical Engineering中的大脑预测模型）
 % - （用于论文）lambda1 lambda2的灵敏度分析
 
-close all; clear; clc;
+% close all; 
+clear; clc;
 
 %% ===== STEP 1: DATA LOADING & PREPROCESSING =====
 % Load three muscle excitations and one shared biomechanical feature matrix.
@@ -107,31 +105,30 @@ for m = 1:numTargets
     warmStartBeta{m} = zeros(size(M, 2), 1);
 end
 
-这里需要修改：
-比目鱼肌的热启动换成SCONE中相同的；
-通过featureToIndexMap实现用feature name而非index number赋值。
-if size(M, 2) >= 25
-    % soleus_r
-    warmStartBeta{1}(17) = 0.68247;
-    warmStartBeta{1}(18) = -0.58974;
-    warmStartBeta{1}(25) = 0.44245;
-    warmStartB(1) = 0.097071;
+% 这里需要修改：
+% 通过文件实现warm start读取
+% 分步态阶段读取（站立相和摆动相不同）
+% soleus_r: 
+warmStartBeta{1}(featureToIndexMap('soleus_r.fiber_length_norm')) = 0.681;
+warmStartBeta{1}(featureToIndexMap('soleus_r.mtu_force_norm')) = 0.920;
+warmStartBeta{1}(featureToIndexMap('tib_ant_r.mtu_force_norm')) = -0.704;
+warmStartB(1) = -0.610;
 
-    % tib_ant_r (placeholder, to be tuned later)
-    warmStartBeta{2}(17) = 0.215;
-    warmStartBeta{2}(18) = -0.305;
-    warmStartBeta{2}(25) = 0.180;
-    warmStartB(2) = 0.052;
+% tib_ant_r
+warmStartBeta{2}(featureToIndexMap('tib_ant_r.fiber_length_norm')) = 0.685;
+warmStartBeta{2}(featureToIndexMap('tib_ant_r.mtu_force_norm')) = 0.657;
+warmStartBeta{2}(featureToIndexMap('soleus_r.fiber_length_norm')) = -0.050;
+warmStartBeta{2}(featureToIndexMap('soleus_r.mtu_force_norm')) = -0.986;
+warmStartBeta{2}(featureToIndexMap('gastroc_r.fiber_length_norm')) = -0.029;
+warmStartBeta{2}(featureToIndexMap('gastroc_r.mtu_force_norm')) = -0.771;
+warmStartB(2) = -0.314;
 
-    % gastroc_r (placeholder, to be tuned later)
-    warmStartBeta{3}(17) = 0.335;
-    warmStartBeta{3}(18) = -0.225;
-    warmStartBeta{3}(25) = 0.275;
-    warmStartB(3) = 0.081;
-else
-    warning('Sparse_Group_LASSO:WarmStartIgnored', ...
-        'Warm start templates need >=25 coefficients, got %d. Using zeros for all muscles.', size(M, 2));
-end
+% gastroc_r
+warmStartBeta{3}(featureToIndexMap('gastroc_r.fiber_length_norm')) = 0.452;
+warmStartBeta{3}(featureToIndexMap('gastroc_r.mtu_force_norm')) = 0.686;
+warmStartBeta{3}(featureToIndexMap('tib_ant_r.mtu_force_norm')) = -0.819;
+warmStartB(3) = -0.308;
+
 
 %% ===== STEP 4: BUILD FEATURE MATRIX & RUN OPTIMIZATION =====
 % Build one shared A = X * M and solve each muscle independently.
@@ -147,6 +144,7 @@ RMSE = zeros(numTargets, 1);
 
 for m = 1:numTargets
     optsM = optsCommon;
+    optsM.muscleName = muscleNames{m};
     optsM.c = cVec(m);
     optsM.rho = rhoVec(m);
     if optsCommon.doWarmStart
