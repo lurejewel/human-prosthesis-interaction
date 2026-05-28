@@ -1,4 +1,9 @@
-% Adaptive LASSO runner script.
+% Adaptive LASSO runner script for phase-dependent controlled muscles.
+% 
+% P.S. While the stance-swing split may work well for normal walking,
+% dividing the gait cycle into additional phases (thus introducing more
+% segmented controllers) may provide a better fit. Properly defining and
+% segmenting gait phases is therefore an important reserach consideration.
 % ========================================================================
 % PURPOSE:
 %   Fit a lower-censored adaptive LASSO model to predict muscle excitation
@@ -49,7 +54,7 @@ gamma = 1;
 epsilon_ols = 1e-8;
 nzTol = 1e-5;
 lambda1 = 0;
-lambda2 = 2;
+lambda2 = 1; % 需要检查：目前的lambda2取值是不是太大了？目前辨识出的系数怎样？如何避免全零的adaptive lasso结果（bifemsh, rect_fem, glut_max）？
 c = 0.01;
 rho = 50;
 delaySteps = 1;
@@ -224,7 +229,7 @@ for m = 1:numTargets
                 coeffs = pinv(augA) * y_U;
             else
                 coeffs = augA \ y_U;
-            end
+            end     
 
             beta_OLS.(phaseName)(:, m) = coeffs(1:p);
             b_OLS.(phaseName)(m) = coeffs(end);

@@ -1,4 +1,15 @@
-% Adaptive LASSO runner script.
+% Adaptive LASSO runner script for unified-controlled muscles.
+% 
+% Note that this script is intended only for comparison with simulation
+% results generated in SCONE using the H0918RS2v3 controller. For
+% experimental validation, please use the `Adaptive_LASSO_StanceSwing.m`
+% script instead, since, in practice, muscles are not ideally
+% unified-controlled in real time.
+% 
+% P.S. While the stance-swing split may work well for normal walking,
+% dividing the gait cycle into additional phases (thus introducing more
+% segmented controllers) may provide a better fit. Properly defining and
+% segmenting gait phases is therefore an important reserach consideration.
 % ========================================================================
 % PURPOSE:
 %   Fit a lower-censored adaptive LASSO model to predict muscle excitation
@@ -19,7 +30,6 @@
 %   Journal of the American Statistical Association, 101(476), 1418-1429.
 % 
 % TODO:
-% - 按照支撑相和摆动相切分数据，对其他几个肌肉的控制律进行验证
 % - 所有肌肉成功后的行走正动力学验证
 % - 基于多人行走实测数据的肌肉控制律预测和分析
 % - 其他具备现有控制律的动作（跑步？）的验证
@@ -28,6 +38,7 @@
 % 
 % IMPORTANT:
 % - maskMatrix需要根据肌肉特性赋值（重读经典论文，导入先验证据）；是否还需要sparse group？
+% - 是否需要为不同动作/相位设置不同的lambda、c、rho？
 % - (正动力学完成后）代理模型研究：对应Annuals Review of Biomedical Engineering中的大脑预测模型）
 % - gamma & lambda的二维网格搜索
 % - 消融实验：pure lasso vs adaptive lasso vs adaptive lasso with priori vs
@@ -47,14 +58,14 @@ numTargets = numel(muscleNames);
 gamma = 1;
 epsilon_ols = 1e-8;
 nzTol = 1e-5;
-lambda1Vec = [0, 0, 0];
-lambda2Vec = [2, 2, 2];
-cVec = [0.01, 0.01, 0.01];
-rhoVec = [50, 50, 50];
+lambda1 = 0;
+lambda2 = 1;
+c = 0.01;
+rho = 50;
 delaySteps = 1;
 excitationThreshold = 0.01;
 
-assert(all(lambda1Vec == 0), ...
+assert(lambda1 == 0, ...
     'Adaptive LASSO column-scaling only adapts L1 penalty. lambda1 must be 0.');
 
 % Extract base muscle to initialize shared X and M.
@@ -143,7 +154,7 @@ for m = 1:numTargets
     fprintf('\n===== Fitting target muscle: %s (%d/%d) =====\n', muscleNames{m}, m, numTargets);
 
     % --- STEP 3: INITIAL OLS ESTIMATE ---
-    c_m = cVec(m);
+    c_m = c;
     tolC = optsCommon.tolCensor;
     Uidx = find(Y(:, m) > c_m + tolC);
     nU = numel(Uidx);
@@ -188,8 +199,8 @@ for m = 1:numTargets
 
     optsM = optsCommon;
     optsM.muscleName = muscleNames{m};
-    optsM.c = cVec(m);
-    optsM.rho = rhoVec(m);
+    optsM.c = c;
+    optsM.rho = rho;
     optsM.beta0 = zeros(p, 1);
     optsM.b0 = 0;
     optsM.doWarmStart = true;
@@ -199,12 +210,12 @@ for m = 1:numTargets
     % optsM.b0 = b_OLS(m);
 
     [betaOrig_star, intercept_star, ~, stats_ada{m}] = ...
-        sgl_fit(A_star, Y(:, m), lambda1Vec(m), lambda2Vec(m), optsM);
+        sgl_fit(A_star, Y(:, m), lambda1, lambda2, optsM);
 
     Beta_adaptive(:, m) = betaOrig_star ./ w;
     Intercept_adaptive(m) = intercept_star;
 
-    YPred_adaptive(:, m) = max(A * Beta_adaptive(:, m) + Intercept_adaptive(m), cVec(m));
+    YPred_adaptive(:, m) = max(A * Beta_adaptive(:, m) + Intercept_adaptive(m), c_m);
     RMSE_adaptive(m) = sqrt(mean((Y(:, m) - YPred_adaptive(:, m)).^2));
 
     S{m} = find(abs(Beta_adaptive(:, m)) > nzTol);
@@ -216,7 +227,7 @@ for m = 1:numTargets
             muscleNames{m});
         Beta_refit(:, m) = zeros(p, 1);
         Intercept_refit(m) = 0;
-        YPred_refit(:, m) = cVec(m) * ones(nSamples, 1);
+        YPred_refit(:, m) = c_m * ones(nSamples, 1);
         RMSE_refit(m) = sqrt(mean((Y(:, m) - YPred_refit(:, m)).^2));
         stats_refit{m} = struct('exitType', 'skipped_empty_support');
         continue;
@@ -228,8 +239,8 @@ for m = 1:numTargets
 
     optsRefit = optsCommon;
     optsRefit.muscleName = [muscleNames{m}, '_refit'];
-    optsRefit.c = cVec(m);
-    optsRefit.rho = rhoVec(m);
+    optsRefit.c = c;
+    optsRefit.rho = rho;
     optsRefit.doWarmStart = true;
     optsRefit.beta0 = Beta_adaptive(:, m);
     optsRefit.b0 = Intercept_adaptive(m);
@@ -237,7 +248,7 @@ for m = 1:numTargets
     [Beta_refit(:, m), Intercept_refit(m), ~, stats_refit{m}] = ...
         sgl_fit(A_refit, Y(:, m), 0, 0, optsRefit);
 
-    YPred_refit(:, m) = max(A * Beta_refit(:, m) + Intercept_refit(m), cVec(m));
+    YPred_refit(:, m) = max(A * Beta_refit(:, m) + Intercept_refit(m), c_m);
     RMSE_refit(m) = sqrt(mean((Y(:, m) - YPred_refit(:, m)).^2));
 end
 
@@ -287,7 +298,7 @@ end
 %% ===== STEP 9: VISUALIZE FIT QUALITY =====
 for m = 1:numTargets
     figure('Name', sprintf('Adaptive LASSO Fitting Results: %s', muscleNames{m}), 'Color', 'w');
-    plot(Y(:, m), 'LineWidth', 1.0); hold on;
+    plot(Y(:, m), 'LineWidth', 1.5); hold on;
     plot(YPred_adaptive(:, m), 'LineWidth', 1.0);
     plot(YPred_refit(:, m), 'LineWidth', 1.0);
     xlim([1 size(Y, 1)]);
