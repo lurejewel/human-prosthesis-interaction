@@ -48,6 +48,21 @@
 
 close all; clear; clc;
 
+scriptFullPath = mfilename('fullpath');
+if isempty(scriptFullPath)
+    logFilePath = fullfile(pwd, 'Adaptive_LASSO_AllPhase.log');
+else
+    [scriptDir, scriptBase] = fileparts(scriptFullPath);
+    logFilePath = fullfile(scriptDir, [scriptBase, '.log']);
+end
+if exist(logFilePath, 'file')
+    delete(logFilePath);
+end
+diary(logFilePath);
+diary on;
+logCleanup = onCleanup(@() diary('off'));
+fprintf('Logging to %s\n', logFilePath);
+
 %% ===== STEP 1: DATA LOADING & PREPROCESSING =====
 % Load three muscle excitations and one shared biomechanical feature matrix.
 stoFilePath = 'UN.sto';
@@ -59,7 +74,12 @@ gamma = 1;
 epsilon_ols = 1e-8;
 nzTol = 1e-5;
 lambda1 = 0;
-lambda2 = 1;
+lambdaPathConfig = struct();
+lambdaPathConfig.nLambda = 60;
+lambdaPathConfig.lambdaMinRatio = 1e-4;
+lambdaPathConfig.alphaGrid = logspace(0, log10(lambdaPathConfig.lambdaMinRatio), lambdaPathConfig.nLambda).';
+lambdaPathConfig.tolSelect = 0.05;
+lambdaPathConfig.selectionMetric = 'post_refit_train_censored_rmse';
 c = 0.01;
 rho = 50;
 delaySteps = 1;
@@ -67,6 +87,10 @@ excitationThreshold = 0.01;
 
 assert(lambda1 == 0, ...
     'Adaptive LASSO column-scaling only adapts L1 penalty. lambda1 must be 0.');
+
+fprintf('Lambda path config: nLambda=%d, alpha from %.3g to %.3g, tolSelect=%.3g, metric=%s\n', ...
+    lambdaPathConfig.nLambda, lambdaPathConfig.alphaGrid(1), lambdaPathConfig.alphaGrid(end), ...
+    lambdaPathConfig.tolSelect, lambdaPathConfig.selectionMetric);
 
 % Extract base muscle to initialize shared X and M.
 [yAllBase, XAll, featureToIndexMap, M, phase] = extractStoMuscleFeatures(stoFilePath, muscleNames{1});
@@ -146,6 +170,7 @@ YPred_adaptive = zeros(nSamples, numTargets);
 RMSE_adaptive = zeros(numTargets, 1);
 stats_ada = cell(numTargets, 1);
 S = cell(numTargets, 1);
+LambdaPath = cell(numTargets, 1);
 
 Beta_refit = zeros(p, numTargets);
 Intercept_refit = zeros(numTargets, 1);
@@ -160,7 +185,11 @@ for m = 1:numTargets
     % --- STEP 3: INITIAL OLS ESTIMATE ---
     c_m = c;
     tolC = optsCommon.tolCensor;
-    Uidx = find(Y(:, m) > c_m + tolC);
+    Y_phase = Y(:, m);
+    A_phase = A;
+    A_phase_orig = A_orig;
+
+    Uidx = find(Y_phase > c_m + tolC);
     nU = numel(Uidx);
 
     if nU == 0
@@ -170,7 +199,7 @@ for m = 1:numTargets
         b_OLS_std = c_m;
     else
         A_U = A(Uidx, :);
-        y_U = Y(Uidx, m);
+        y_U = Y_phase(Uidx);
         augA = [A_U, ones(nU, 1)];
 
         if rank(augA) < min(size(augA))
@@ -202,54 +231,166 @@ for m = 1:numTargets
     end
     W(:, m) = w;
 
-    % --- STEP 5: ADAPTIVE LASSO VIA sgl_fit ---
+    % --- STEP 5: ADAPTIVE LASSO VIA sgl_fit (LAMBDA PATH) ---
     % Column-scale A to absorb adaptive weights into standard L1.
-    A_star = A .* (1 ./ w)';
+    A_star = A_phase .* (1 ./ w)';
+    [lambda2Max, b0AtZero, lambdaMaxInfo] = ...
+        compute_lambda2_max_censored(A_star, Y_phase, c_m, rho, tolC);
 
-    optsM = optsCommon;
-    optsM.muscleName = muscleNames{m};
-    optsM.c = c;
-    optsM.rho = rho;
-    optsM.beta0 = zeros(p, 1);
-    optsM.b0 = 0;
-    optsM.doWarmStart = true;
-
-    % Optional warm start from OLS (in A* space):
-    % optsM.beta0 = beta_OLS_std .* w;
-    % optsM.b0 = b_OLS_std;
-
-    [beta_star_std, intercept_std, ~, stats_ada{m}] = ...
-        sgl_fit(A_star, Y(:, m), lambda1, lambda2, optsM);
-
-    betaAdaStd = beta_star_std ./ w;
-    interceptAdaStd = intercept_std;
-    S{m} = find(abs(betaAdaStd) > nzTol);
-
-    % --- STEP 6: POST-SELECTION OLS VIA sgl_fit ---
-    if isempty(S{m})
-        warning('Adaptive_LASSO:EmptySupport', ...
-            'Support set for %s is empty. Skipping post-selection OLS.', ...
-            muscleNames{m});
-        betaRefitStd = zeros(p, 1);
-        interceptRefitStd = 0;
-        stats_refit{m} = struct('exitType', 'skipped_empty_support');
+    if lambda2Max > 0
+        alphaGridThis = lambdaPathConfig.alphaGrid;
+        lambdaGridThis = lambda2Max * alphaGridThis;
     else
-        A_refit = A;
-        nonS = setdiff(1:p, S{m});
-        A_refit(:, nonS) = 0;
-
-        optsRefit = optsCommon;
-        optsRefit.muscleName = [muscleNames{m}, '_refit'];
-        optsRefit.c = c;
-        optsRefit.rho = rho;
-        optsRefit.doWarmStart = true;
-        optsRefit.beta0 = betaAdaStd;
-        optsRefit.b0 = interceptAdaStd;
-
-        [betaRefitStd, interceptRefitStd, ~, stats_refit{m}] = ...
-            sgl_fit(A_refit, Y(:, m), 0, 0, optsRefit);
-        betaRefitStd(nonS) = 0;
+        alphaGridThis = 1;
+        lambdaGridThis = 0;
     end
+
+    nPath = numel(lambdaGridThis);
+    betaStarStdPath = zeros(p, nPath);
+    betaAdaStdPath = zeros(p, nPath);
+    interceptAdaStdPath = zeros(1, nPath);
+    betaRefitStdPath = zeros(p, nPath);
+    interceptRefitStdPath = zeros(1, nPath);
+    trainErrorAdaptive = nan(nPath, 1);
+    trainErrorRefit = nan(nPath, 1);
+    supportSize = zeros(nPath, 1);
+    supportPath = cell(nPath, 1);
+    statsAdaPath = cell(nPath, 1);
+    statsRefitPath = cell(nPath, 1);
+
+    prevBetaStarStd = zeros(p, 1);
+    prevInterceptStd = b0AtZero;
+
+    for kk = 1:nPath
+        lambda2_k = lambdaGridThis(kk);
+        if lambda2Max <= 0
+            betaStarStdK = zeros(p, 1);
+            interceptAdaStdK = b0AtZero;
+            statsAdaK = struct('exitType', 'degenerate_lambda2max_zero', ...
+                'lambda1', lambda1, 'lambda2', lambda2_k, 'converged', true, 'iters', 0);
+        else
+            optsM = optsCommon;
+            optsM.muscleName = [muscleNames{m}, '_path_', num2str(kk)];
+            optsM.c = c_m;
+            optsM.rho = rho;
+            optsM.beta0 = prevBetaStarStd;
+            optsM.b0 = prevInterceptStd;
+            optsM.doWarmStart = true;
+
+            [betaStarStdK, interceptAdaStdK, ~, statsAdaK] = ...
+                sgl_fit(A_star, Y_phase, lambda1, lambda2_k, optsM);
+        end
+
+        betaAdaStdK = betaStarStdK ./ w;
+        S_k = find(abs(betaAdaStdK) > nzTol);
+
+        if isempty(S_k)
+            betaRefitStdK = zeros(p, 1);
+            interceptRefitStdK = b0AtZero;
+            statsRefitK = struct('exitType', 'intercept_only_empty_support', ...
+                'lambda1', 0, 'lambda2', 0, 'converged', true, 'iters', 0);
+        else
+            A_refit = A_phase;
+            nonS = setdiff(1:p, S_k);
+            A_refit(:, nonS) = 0;
+
+            beta0Refit = betaAdaStdK;
+            beta0Refit(nonS) = 0;
+
+            optsRefit = optsCommon;
+            optsRefit.muscleName = [muscleNames{m}, '_refit_path_', num2str(kk)];
+            optsRefit.c = c_m;
+            optsRefit.rho = rho;
+            optsRefit.doWarmStart = true;
+            optsRefit.beta0 = beta0Refit;
+            optsRefit.b0 = interceptAdaStdK;
+
+            [betaRefitStdK, interceptRefitStdK, ~, statsRefitK] = ...
+                sgl_fit(A_refit, Y_phase, 0, 0, optsRefit);
+            betaRefitStdK(nonS) = 0;
+        end
+
+        yPredAdaK = max(A_phase * betaAdaStdK + interceptAdaStdK, c_m);
+        trainErrorAdaptive(kk) = sqrt(mean((Y_phase - yPredAdaK).^2));
+
+        yPredRefitK = max(A_phase * betaRefitStdK + interceptRefitStdK, c_m);
+        trainErrorRefit(kk) = sqrt(mean((Y_phase - yPredRefitK).^2));
+
+        betaStarStdPath(:, kk) = betaStarStdK;
+        betaAdaStdPath(:, kk) = betaAdaStdK;
+        interceptAdaStdPath(kk) = interceptAdaStdK;
+        betaRefitStdPath(:, kk) = betaRefitStdK;
+        interceptRefitStdPath(kk) = interceptRefitStdK;
+        supportPath{kk} = S_k;
+        supportSize(kk) = numel(S_k);
+        statsAdaPath{kk} = statsAdaK;
+        statsRefitPath{kk} = statsRefitK;
+
+        prevBetaStarStd = betaStarStdK;
+        prevInterceptStd = interceptAdaStdK;
+    end
+
+    validErr = isfinite(trainErrorRefit);
+    if ~any(validErr)
+        error('Adaptive_LASSO:NoValidPathRMSE', ...
+            'No finite refit errors for %s.', muscleNames{m});
+    end
+
+    [minErr, localMinPos] = min(trainErrorRefit(validErr));
+    validIdx = find(validErr);
+    minIdx = validIdx(localMinPos);
+    thresholdErr = (1 + lambdaPathConfig.tolSelect) * minErr;
+
+    feasibleIdx = find(validErr & trainErrorRefit <= thresholdErr + 10 * eps(max(1, thresholdErr)));
+    if isempty(feasibleIdx)
+        selectedIdx = minIdx;
+    else
+        selectedIdx = feasibleIdx(1);
+    end
+
+    beta_star_std = betaStarStdPath(:, selectedIdx);
+    interceptAdaStd = interceptAdaStdPath(selectedIdx);
+    betaAdaStd = betaAdaStdPath(:, selectedIdx);
+    betaRefitStd = betaRefitStdPath(:, selectedIdx);
+    interceptRefitStd = interceptRefitStdPath(selectedIdx);
+    S{m} = supportPath{selectedIdx};
+    stats_ada{m} = statsAdaPath{selectedIdx};
+    stats_refit{m} = statsRefitPath{selectedIdx};
+
+    pathInfo = struct();
+    pathInfo.alphaGrid = alphaGridThis;
+    pathInfo.lambdaGrid = lambdaGridThis;
+    pathInfo.lambda2Max = lambda2Max;
+    pathInfo.b0AtZero = b0AtZero;
+    pathInfo.lambdaMaxInfo = lambdaMaxInfo;
+    pathInfo.trainErrorAdaptive = trainErrorAdaptive;
+    pathInfo.trainErrorRefit = trainErrorRefit;
+    pathInfo.supportSize = supportSize;
+    pathInfo.supportPath = supportPath;
+    pathInfo.selectedIdx = selectedIdx;
+    pathInfo.selectedAlpha = alphaGridThis(selectedIdx);
+    pathInfo.selectedLambda2 = lambdaGridThis(selectedIdx);
+    pathInfo.selectedSupport = supportPath{selectedIdx};
+    pathInfo.selectionMetric = lambdaPathConfig.selectionMetric;
+    pathInfo.tolSelect = lambdaPathConfig.tolSelect;
+    pathInfo.minTrainErrorRefit = minErr;
+    pathInfo.thresholdTrainErrorRefit = thresholdErr;
+    pathInfo.selectedTrainErrorRefit = trainErrorRefit(selectedIdx);
+    pathInfo.selectedTrainErrorAdaptive = trainErrorAdaptive(selectedIdx);
+    pathInfo.betaStarStdPath = betaStarStdPath;
+    pathInfo.betaAdaStdPath = betaAdaStdPath;
+    pathInfo.interceptAdaStdPath = interceptAdaStdPath;
+    pathInfo.betaRefitStdPath = betaRefitStdPath;
+    pathInfo.interceptRefitStdPath = interceptRefitStdPath;
+    pathInfo.statsAdaPath = statsAdaPath;
+    pathInfo.statsRefitPath = statsRefitPath;
+
+    LambdaPath{m} = pathInfo;
+
+    fprintf(['[%s] lambda2Max=%.6g | selectedIdx=%d/%d | selectedAlpha=%.6g | ' ...
+        'selectedLambda2=%.6g | minRefitRMSE=%.6g | selectedRefitRMSE=%.6g | selectedSupportSize=%d\n'], ...
+        muscleNames{m}, lambda2Max, selectedIdx, nPath, alphaGridThis(selectedIdx), ...
+        lambdaGridThis(selectedIdx), minErr, trainErrorRefit(selectedIdx), numel(supportPath{selectedIdx}));
 
     betaAdaOrig = betaAdaStd ./ sA.';
     interceptAdaOrig = interceptAdaStd - muA * betaAdaOrig;
@@ -261,23 +402,25 @@ for m = 1:numTargets
     Beta_refit(:, m) = betaRefitOrig;
     Intercept_refit(m) = interceptRefitOrig;
 
-    YPred_adaptive(:, m) = max(A_orig * betaAdaOrig + interceptAdaOrig, c_m);
-    RMSE_adaptive(m) = sqrt(mean((Y(:, m) - YPred_adaptive(:, m)).^2));
+    YPred_adaptive(:, m) = max(A_phase_orig * betaAdaOrig + interceptAdaOrig, c_m);
+    RMSE_adaptive(m) = sqrt(mean((Y_phase - YPred_adaptive(:, m)).^2));
 
-    YPred_refit(:, m) = max(A_orig * betaRefitOrig + interceptRefitOrig, c_m);
-    RMSE_refit(m) = sqrt(mean((Y(:, m) - YPred_refit(:, m)).^2));
+    YPred_refit(:, m) = max(A_phase_orig * betaRefitOrig + interceptRefitOrig, c_m);
+    RMSE_refit(m) = sqrt(mean((Y_phase - YPred_refit(:, m)).^2));
 end
 
 %% ===== STEP 7: SUMMARY METRICS =====
 fprintf('\n===== MULTI-MUSCLE ADAPTIVE LASSO SUMMARY =====\n');
 for m = 1:numTargets
+    pathInfo = LambdaPath{m};
     fprintf(['[%s] OLS_nnz=%d | Ada_nnz=%d | Refit_nnz=%d | ' ...
-        'RMSE_ada=%.4g | RMSE_refit=%.4g | exit=%s\n'], ...
+        'RMSE_ada=%.4g | RMSE_refit=%.4g | exit=%s | lambda2Max=%.4g | lambda2Sel=%.4g\n'], ...
         muscleNames{m}, ...
         nnz(abs(beta_OLS(:, m)) > nzTol), ...
         nnz(abs(Beta_adaptive(:, m)) > nzTol), ...
         nnz(abs(Beta_refit(:, m)) > nzTol), ...
-        RMSE_adaptive(m), RMSE_refit(m), stats_ada{m}.exitType);
+        RMSE_adaptive(m), RMSE_refit(m), stats_ada{m}.exitType, ...
+        pathInfo.lambda2Max, pathInfo.selectedLambda2);
 end
 
 %% ===== STEP 8: ANALYZE SPARSE SOLUTION =====
@@ -321,8 +464,10 @@ for m = 1:numTargets
     xlabel('#timesteps');
     ylabel('excitation');
     legend('SCONE muscle excitation', 'Adaptive LASSO', 'Post-selection OLS');
-    title(sprintf('%s: Adaptive LASSO (RMSE=%.4g) vs Refit (RMSE=%.4g)', ...
-        muscleNames{m}, RMSE_adaptive(m), RMSE_refit(m)), 'Interpreter','none');
+    lambda2Sel = LambdaPath{m}.selectedLambda2;
+    title(sprintf(['%s: Adaptive LASSO (RMSE=%.4g) vs Refit (RMSE=%.4g)\n', ...
+        'lambda2 selected=%.4g'], ...
+        muscleNames{m}, RMSE_adaptive(m), RMSE_refit(m), lambda2Sel), 'Interpreter','none');
     grid on;
 end
 
@@ -347,6 +492,8 @@ results.Intercept_refit = Intercept_refit;
 results.YPred_refit = YPred_refit;
 results.RMSE_refit = RMSE_refit;
 results.stats_refit = stats_refit;
+results.lambdaPathConfig = lambdaPathConfig;
+results.LambdaPath = LambdaPath;
 
 %% functions
 function indexToFeatureName = buildInverseFeatureMap(featureToIndexMap, numFeatures)
