@@ -11,15 +11,11 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2,
 %
 %   IMPORTANT NOTES:
 %   - y is NOT centered; threshold c is on ORIGINAL y scale and NEVER transformed.
-%   - A is optionally centered (feature means ubstracted) then scaled
-%   (solumn L2-norm or std).
+%   - A is used as provided. If you want centering/scaling, do it before calling.
 %   - c is a censoring floor on original scale: y_i = max(z_i, c) where z_i = A_i*beta_orig + b_orig
-%       A*betaOrig + interc = AStd*betaStd + stats.bStd   (invariant to all
-%       centering/scaling)
-%   - Warm starts opts.beta0, opts.b0 are in ORIGINAL space; auto-converted
-%   to internal space.
-%   - Outputs betaOrig, intercept are in ORIGINAL space to match input A
-%   and y scales.
+%   - Warm starts opts.beta0, opts.b0 are in the same feature scale as A.
+%   - Outputs betaOrig, intercept are in the same feature scale as A.
+%   - betaStd equals betaOrig when no external standardization is applied.
 % 
 %   Group structure is inferred from p = size(A,2), where p = 2*#mus + 8:
 %     group1: 1:#mus
@@ -37,20 +33,16 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2,
 %               maxIter       (default 2000)
 %               tol           (default 1e-6)
 %               verbose       (default true)
-%               doCenter      (default true)
-%               doScale       (default true)
-%               scaleType     (default 'l2'; choices: 'l2', 'std')
 %               backtrackBeta (default 0.5)
 %               L0            (default 1.0)
 %               beta0         (default []) warm start in ORIGINAL space
 %               b0            (default 0) warm start intercept in ORIGINAL space
-%               beta0Std      (optional legacy warm start in standardized space)
 %               tolCensor     (default 1e-12)
 %
 %   Outputs:
 %     betaOrig  - p x 1 coefficients on original A scale
 %     intercept - optimized intercept bOrig on original y scale
-%     betaStd   - p x 1 coefficients in centered+scaled feature space
+%     betaStd   - p x 1 coefficients in internal optimization space
 %     stats     - optimization traces and metadata
 
 if nargin < 5
@@ -74,31 +66,9 @@ end
 if opts.L0 <= 0
     error('sgl_fit:BadL0', 'opts.L0 must be positive.');
 end
-if ~(isscalar(opts.doCenter) && (islogical(opts.doCenter) || isnumeric(opts.doCenter)))
-    error('sgl_fit:BadDoCenter', 'opts.doCenter must be a logical scalar.');
-end
-opts.doCenter = logical(opts.doCenter);
-
-%% ========== CENTERING + SCALING TRANSFORMATION ==========
-% Sequentially: (1) Center features if opts.doCenter, (2) Scale if opts.doScale.
-% Both are applied to original A; scaling uses the centered matrix, not raw A.
-% Result: AStd is the preprocessed design matrix used for optimization.
-
-if opts.doCenter
-    muA = mean(A, 1).';
-    ACenter = A - ones(n, 1) * muA.';   % subtract feature-wise means
-else
-    muA = zeros(p, 1);                 % no centering
-    ACenter = A;
-end
-
-if opts.doScale
-    sA = compute_column_scales(ACenter, opts.scaleType);  % p x 1 scale factors (from centered data)
-    AStd = ACenter ./ sA.';             % divide each column by its scale
-else
-    sA = ones(p, 1);                   % no scaling
-    AStd = ACenter;
-end
+%% ========== FEATURE PREPROCESSING ==========
+% No internal centering/scaling. Use A as provided.
+AStd = A;
 
 c = opts.c;
 rho = opts.rho;
@@ -116,20 +86,13 @@ AC = AStd(Cidx, :);                    % |C| x p, rows of AStd for censored
 % Note: yC is not extracted; we use the fact that censored obs are modeled as y=c in the objective.
 
 %% ========== INITIALIZE OPTIMIZATION VARIABLES FROM WARM STARTS ==========
-% Warm starts are provided in ORIGINAL space, then transformed to internal (scaled) space.
-% This way, users specify initial guesses on the original feature/response scale.
+% Warm starts are provided in the same feature scale as A.
 betaOrig0 = zeros(p, 1);              % default: zero initialization
 if ~isempty(opts.beta0)
     if ~isvector(opts.beta0) || numel(opts.beta0) ~= p
         error('sgl_fit:BadWarmStart', 'opts.beta0 must be a %d-by-1 vector.', p);
     end
     betaOrig0 = opts.beta0(:);
-elseif isfield(opts, 'beta0Std') && ~isempty(opts.beta0Std)
-    % Legacy fallback: if betaStd warm start provided, convert to original
-    if ~isvector(opts.beta0Std) || numel(opts.beta0Std) ~= p
-        error('sgl_fit:BadWarmStartLegacy', 'opts.beta0Std must be a %d-by-1 vector.', p);
-    end
-    betaOrig0 = opts.beta0Std(:) ./ sA;   % convert scaled -> original: betaOrig = betaStd / sA
 end
 if ~(isscalar(opts.b0) && isnumeric(opts.b0) && isfinite(opts.b0))
     error('sgl_fit:BadWarmStartIntercept', 'opts.b0 must be a finite numeric scalar.');
@@ -137,11 +100,9 @@ end
 
 bOrig0 = opts.b0;                              % intercept in original space
 
-% Transform warm start from original space to internal (scaled) space
-% betaStd = betaOrig .* sA   (scale by factor)
-% bStd = bOrig + muA' * betaOrig   (centering adjustment)
-beta = betaOrig0 .* sA;                        % p x 1, scaled beta
-b = bOrig0 + muA.' * betaOrig0;                % scalar, scaled intercept (with centering correction)
+% Internal variables match original feature scale.
+beta = betaOrig0;                               % p x 1
+b = bOrig0;                                     % scalar
 
 %% ========== FISTA INITIALIZATION ==========
 % FISTA maintains current point (beta, b) and extrapolated point (yBeta, yb) for acceleration.
@@ -281,11 +242,11 @@ end
 betaStd = beta;
 
 %% ========== OUTPUT BACK-TRANSFORMATION ==========
-% Convert internal (scaled) solution back to original space for user output.
+% No internal centering/scaling; outputs already match input feature scale.
 
-betaOrig = betaStd ./ sA; % unscale
+betaOrig = betaStd;
 bStd = b;
-bOrig = bStd - muA.' * betaOrig; % undo centering
+bOrig = bStd;
 intercept = bOrig;
 
 nnzPerGroup = zeros(numel(groups), 1);
@@ -325,11 +286,6 @@ stats.bOrig = bOrig;
 
 % Transformation parameters (for reproducibility and manual verification)
 stats.groups = groups;
-stats.sA = sA;
-stats.doCenter = opts.doCenter;
-stats.muA = muA;           % feature centering means (zero if not centered)
-stats.doScale = opts.doScale;
-stats.scaleType = opts.scaleType;
 
 % Censoring and penalty parameters
 stats.c = c;
@@ -405,10 +361,6 @@ defaults.rho = [];
 defaults.maxIter = 20000;
 defaults.tol = 1e-8;
 defaults.verbose = true;
-% Preprocessing: centering and scaling
-defaults.doCenter = true;
-defaults.doScale = true;
-defaults.scaleType = 'std';
 % FISTA + backtracking parameters
 defaults.backtrackBeta = 0.5;
 defaults.L0 = 1.0;
@@ -433,14 +385,6 @@ if isempty(opts.rho)
     opts.rho = 100;
 end
 
-% Validate and normalize scaleType
-if isstring(opts.scaleType)
-    opts.scaleType = char(opts.scaleType);
-end
-opts.scaleType = lower(opts.scaleType);
-if ~strcmp(opts.scaleType, 'l2') && ~strcmp(opts.scaleType, 'std')
-    error('sgl_fit:BadScaleType', 'opts.scaleType must be ''l2'' or ''std''.');
-end
 end
 
 function groups = group_indices(p)
@@ -467,34 +411,6 @@ groups = {
     (nMus + 1):(2 * nMus)          % group 2: mtu force feedbacks
     (2 * nMus + 1):(2 * nMus + 8)  % group 3: kinematics / proprioception feedbacks
     };
-end
-
-function sA = compute_column_scales(A, scaleType)
-% Compute column-wise scaling factors for feature normalization.
-%
-% Input:
-%   A (n x p): design matrix (typically already centered if centering enabled)
-%   scaleType: 'l2' (L2 norm) or 'std' (standard deviation)
-%
-% Output:
-%   sA (p x 1): scaling factors for each column; zeros replaced with 1.
-%
-% Behavior:
-%   - 'l2': sA(j) = ||A(:,j)||_2 / sqrt(n)  [population L2 norm]
-%   - 'std': sA(j) = std(A(:,j), 1)         [population standard deviation]
-%   - If sA(j) == 0, set sA(j) = 1 to avoid division by zero
-
-switch scaleType
-    case 'l2'
-        sA = sqrt(sum(A.^2, 1) / size(A, 1)).';     % L2 norm (column-wise)
-    case 'std'
-        sA = std(A, 1, 1).';                        % standard deviation (population)
-    otherwise
-        error('sgl_fit:BadScaleType', 'Unknown scale type: %s', scaleType);
-end
-
-% Prevent division by zero: if a column has zero variance, use scale=1
-sA(sA == 0) = 1;
 end
 
 function [gradBeta, gradb, fVal] = compute_grad_smooth(AU, yU, AC, c, rho, beta, b)

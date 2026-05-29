@@ -38,6 +38,9 @@
 % - 消融实验：pure lasso vs adaptive lasso vs adaptive lasso with priori vs
 % something else
 % - c, rho，以及其他参数的灵敏度分析
+% - 按照source对象分组：[TA], [SOL], ..., [hip], [knee], [ankle]，而非按照反馈类型分组
+% - 后续考虑按照muscular function分组，但会有重叠的问题（因为有跨双关节的肌肉），要想想怎么解决
+% - stability selection, 解决source的可信度问题（重采样、保留selection probability高于阈值的source）
 % ========================================================================
 
 close all; clear; clc;
@@ -54,7 +57,7 @@ gamma = 1;
 epsilon_ols = 1e-8;
 nzTol = 1e-5;
 lambda1 = 0;
-lambda2 = 1; % 需要检查：目前的lambda2取值是不是太大了？目前辨识出的系数怎样？如何避免全零的adaptive lasso结果（bifemsh, rect_fem, glut_max）？
+lambda2 = 0.2; % 需要检查：目前的lambda2取值是不是太大了？目前辨识出的系数怎样？如何避免全零的adaptive lasso结果（bifemsh, rect_fem, glut_max）？
 c = 0.01;
 rho = 50;
 delaySteps = 1;
@@ -103,6 +106,13 @@ fprintf('Loaded %d muscles with shared feature matrix: X size = [%d, %d], Y size
 
 % Build one shared A = X * M and solve each muscle independently.
 A = X * M; % feature matrix X (augmented), masked with the sparse matrix M
+
+% Center and scale features before OLS/optimization (population std).
+A_orig = A;
+muA = mean(A_orig, 1);
+sA = std(A_orig, 1, 1);
+sA(sA == 0) = 1;
+A = (A_orig - muA) ./ sA;
 p = size(A, 2);
 
 nMus = (p - 8) / 2;
@@ -117,9 +127,6 @@ optsCommon.maxIter = 20000;
 optsCommon.tol = 1e-10;
 optsCommon.verbose = false;
 optsCommon.doWarmStart = false; % true;
-optsCommon.doCenter = false; % true;
-optsCommon.doScale = false; % true;
-optsCommon.scaleType = 'std';
 optsCommon.backtrackBeta = 0.5;
 optsCommon.L0 = 1000;
 optsCommon.tolCensor = 1e-12;
@@ -203,6 +210,7 @@ for m = 1:numTargets
         phaseName = phaseNames{phaseIter};
         idx = phaseIdxMap.(phaseName);
         A_phase = A(idx, :);
+        A_phase_orig = A_orig(idx, :);
         Y_phase = Y(idx, m);
 
         % --- STEP 3: INITIAL OLS ESTIMATE ---
@@ -215,8 +223,8 @@ for m = 1:numTargets
             warning('Adaptive_LASSO:NoUncensored', ...
                 'No uncensored samples for %s (%s). Using zero OLS coefficients.', ...
                 muscleNames{m}, phaseName);
-            beta_OLS.(phaseName)(:, m) = zeros(p, 1);
-            b_OLS.(phaseName)(m) = c_m;
+            beta_OLS_std = zeros(p, 1);
+            b_OLS_std = c_m;
         else
             A_U = A_phase(Uidx, :);
             y_U = Y_phase(Uidx);
@@ -231,15 +239,20 @@ for m = 1:numTargets
                 coeffs = augA \ y_U;
             end     
 
-            beta_OLS.(phaseName)(:, m) = coeffs(1:p);
-            b_OLS.(phaseName)(m) = coeffs(end);
+            beta_OLS_std = coeffs(1:p);
+            b_OLS_std = coeffs(end);
         end
 
+        beta_OLS_orig = beta_OLS_std ./ sA.';
+        b_OLS_orig = b_OLS_std - muA * beta_OLS_orig;
+        beta_OLS.(phaseName)(:, m) = beta_OLS_orig;
+        b_OLS.(phaseName)(m) = b_OLS_orig;
+
         fprintf('[%s|%s] OLS: nU=%d, nnz(beta_OLS)=%d\n', ...
-            muscleNames{m}, phaseName, nU, nnz(abs(beta_OLS.(phaseName)(:, m)) > nzTol));
+            muscleNames{m}, phaseName, nU, nnz(abs(beta_OLS_orig) > nzTol));
 
         % --- STEP 4: COMPUTE ADAPTIVE WEIGHTS ---
-        w = 1 ./ max(abs(beta_OLS.(phaseName)(:, m)), epsilon_ols).^gamma;
+        w = 1 ./ max(abs(beta_OLS_std), epsilon_ols).^gamma;
         if any(~isfinite(w))
             error('Adaptive_LASSO:BadWeights', ...
                 'Non-finite adaptive weights for %s (%s).', muscleNames{m}, phaseName);
@@ -259,32 +272,23 @@ for m = 1:numTargets
         optsM.doWarmStart = true;
 
         % Optional warm start from OLS (in A* space):
-        % optsM.beta0 = beta_OLS.(phaseName)(:, m) .* w;
-        % optsM.b0 = b_OLS.(phaseName)(m);
+        % optsM.beta0 = beta_OLS_std .* w;
+        % optsM.b0 = b_OLS_std;
 
-        [betaOrig_star, intercept_star, ~, stats_ada.(phaseName){m}] = ...
+        [beta_star_std, intercept_std, ~, stats_ada.(phaseName){m}] = ...
             sgl_fit(A_star, Y_phase, lambda1, lambda2, optsM);
 
-        Beta_adaptive.(phaseName)(:, m) = betaOrig_star ./ w;
-        Intercept_adaptive.(phaseName)(m) = intercept_star;
-
-        yPredAda = max(A_phase * Beta_adaptive.(phaseName)(:, m) + ...
-            Intercept_adaptive.(phaseName)(m), c_m);
-        YPred_adaptive.(phaseName){m} = yPredAda;
-        RMSE_adaptive.(phaseName)(m) = sqrt(mean((Y_phase - yPredAda).^2));
-
-        S.(phaseName){m} = find(abs(Beta_adaptive.(phaseName)(:, m)) > nzTol);
+        betaAdaStd = beta_star_std ./ w;
+        interceptAdaStd = intercept_std;
+        S.(phaseName){m} = find(abs(betaAdaStd) > nzTol);
 
         % --- STEP 6: POST-SELECTION OLS VIA sgl_fit ---
         if isempty(S.(phaseName){m})
             warning('Adaptive_LASSO:EmptySupport', ...
                 'Support set for %s (%s) is empty. Skipping post-selection OLS.', ...
                 muscleNames{m}, phaseName);
-            Beta_refit.(phaseName)(:, m) = zeros(p, 1);
-            Intercept_refit.(phaseName)(m) = 0;
-            yPredRefit = c_m * ones(numel(idx), 1);
-            YPred_refit.(phaseName){m} = yPredRefit;
-            RMSE_refit.(phaseName)(m) = sqrt(mean((Y_phase - yPredRefit).^2));
+            betaRefitStd = zeros(p, 1);
+            interceptRefitStd = 0;
             stats_refit.(phaseName){m} = struct('exitType', 'skipped_empty_support');
         else
             A_refit = A_phase;
@@ -296,17 +300,31 @@ for m = 1:numTargets
             optsRefit.c = c;
             optsRefit.rho = rho;
             optsRefit.doWarmStart = true;
-            optsRefit.beta0 = Beta_adaptive.(phaseName)(:, m);
-            optsRefit.b0 = Intercept_adaptive.(phaseName)(m);
+            optsRefit.beta0 = betaAdaStd;
+            optsRefit.b0 = interceptAdaStd;
 
-            [Beta_refit.(phaseName)(:, m), Intercept_refit.(phaseName)(m), ~, ...
+            [betaRefitStd, interceptRefitStd, ~, ...
                 stats_refit.(phaseName){m}] = sgl_fit(A_refit, Y_phase, 0, 0, optsRefit);
-
-            yPredRefit = max(A_phase * Beta_refit.(phaseName)(:, m) + ...
-                Intercept_refit.(phaseName)(m), c_m);
-            YPred_refit.(phaseName){m} = yPredRefit;
-            RMSE_refit.(phaseName)(m) = sqrt(mean((Y_phase - yPredRefit).^2));
+            betaRefitStd(nonS) = 0;
         end
+
+        betaAdaOrig = betaAdaStd ./ sA.';
+        interceptAdaOrig = interceptAdaStd - muA * betaAdaOrig;
+        betaRefitOrig = betaRefitStd ./ sA.';
+        interceptRefitOrig = interceptRefitStd - muA * betaRefitOrig;
+
+        Beta_adaptive.(phaseName)(:, m) = betaAdaOrig;
+        Intercept_adaptive.(phaseName)(m) = interceptAdaOrig;
+        Beta_refit.(phaseName)(:, m) = betaRefitOrig;
+        Intercept_refit.(phaseName)(m) = interceptRefitOrig;
+
+        yPredAda = max(A_phase_orig * betaAdaOrig + interceptAdaOrig, c_m);
+        YPred_adaptive.(phaseName){m} = yPredAda;
+        RMSE_adaptive.(phaseName)(m) = sqrt(mean((Y_phase - yPredAda).^2));
+
+        yPredRefit = max(A_phase_orig * betaRefitOrig + interceptRefitOrig, c_m);
+        YPred_refit.(phaseName){m} = yPredRefit;
+        RMSE_refit.(phaseName)(m) = sqrt(mean((Y_phase - yPredRefit).^2));
 
         YPred_adaptive_full(idx, m) = yPredAda;
         YPred_refit_full(idx, m) = yPredRefit;
@@ -425,7 +443,9 @@ end
 %% ===== COLLECT RESULTS =====
 results = struct();
 results.muscleNames = muscleNames;
-results.A = A;
+results.A = A_orig;
+results.A_std = A;
+results.featureScaling = struct('muA', muA, 'sA', sA);
 results.Y = Y;
 results.phase = struct();
 results.phase.stanceIdx = stanceIdx;

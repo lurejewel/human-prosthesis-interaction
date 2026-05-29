@@ -3,7 +3,7 @@
 % Note that this script is intended only for comparison with simulation
 % results generated in SCONE using the H0918RS2v3 controller. For
 % experimental validation, please use the `Adaptive_LASSO_StanceSwing.m`
-% script instead, since, in practice, muscles are not ideally
+% script instead, since,q in practice, muscles are not ideally
 % unified-controlled in real time.
 % 
 % P.S. While the stance-swing split may work well for normal walking,
@@ -108,6 +108,13 @@ fprintf('Loaded %d muscles with shared feature matrix: X size = [%d, %d], Y size
 
 % Build one shared A = X * M and solve each muscle independently.
 A = X * M; % feature matrix X (augmented), masked with the sparse matrix M
+
+% Center and scale features before OLS/optimization (population std).
+A_orig = A;
+muA = mean(A_orig, 1);
+sA = std(A_orig, 1, 1);
+sA(sA == 0) = 1;
+A = (A_orig - muA) ./ sA;
 p = size(A, 2);
 
 nMus = (p - 8) / 2;
@@ -122,9 +129,6 @@ optsCommon.maxIter = 20000;
 optsCommon.tol = 1e-10;
 optsCommon.verbose = false;
 optsCommon.doWarmStart = false; % true;
-optsCommon.doCenter = false; % true;
-optsCommon.doScale = false; % true;
-optsCommon.scaleType = 'std';
 optsCommon.backtrackBeta = 0.5;
 optsCommon.L0 = 1000;
 optsCommon.tolCensor = 1e-12;
@@ -162,8 +166,8 @@ for m = 1:numTargets
     if nU == 0
         warning('Adaptive_LASSO:NoUncensored', ...
             'No uncensored samples for %s. Using zero OLS coefficients.', muscleNames{m});
-        beta_OLS(:, m) = zeros(p, 1);
-        b_OLS(m) = c_m;
+        beta_OLS_std = zeros(p, 1);
+        b_OLS_std = c_m;
     else
         A_U = A(Uidx, :);
         y_U = Y(Uidx, m);
@@ -178,15 +182,20 @@ for m = 1:numTargets
             coeffs = augA \ y_U;
         end
 
-        beta_OLS(:, m) = coeffs(1:p);
-        b_OLS(m) = coeffs(end);
+        beta_OLS_std = coeffs(1:p);
+        b_OLS_std = coeffs(end);
     end
 
+    beta_OLS_orig = beta_OLS_std ./ sA.';
+    b_OLS_orig = b_OLS_std - muA * beta_OLS_orig;
+    beta_OLS(:, m) = beta_OLS_orig;
+    b_OLS(m) = b_OLS_orig;
+
     fprintf('[%s] OLS: nU=%d, nnz(beta_OLS)=%d\n', ...
-        muscleNames{m}, nU, nnz(abs(beta_OLS(:, m)) > nzTol));
+        muscleNames{m}, nU, nnz(abs(beta_OLS_orig) > nzTol));
 
     % --- STEP 4: COMPUTE ADAPTIVE WEIGHTS ---
-    w = 1 ./ max(abs(beta_OLS(:, m)), epsilon_ols).^gamma;
+    w = 1 ./ max(abs(beta_OLS_std), epsilon_ols).^gamma;
     if any(~isfinite(w))
         error('Adaptive_LASSO:BadWeights', ...
             'Non-finite adaptive weights for %s.', muscleNames{m});
@@ -206,49 +215,56 @@ for m = 1:numTargets
     optsM.doWarmStart = true;
 
     % Optional warm start from OLS (in A* space):
-    % optsM.beta0 = beta_OLS(:, m) .* w;
-    % optsM.b0 = b_OLS(m);
+    % optsM.beta0 = beta_OLS_std .* w;
+    % optsM.b0 = b_OLS_std;
 
-    [betaOrig_star, intercept_star, ~, stats_ada{m}] = ...
+    [beta_star_std, intercept_std, ~, stats_ada{m}] = ...
         sgl_fit(A_star, Y(:, m), lambda1, lambda2, optsM);
 
-    Beta_adaptive(:, m) = betaOrig_star ./ w;
-    Intercept_adaptive(m) = intercept_star;
-
-    YPred_adaptive(:, m) = max(A * Beta_adaptive(:, m) + Intercept_adaptive(m), c_m);
-    RMSE_adaptive(m) = sqrt(mean((Y(:, m) - YPred_adaptive(:, m)).^2));
-
-    S{m} = find(abs(Beta_adaptive(:, m)) > nzTol);
+    betaAdaStd = beta_star_std ./ w;
+    interceptAdaStd = intercept_std;
+    S{m} = find(abs(betaAdaStd) > nzTol);
 
     % --- STEP 6: POST-SELECTION OLS VIA sgl_fit ---
     if isempty(S{m})
         warning('Adaptive_LASSO:EmptySupport', ...
             'Support set for %s is empty. Skipping post-selection OLS.', ...
             muscleNames{m});
-        Beta_refit(:, m) = zeros(p, 1);
-        Intercept_refit(m) = 0;
-        YPred_refit(:, m) = c_m * ones(nSamples, 1);
-        RMSE_refit(m) = sqrt(mean((Y(:, m) - YPred_refit(:, m)).^2));
+        betaRefitStd = zeros(p, 1);
+        interceptRefitStd = 0;
         stats_refit{m} = struct('exitType', 'skipped_empty_support');
-        continue;
+    else
+        A_refit = A;
+        nonS = setdiff(1:p, S{m});
+        A_refit(:, nonS) = 0;
+
+        optsRefit = optsCommon;
+        optsRefit.muscleName = [muscleNames{m}, '_refit'];
+        optsRefit.c = c;
+        optsRefit.rho = rho;
+        optsRefit.doWarmStart = true;
+        optsRefit.beta0 = betaAdaStd;
+        optsRefit.b0 = interceptAdaStd;
+
+        [betaRefitStd, interceptRefitStd, ~, stats_refit{m}] = ...
+            sgl_fit(A_refit, Y(:, m), 0, 0, optsRefit);
+        betaRefitStd(nonS) = 0;
     end
 
-    A_refit = A;
-    nonS = setdiff(1:p, S{m});
-    A_refit(:, nonS) = 0;
+    betaAdaOrig = betaAdaStd ./ sA.';
+    interceptAdaOrig = interceptAdaStd - muA * betaAdaOrig;
+    betaRefitOrig = betaRefitStd ./ sA.';
+    interceptRefitOrig = interceptRefitStd - muA * betaRefitOrig;
 
-    optsRefit = optsCommon;
-    optsRefit.muscleName = [muscleNames{m}, '_refit'];
-    optsRefit.c = c;
-    optsRefit.rho = rho;
-    optsRefit.doWarmStart = true;
-    optsRefit.beta0 = Beta_adaptive(:, m);
-    optsRefit.b0 = Intercept_adaptive(m);
+    Beta_adaptive(:, m) = betaAdaOrig;
+    Intercept_adaptive(m) = interceptAdaOrig;
+    Beta_refit(:, m) = betaRefitOrig;
+    Intercept_refit(m) = interceptRefitOrig;
 
-    [Beta_refit(:, m), Intercept_refit(m), ~, stats_refit{m}] = ...
-        sgl_fit(A_refit, Y(:, m), 0, 0, optsRefit);
+    YPred_adaptive(:, m) = max(A_orig * betaAdaOrig + interceptAdaOrig, c_m);
+    RMSE_adaptive(m) = sqrt(mean((Y(:, m) - YPred_adaptive(:, m)).^2));
 
-    YPred_refit(:, m) = max(A * Beta_refit(:, m) + Intercept_refit(m), c_m);
+    YPred_refit(:, m) = max(A_orig * betaRefitOrig + interceptRefitOrig, c_m);
     RMSE_refit(m) = sqrt(mean((Y(:, m) - YPred_refit(:, m)).^2));
 end
 
@@ -313,7 +329,9 @@ end
 %% ===== COLLECT RESULTS =====
 results = struct();
 results.muscleNames = muscleNames;
-results.A = A;
+results.A = A_orig;
+results.A_std = A;
+results.featureScaling = struct('muA', muA, 'sA', sA);
 results.Y = Y;
 results.beta_OLS = beta_OLS;
 results.b_OLS = b_OLS;
