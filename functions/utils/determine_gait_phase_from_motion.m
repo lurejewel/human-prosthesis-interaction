@@ -13,12 +13,7 @@
 % pelvis.
 % - [Landing]: ending at the next heel strike.
 
-% TODO1 (Completed): 给模型加载上外力（subject01_walk1_grf.xml），读取足部的受力，判断步态阶段。
-% TODO2: 编写肌肉反射机制和优化算法。
-% TODO3: 保证能够通过读取接触力，正确且准确地实时获取地反力（正压力和摩擦力）。
-
-
-addpath('assets\', 'model\')
+addpath(genpath('..\assets\'), genpath('..\model\'), genpath('..\functions\'))
 import org.opensim.modeling.*
 
 %% load model

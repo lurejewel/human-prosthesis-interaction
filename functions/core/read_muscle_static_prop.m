@@ -32,7 +32,7 @@ for i = 0 : nMus-1
     lopt(i+1) = model.getMuscles.get(names{i+1}).getOptimalFiberLength;
     fopt(i+1) = model.getMuscles.get(names{i+1}).getMaxIsometricForce;
 end
-[lambda, mass, map] = read_muscle_lambda_and_mass(['assets/muscle references/' projName '_muscleProp.csv']);
+[lambda, mass, map] = read_muscle_lambda_and_mass(['assets/' projName '_muscleProp.csv']);
 delay = round(10/1000/simConfig.stepTime); % 10 ms delay for muscle reflex mechanism to take effect
 
 st.muscle.names = names;

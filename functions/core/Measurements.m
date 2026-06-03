@@ -35,10 +35,9 @@ classdef Measurements
         state
         heelstrikeEventR
         heelstrikeEventL
-        grf
+        grf = struct('normalR', [], 'normalL', [])
         stateMap
         muscleinfo
-
         distance
 
     end
@@ -56,8 +55,6 @@ classdef Measurements
             
             obj.grf.normalR = modelInfo.dy.grf.fyr(1:obj.npts);
             obj.grf.normalL = modelInfo.dy.grf.fyl(1:obj.npts);
-            obj.grf.frictionR = modelInfo.dy.grf.fxr(1:obj.npts);
-            obj.grf.frictionL = modelInfo.dy.grf.fxl(1:obj.npts);
 
             obj.muscleinfo.mass = modelInfo.st.muscle.mass;
             obj.muscleinfo.lambda = modelInfo.st.muscle.lambda;
@@ -70,16 +67,22 @@ classdef Measurements
 
             obj.distance = obj.state(obj.stateMap('pelvis_tx/value'),end);
 
-            obj.heelstrikeEventR = [];
-            obj.heelstrikeEventL = [];
+            % pre-allocate and collect heelstrike events
+            obj.heelstrikeEventR = zeros(1, obj.npts);
+            obj.heelstrikeEventL = zeros(1, obj.npts);
+            nHS_R = 0; nHS_L = 0;
             for i = 2 : obj.npts
                 if modelInfo.dy.phase.r(i-1) == 4 && modelInfo.dy.phase.r(i) == 0
-                    obj.heelstrikeEventR = [obj.heelstrikeEventR, i];
+                    nHS_R = nHS_R + 1;
+                    obj.heelstrikeEventR(nHS_R) = i;
                 end
                 if modelInfo.dy.phase.l(i-1) == 4 && modelInfo.dy.phase.l(i) == 0
-                    obj.heelstrikeEventL = [obj.heelstrikeEventL, i];
+                    nHS_L = nHS_L + 1;
+                    obj.heelstrikeEventL(nHS_L) = i;
                 end
             end
+            obj.heelstrikeEventR = obj.heelstrikeEventR(1:nHS_R);
+            obj.heelstrikeEventL = obj.heelstrikeEventL(1:nHS_L);
 
         end
 

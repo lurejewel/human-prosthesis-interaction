@@ -1,8 +1,0 @@
-update: PCSA同样难以获得。目前肌肉的质量信息通过该文献获取：Theile F W. Gewichtsbestimmungen zur Entwickelung des Muskelsystems und des Skelettes beim Menschen[M]. Blochmann, 1884.
-
-另外OpenSim官方对于肌肉结构（2392和2354）的说明见：https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53086215/Gait+2392+and+2354+Models
-
-Lieber, R. L., & Fridén, J. (2000). Functional and clinical significance of skeletal muscle architecture. Muscle & Nerve, 23(11), 1647-1666.
-
-另外有一篇叫"What the PCSA? Addressing diversity in lower-limb musculoskeletal models: age- and sex-related differences in PCSA and muscle mass"，这篇文章讲得比较详细。 其中Supplementary Material里有一张表格，列出了不同肌肉的质量。
-

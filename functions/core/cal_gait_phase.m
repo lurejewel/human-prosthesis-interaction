@@ -1,35 +1,27 @@
-function modelInfo = cal_gait_phase(model, modelInfo, state, frameIndex)
+function modelInfo = cal_gait_phase(simCache, modelInfo, state, frameIndex)
 %% materials for gait phase detection
-% state, grf
-% state = modelInfo.state;
 GRF = [modelInfo.dy.grf.fyr(frameIndex), modelInfo.dy.grf.fyl(frameIndex)];
 
 % init gait phases
 phaseR = -1;
 phaseL = -1;
 
-% body weight, stance threshold
-BW = -model.getTotalMass(state) * model.getGravity.get(1); % body weight (N)
-stanceTh = 0.23137978; % for heel strike detection
+% body weight, stance threshold (precomputed in simCache)
+BW = -simCache.totalMass * simCache.gravity;
+stanceTh = simCache.stanceTh;
 
 % Normal GRF
 grfR = GRF(1)/BW; % normal component of GRF, right-foot side
 grfL = GRF(2)/BW; % left-foot side
 
-% X-axis of pelvis COM
-pelvis = model.getBodySet().get('pelvis');
-pelvisCOMLocal = pelvis.getMassCenter();
-pelvisCOMGlobal = pelvis.findStationLocationInGround(state, pelvisCOMLocal);
+% pelvis COM X (using cached body handle)
+pelvisCOMGlobal = simCache.bodyPelvis.findStationLocationInGround(state, simCache.pelvisCOMLocal);
 pelvisCOM = pelvisCOMGlobal.get(0);
 
-% X-axis of calcn COM
-calcnR = model.getBodySet().get('calcn_r');
-calcnRCOMLocal = calcnR.getMassCenter();
-calcnRCOMGlobal = calcnR.findStationLocationInGround(state, calcnRCOMLocal);
+% calcn COM X (using cached body handles)
+calcnRCOMGlobal = simCache.bodyCalcnR.findStationLocationInGround(state, simCache.calcnRCOMLocal);
 calcnRCOM = calcnRCOMGlobal.get(0);
-calcnL = model.getBodySet().get('calcn_l');
-calcnLCOMLocal = calcnL.getMassCenter();
-calcnLCOMGlobal = calcnL.findStationLocationInGround(state, calcnLCOMLocal);
+calcnLCOMGlobal = simCache.bodyCalcnL.findStationLocationInGround(state, simCache.calcnLCOMLocal);
 calcnLCOM = calcnLCOMGlobal.get(0);
 
 %% gait detection

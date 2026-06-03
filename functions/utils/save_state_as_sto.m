@@ -16,7 +16,7 @@ if flag
     end
 
     stoFile = org.opensim.modeling.Storage();
-    filename = ['sim_result_' char(datetime("now","Format","yyyy-MM-dd_HH-mm-ss")) '.sto'];
+    filename = ['results\sim_result_' char(datetime("now","Format","yyyy-MM-dd_HH-mm-ss")) '.sto'];
     stoFile.setName(filename);
     stoFile.setColumnLabels(labels);
 

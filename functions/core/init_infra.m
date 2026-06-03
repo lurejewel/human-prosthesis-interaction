@@ -30,6 +30,9 @@ model.realizeDynamics(state);
      modelInfo.dy.muscle.lCEN(i,1) = model.getMuscles.get(i-1).getNormalizedFiberLength(state);
  end
 
+% capture initial state snapshot for per-particle reset
+modelInfo.dy.initStateY = vec_2_mat(state.getY());
+
 % % coordinate position （用数组表示是不是更利于后面赋值？）
 % % init.pose.pelvis_list = 0;
 % % init.pose.pelvis_rotation = 0;
