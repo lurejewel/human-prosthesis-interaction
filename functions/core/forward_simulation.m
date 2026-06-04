@@ -79,5 +79,6 @@ for t = modelInfo.st.simInfo.timeSeries % for every frame
 
 end
 modelInfo.dy.lastTime = t;
+modelInfo.dy.hasRun  = true;
 
 end

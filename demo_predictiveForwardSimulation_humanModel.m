@@ -139,9 +139,6 @@ while g < optConfig.gMax && ~stop
 
     % update elite particles (best & big3) and CMA-ES parameters
     fits = vertcat(fits_cell{:});
-    if isnan(sum(fits)) || min(fits)<6
-        pause
-    end
     optConfig.update_elite_fit(fits, arx, arz);
     optConfig.update_core(fits, g - gAtRestartStart);
 

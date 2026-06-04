@@ -4,7 +4,7 @@ function fit = measure_simResults(modelInfo)
 % aspects of walking speed, metabolic expenditure, joint hyperextension,
 % etc.
 % Author(s): Jin Wei, Peking U. wjin24@stu.pku.edu.cn
-if modelInfo.dy.lastTime == -1
+if ~modelInfo.dy.hasRun
     error('[CUSTOMIZED ERROR] simulation did not operate normally.')
 end
 

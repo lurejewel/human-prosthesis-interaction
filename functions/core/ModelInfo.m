@@ -91,6 +91,7 @@ classdef ModelInfo < handle
             obj.dy.phase.r = nan(1, npts);
             obj.dy.phase.l = nan(1, npts);
             obj.dy.lastTime = -1;
+            obj.dy.hasRun  = false;
 
         end
 
@@ -129,6 +130,7 @@ classdef ModelInfo < handle
             obj.dy.phase.r(:) = nan;
             obj.dy.phase.l(:) = nan;
             obj.dy.lastTime = -1;
+            obj.dy.hasRun  = false;
 
         end
 

@@ -195,13 +195,15 @@ classdef Measurements
         function fit = effort_measure(obj, weight)
 
             Effort = zeros(1, obj.npts);
+            nMuscles = numel(obj.muscleinfo.mass);
+            massVec  = obj.muscleinfo.mass;
+            lambdaVec = obj.muscleinfo.lambda;
 
-            for i =  2 : obj.npts
-                nMuscles= numel(obj.muscleinfo.mass);
+            for i = 2 : obj.npts
                 dE = zeros(1, nMuscles);
                 for j = 1 : nMuscles
-                    m = obj.muscleinfo.mass(j);
-                    lambda = obj.muscleinfo.lambda(j);
+                    m = massVec(j);
+                    lambda = lambdaVec(j);
                     u = obj.muscleinfo.u(j,i);
                     a = obj.muscleinfo.a(j,i);
                     lCEN = obj.muscleinfo.l_CEN(j,i);
