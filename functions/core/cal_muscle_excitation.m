@@ -56,14 +56,14 @@ end
 
 % ---- compute excitation per leg (same reflex rules, independent leg state) ----
 nMusPerLeg = numel(modelInfo.st.muscle.names) / 2;  % 7 muscles per leg
-muscleMap  = modelInfo.st.muscle.map;
-baseIdxR = muscleMap('ham') - 1;    % right-leg offset into 14-muscle arrays
-baseIdxL = nMusPerLeg;              % left-leg offset
+baseIdxR = 0;            % right-leg muscles occupy indices 1..7  (R-L ordering)
+baseIdxL = nMusPerLeg;   % left-leg  muscles occupy indices 8..14
+muscleIdx = modelInfo.st.muscle.legIdx;  % built once in read_muscle_static_prop
 
 excR = compute_leg_excitation(modelInfo.dy.phase.r(frameIndex), fATN_frame, lCEN_frame, ...
-    p, pelvisTilt, pelvisTiltV, kneeAngR, kneeVelR, baseIdxR);
+    p, pelvisTilt, pelvisTiltV, kneeAngR, kneeVelR, baseIdxR, muscleIdx);
 excL = compute_leg_excitation(modelInfo.dy.phase.l(frameIndex), fATN_frame, lCEN_frame, ...
-    p, pelvisTilt, pelvisTiltV, kneeAngL, kneeVelL, baseIdxL);
+    p, pelvisTilt, pelvisTiltV, kneeAngL, kneeVelL, baseIdxL, muscleIdx);
 
 % ---- assemble 14-element output ----
 muscleExcitations = [excR; excL];
@@ -76,18 +76,22 @@ end
 
 % ========================================================================
 function exc = compute_leg_excitation(phase, fATN, lCEN, p, ...
-    pelvisTilt, pelvisTiltV, kneeAng, kneeVel, baseIdx)
+    pelvisTilt, pelvisTiltV, kneeAng, kneeVel, baseIdx, muscleIdx)
 % Compute the 7 muscle excitations for a single leg using the muscle-reflex
 % controller.  baseIdx is the 0-based offset of this leg's muscles within
-% the full 14-muscle arrays (computed dynamically from muscleMap in caller).
-% fATN and lCEN are 14×1 column vectors for the current frame.
+% the full 14-muscle arrays.  muscleIdx maps base muscle name → within-leg
+% position (1-based), built dynamically from the right-leg keys in caller.
 %
 % Phase legend: 0=Early Stance, 1=Late Stance, 2=Liftoff, 3=Swing, 4=Landing
 
-% ---- per-leg muscle indices (1-based within the 7-muscle block) ----
-% These are fixed structural constants reflecting the model's muscle order:
-%   hamstrings, glut_max, ilipsoas, vasti, gastroc, soleus, tibialis
-HAM = 1; GLU = 2; ILI = 3; VAS = 4; GAS = 5; SOL = 6; TIB = 7;
+% ---- per-leg muscle positions (1-based, from dynamic map) ----
+HAM = muscleIdx('hamstrings');
+GLU = muscleIdx('glut_max');
+ILI = muscleIdx('iliopsoas');
+VAS = muscleIdx('vasti');
+GAS = muscleIdx('gastroc');
+SOL = muscleIdx('soleus');
+TIB = muscleIdx('tibia');
 
 % ---- muscle states for this leg ----
 gluFN = fATN(baseIdx + GLU);

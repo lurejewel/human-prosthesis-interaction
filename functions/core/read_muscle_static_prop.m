@@ -43,6 +43,22 @@ st.muscle.fopt = fopt;
 st.muscle.map = map;
 st.muscle.delay = delay;
 
+% Build muscle-name → within-leg position map (1-based, used by cal_muscle_excitation)
+nMusPerLeg = nMus / 2;
+keys = map.keys;
+vals = zeros(1, numel(keys));
+for j = 1:numel(keys)
+    vals(j) = map(keys{j});
+end
+[~, sortIdx] = sort(vals);
+rightKeys = keys(sortIdx(1:nMusPerLeg));
+legIdx = containers.Map('KeyType', 'char', 'ValueType', 'int32');
+for j = 1:nMusPerLeg
+    baseName = regexprep(rightKeys{j}, '_[rl]$', '');
+    legIdx(baseName) = j;
+end
+st.muscle.legIdx = legIdx;
+
 %% model-level static property
 state = model.initSystem(); % this is a must before calling model.getTotalMass() and model.getNumStateVariables()
 totalMass = model.getTotalMass(state);

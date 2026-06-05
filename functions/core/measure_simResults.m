@@ -5,7 +5,7 @@ function fit = measure_simResults(modelInfo)
 % etc.
 % Author(s): Jin Wei, Peking U. wjin24@stu.pku.edu.cn
 if ~modelInfo.dy.hasRun
-    error('[CUSTOMIZED ERROR] simulation did not operate normally.')
+    error('simulation did not operate normally.')
 end
 
 measureObj = Measurements(modelInfo);
