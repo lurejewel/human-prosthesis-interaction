@@ -24,18 +24,74 @@
 % -------------------------------------------------------------------------
 
 function muscleExcitations = cal_muscle_excitation(modelInfo, frameIndex)
-% Muscle order (7 per leg, R then L):
-%   1=hamR, 2=gluR, 3=iliR, 4=vasR, 5=gasR, 6=solR, 7=tibR
-%   8=hamL, 9=gluL, 10=iliL, 11=vasL, 12=gasL, 13=solL, 14=tibL
+% Name: cal_muscle_excitation
+% Description: Compute 14×1 muscle excitation vector for the current frame.
+%   Supports two controller modes:
+%     - LASSO linear-phase controller (if modelInfo.reflexParams is nonempty)
+%     - Legacy hand-crafted reflex controller (fallback)
+%
+%   Muscle order (7 per leg, R then L):
+%     1=hamR, 2=gluR, 3=iliR, 4=vasR, 5=gasR, 6=solR, 7=tibR
+%     8=hamL, 9=gluL, 10=iliL, 11=vasL, 12=gasL, 13=solL, 14=tibL
+
+%% ---- dispatch: LASSO vs legacy ----
+if ~isempty(modelInfo.reflexParams) ...
+   && strcmp(modelInfo.reflexParams.controllerType, 'lasso_linear_phase')
+
+    % ======== LASSO linear-phase controller ========
+    muscleExcitations = lasso_excitation(modelInfo, frameIndex);
+
+else
+    % ======== legacy hand-crafted controller ========
+    muscleExcitations = legacy_excitation(modelInfo, frameIndex);
+end
+
+% ---- clip to physiological range [0, 1] ----
+muscleExcitations(muscleExcitations > 1) = 1;
+muscleExcitations(muscleExcitations < 0) = 0;
+
+end
+
+% ========================================================================
+function exc = lasso_excitation(modelInfo, frameIndex)
+% LASSO sparse linear-phase controller.
+%   excitation_side = A_side * beta{phaseIdx} + bias{phaseIdx}
+
+rp = modelInfo.reflexParams;
+rt = modelInfo.reflexTemplate;
+
+% ---- right leg ----
+phaseR = modelInfo.dy.phase.r(frameIndex);
+phaseIdxR = find(rt.phaseIds == phaseR, 1);
+if isempty(phaseIdxR)
+    error('LASSO: unknown right-leg phase ID %d at frame %d.', phaseR, frameIndex);
+end
+A_R = extract_lasso_reflex_features(modelInfo, 'right', frameIndex);
+excR = A_R * rp.beta{phaseIdxR} + rp.bias{phaseIdxR};  % 1×7
+
+% ---- left leg (same canonical beta/bias, different features) ----
+phaseL = modelInfo.dy.phase.l(frameIndex);
+phaseIdxL = find(rt.phaseIds == phaseL, 1);
+if isempty(phaseIdxL)
+    error('LASSO: unknown left-leg phase ID %d at frame %d.', phaseL, frameIndex);
+end
+A_L = extract_lasso_reflex_features(modelInfo, 'left', frameIndex);
+excL = A_L * rp.beta{phaseIdxL} + rp.bias{phaseIdxL};  % 1×7
+
+% ---- assemble 14×1 column: [right 1:7; left 8:14] ----
+exc = [excR(:); excL(:)];
+end
+
+% ========================================================================
+function exc = legacy_excitation(modelInfo, frameIndex)
+% Original hand-crafted muscle-reflex controller (preserved as fallback).
 
 map = modelInfo.st.model.map;
-p   = modelInfo.dy.muscle.para;  % reflex parameter struct
+p   = modelInfo.dy.muscle.para;
 
-% ---- extract current-frame muscle state vectors ----
 fATN_frame = modelInfo.dy.muscle.fATN(:, frameIndex);
 lCEN_frame = modelInfo.dy.muscle.lCEN(:, frameIndex);
 
-% ---- joint states (pelvis tilt, knee angles / velocities) ----
 if frameIndex == 1
     initPose  = modelInfo.st.model.initPose;
     pelvisTilt  = initPose(map('pelvis_tilt/value'));
@@ -54,37 +110,24 @@ else
     kneeVelL = sh(map('knee_flexion_l/speed'), frameIndex - 1);
 end
 
-% ---- compute excitation per leg (same reflex rules, independent leg state) ----
-nMusPerLeg = numel(modelInfo.st.muscle.names) / 2;  % 7 muscles per leg
-baseIdxR = 0;            % right-leg muscles occupy indices 1..7  (R-L ordering)
-baseIdxL = nMusPerLeg;   % left-leg  muscles occupy indices 8..14
-muscleIdx = modelInfo.st.muscle.legIdx;  % built once in read_muscle_static_prop
+nMusPerLeg = numel(modelInfo.st.muscle.names) / 2;
+baseIdxR = 0;
+baseIdxL = nMusPerLeg;
+muscleIdx = modelInfo.st.muscle.legIdx;
 
 excR = compute_leg_excitation(modelInfo.dy.phase.r(frameIndex), fATN_frame, lCEN_frame, ...
     p, pelvisTilt, pelvisTiltV, kneeAngR, kneeVelR, baseIdxR, muscleIdx);
 excL = compute_leg_excitation(modelInfo.dy.phase.l(frameIndex), fATN_frame, lCEN_frame, ...
     p, pelvisTilt, pelvisTiltV, kneeAngL, kneeVelL, baseIdxL, muscleIdx);
 
-% ---- assemble 14-element output ----
-muscleExcitations = [excR; excL];
-
-% ---- clip to physiological range [0, 1] ----
-muscleExcitations(muscleExcitations > 1) = 1;
-muscleExcitations(muscleExcitations < 0) = 0;
-
+exc = [excR; excL];
 end
 
 % ========================================================================
 function exc = compute_leg_excitation(phase, fATN, lCEN, p, ...
     pelvisTilt, pelvisTiltV, kneeAng, kneeVel, baseIdx, muscleIdx)
-% Compute the 7 muscle excitations for a single leg using the muscle-reflex
-% controller.  baseIdx is the 0-based offset of this leg's muscles within
-% the full 14-muscle arrays.  muscleIdx maps base muscle name → within-leg
-% position (1-based), built dynamically from the right-leg keys in caller.
-%
-% Phase legend: 0=Early Stance, 1=Late Stance, 2=Liftoff, 3=Swing, 4=Landing
+% Legacy per-leg excitation (preserved from original code).
 
-% ---- per-leg muscle positions (1-based, from dynamic map) ----
 HAM = muscleIdx('hamstrings');
 GLU = muscleIdx('glut_max');
 ILI = muscleIdx('iliopsoas');
@@ -93,7 +136,6 @@ GAS = muscleIdx('gastroc');
 SOL = muscleIdx('soleus');
 TIB = muscleIdx('tibia');
 
-% ---- muscle states for this leg ----
 gluFN = fATN(baseIdx + GLU);
 vasFN = fATN(baseIdx + VAS);
 gasFN = fATN(baseIdx + GAS);
@@ -102,38 +144,31 @@ hamLN = lCEN(baseIdx + HAM);
 iliLN = lCEN(baseIdx + ILI);
 tibLN = lCEN(baseIdx + TIB);
 
-% ---- shared constants ----
-P0_pq = -0.1944;  % reference pelvis tilt angle
-
-% ---- vasti knee-extension gating ----
+P0_pq = -0.1944;
 deltaVas = double(kneeAng < p.vas_knee.pos_max || kneeVel <= 0);
-
-% ---- per-phase excitation ----
 exc = zeros(7, 1);
 
 switch phase
-    case {0, 1}  % early / late stance
+    case {0, 1}
         exc(HAM) = p.ham_pelvis_tilt.C0 - (p.ham_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.ham_pelvis_tilt.KV * pelvisTiltV);
         exc(GLU) = p.glu_pelvis_tilt.C0 - (p.glu_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.glu_pelvis_tilt.KV * pelvisTiltV);
         exc(ILI) = p.ili_pelvis_tilt.C0 - (p.ili_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.ili_pelvis_tilt.KV * pelvisTiltV);
-
         if phase == 0
             exc(VAS) = p.vas.C0 + deltaVas * p.vas.KF1 * vasFN;
         else
             exc(VAS) = p.vas.C0 + deltaVas * p.vas.KF2 * vasFN;
         end
-
         exc(GAS) = p.gas.KF * gasFN;
         exc(SOL) = p.sol.KF * solFN;
         exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
 
-    case 2  % liftoff
+    case 2
         exc(ILI) = p.ili.C0;
         exc(GAS) = p.gas.KF * gasFN;
         exc(SOL) = p.sol.KF * solFN;
         exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
 
-    case 3  % swing
+    case 3
         exc(GLU) = p.glu.KF * gluFN;
         exc(ILI) = p.ili.KL * (iliLN - p.ili.L0) ...
                  - p.ili_pelvis_tilt.KP2 * (pelvisTilt - p.ili_pelvis_tilt.P02) ...
@@ -141,7 +176,7 @@ switch phase
                  - p.ili_pelvis_tilt.KV2 * pelvisTiltV;
         exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
 
-    case 4  % landing
+    case 4
         exc(HAM) = p.ham_glu.KF * gluFN;
         exc(GLU) = p.glu.KF * gluFN;
         exc(ILI) = p.ili.KL * (iliLN - p.ili.L0) ...
@@ -153,5 +188,4 @@ switch phase
     otherwise
         error('Invalid gait phase: %d', phase);
 end
-
 end

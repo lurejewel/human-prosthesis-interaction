@@ -9,6 +9,7 @@
 *.mat
 *.json
 TOOL_*.m
+DEPRECATED_*
 opensim.log
 assets/ResultsRRA/
 assets/ResultsSO/

@@ -89,6 +89,12 @@ modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose);
 %     -0.290013940986199];
 % initPara = load('results\bestPara_noparallel.mat').bestPara;
 initPara = load('results\opt_result_2026-06-02_00-10-00.mat').result.bestPara;
+
+%% ---- LASSO linear-phase controller initialisation ----
+lassoFile = fullfile('results', 'lasso_controller_result.mat');
+[initPara, reflexParamMap, reflexTemplate] = ...
+    load_lasso_reflex_controller(lassoFile);
+
 sigma = 0.02; % deviation
 optConfig = CMAES_optimization(initPara, sigma, nWorkers);
 clear sigma
@@ -117,10 +123,12 @@ while g < optConfig.gMax && ~stop
 
     fits_cell = cell(nWorkers,1); % initialize fit in cell
     % MIDDLE LOOP: for each PARALLEL worker (batch of particles)
-    for w = 1 : nWorkers
+    parfor w = 1 : nWorkers
 
         fits_local = nan(optConfig.nParticles(w),1);
         [model, modelInfo, ~] = init_infra(projName, modelStaticProp);
+        modelInfo.reflexParamMap = reflexParamMap;
+        modelInfo.reflexTemplate = reflexTemplate;
 
         % INNER LOOP: for each particle
         for p = 1 : optConfig.nParticles(w) % optConfig.core.lambda
@@ -199,6 +207,14 @@ result.restartCount  = restartCount;
 result.finalLambda   = optConfig.core.lambda;
 result.finalSigma    = optConfig.core.sigma;
 result.timestamp     = datetime;
+
+% ---- controller metadata (essential for reconstructing bestPara) ----
+result.controllerType    = 'lasso_linear_phase';
+result.lassoFile         = lassoFile;
+result.reflexParamMap    = reflexParamMap;
+result.reflexTemplate    = reflexTemplate;
+result.bestReflexParams  = unpack_lasso_reflex_params( ...
+    result.bestPara, reflexParamMap, reflexTemplate);
 
 
 outFile = ['results\opt_result_', datestr(now, 'yyyy-mm-dd_HH-MM-SS'), '.mat'];

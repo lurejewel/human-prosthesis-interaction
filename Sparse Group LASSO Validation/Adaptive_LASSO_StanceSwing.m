@@ -63,8 +63,10 @@ fprintf('Logging to %s\n', logFilePath);
 %% ===== STEP 1: DATA LOADING & PREPROCESSING =====
 % Load target muscle excitations and one shared biomechanical feature matrix.
 stoFilePath = 'UN.sto';
-muscleNames = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', ...
-    'rect_fem_r', 'vasti_r'};
+% muscleNames = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', ...
+%     'rect_fem_r', 'vasti_r'};
+muscleNames = {'hamstrings_r', 'glut_max_r', 'iliopsoas_r', 'vasti_r', ...
+    'gastroc_r', 'soleus_r', 'tib_ant_r'};
 numTargets = numel(muscleNames);
 
 % Tunable parameters (adaptive LASSO + censoring)
@@ -504,20 +506,20 @@ for m = 1:numTargets
         phaseName = phaseNames{phaseIter};
 
         nzIdx = find(abs(Beta_adaptive.(phaseName)(:, m)) > nzTol);
-        fprintf('\nAdaptive LASSO nonzero controls for %s (%s) (nnz = %.0f):\n', ...
-            muscleNames{m}, phaseName, numel(nzIdx));
+        % fprintf('\nAdaptive LASSO nonzero controls for %s (%s) (nnz = %.0f):\n', ...
+            % muscleNames{m}, phaseName, numel(nzIdx));
         if isempty(nzIdx)
             fprintf('(none)\n');
         else
             for k = 1:numel(nzIdx)
                 i = nzIdx(k);
                 featureName = indexToFeatureName{i};
-                fprintf('  %s -> %s: %.5g  (index %d)\n', featureName, muscleNames{m}, ...
-                    Beta_adaptive.(phaseName)(i, m), i);
+                % fprintf('  %s -> %s: %.5g  (index %d)\n', featureName, muscleNames{m}, ...
+                    % Beta_adaptive.(phaseName)(i, m), i);
             end
         end
-        fprintf('prestimulation (%s, %s adaptive): %.5g\n', ...
-            muscleNames{m}, phaseName, Intercept_adaptive.(phaseName)(m));
+        % fprintf('prestimulation (%s, %s adaptive): %.5g\n', ...
+            % muscleNames{m}, phaseName, Intercept_adaptive.(phaseName)(m));
 
         nzIdxRefit = find(abs(Beta_refit.(phaseName)(:, m)) > nzTol);
         fprintf('\nPost-selection OLS nonzero controls for %s (%s) (nnz = %.0f):\n', ...
@@ -617,6 +619,70 @@ results.RMSE_refit_full = RMSE_refit_full;
 results.stats_refit = stats_refit;
 results.lambdaPathConfig = lambdaPathConfig;
 results.LambdaPath = LambdaPath;
+
+%% ===== EXPORT TO LASSO CONTROLLER FORMAT =====
+% Map the 2-phase LASSO result (stance/swing) to the 5-phase controller
+% expected by demo_predictiveForwardSimulation_humanModel.m.
+%
+% Phase mapping:  stance → phases 0,1    swing → phases 2,3,4
+%
+% The LASSO feature matrix has 26 rows (9 muscles × 2 + 8 kinematics).
+% The demo expects 22 rows (7 muscles × 2 + 8 kinematics).
+% Rows to remove: 2 (bifemsh len), 5 (rect_fem len),
+%                 11 (bifemsh force), 14 (rect_fem force).
+
+rowsToKeep = setdiff(1:26, [2, 5, 11, 14]);  % 22 rows
+
+% ---- build lasso struct ----
+lasso = struct();
+lasso.nPhases = 5;
+lasso.phaseIds = 0:4;
+
+% pre-allocate cells
+lasso.beta = cell(5, 1);
+lasso.bias = cell(5, 1);
+lasso.mask = cell(5, 1);
+
+% stance → phases 0, 1
+betaStance = results.Beta_refit.stance(rowsToKeep, :);  % 22 × 7
+biasStance = results.Intercept_refit.stance(:)';        % 1 × 7
+lasso.beta{1} = betaStance;
+lasso.beta{2} = betaStance;
+lasso.bias{1} = biasStance;
+lasso.bias{2} = biasStance;
+
+% swing → phases 2, 3, 4
+betaSwing = results.Beta_refit.swing(rowsToKeep, :);    % 22 × 7
+biasSwing = results.Intercept_refit.swing(:)';          % 1 × 7
+lasso.beta{3} = betaSwing;
+lasso.beta{4} = betaSwing;
+lasso.beta{5} = betaSwing;
+lasso.bias{3} = biasSwing;
+lasso.bias{4} = biasSwing;
+lasso.bias{5} = biasSwing;
+
+% build mask from abs(beta) > 0
+for p = 1:5
+    lasso.mask{p} = abs(lasso.beta{p}) > nzTol;
+end
+
+% ---- save ----
+outDir = fullfile(fileparts(scriptFullPath), '..', 'results');
+if ~exist(outDir, 'dir')
+    mkdir(outDir);
+end
+save(fullfile(outDir, 'lasso_controller_result.mat'), 'lasso');
+
+fprintf('\n===== LASSO controller exported =====\n');
+fprintf('  File : %s\n', fullfile(outDir, 'lasso_controller_result.mat'));
+fprintf('  nPhases = 5, phaseIds = [0 1 2 3 4]\n');
+fprintf('  Stance → phases [0,1], Swing → phases [2,3,4]\n');
+fprintf('  Feature rows trimmed: 26→22 (removed bifemsh, rect_fem)\n');
+fprintf('  Stance nnz(beta): %d\n', nnz(lasso.mask{1}));
+fprintf('  Swing  nnz(beta): %d\n', nnz(lasso.mask{3}));
+fprintf('  Total optimizable params: %d\n', ...
+    nnz(lasso.mask{1}) + 7 + nnz(lasso.mask{3}) + 7);
+fprintf('=======================================\n');
 
 %% functions
 function indexToFeatureName = buildInverseFeatureMap(featureToIndexMap, numFeatures)
