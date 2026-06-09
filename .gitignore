@@ -8,8 +8,8 @@
 *.xml
 *.mat
 *.json
+*.pdf
+*.scone
 TOOL_*.m
 DEPRECATED_*
-opensim.log
-assets/ResultsRRA/
-assets/ResultsSO/
+Deprecated_*
