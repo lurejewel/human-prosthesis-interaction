@@ -1,6 +1,4 @@
-function save_state_as_sto(flag, model, modelInfo)
-
-if flag
+function save_state_as_sto(model, modelInfo, showVideoFlag)
 
     state = model.initSystem();
     labels = org.opensim.modeling.ArrayStr();
@@ -29,9 +27,9 @@ if flag
     stoFile.print(filename);
     disp(['Successfully save the data to: ' filename]);
     
-    % play the video
-    % read_sto_file('model/coupled_human-prosthesis_model.osim', filename, 1);
-
-end
-
+    if showVideoFlag
+        % play the video
+        read_sto_file('model/coupled_human-prosthesis_model.osim', filename, 1);
+    end
+    
 end

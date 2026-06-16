@@ -28,7 +28,7 @@ model.realizeDynamics(state);
 % reset initial muscle fATN and lCEN (needed for first-frame reflex control)
 nMus = numel(modelInfo.st.muscle.names);
 for i = 1 : nMus
-    modelInfo.dy.muscle.fATN(i, 1) = model.getMuscles.get(i - 1).getActiveFiberForce(state);
+    modelInfo.dy.muscle.fATN(i, 1) = model.getMuscles.get(i - 1).getActiveFiberForce(state) / modelInfo.st.muscle.fopt(i);
     modelInfo.dy.muscle.lCEN(i, 1) = model.getMuscles.get(i - 1).getNormalizedFiberLength(state);
 end
 end

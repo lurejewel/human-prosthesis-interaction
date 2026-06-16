@@ -633,38 +633,35 @@ results.LambdaPath = LambdaPath;
 
 rowsToKeep = setdiff(1:26, [2, 5, 11, 14]);  % 22 rows
 
-% ---- build lasso struct ----
-lasso = struct();
-lasso.nPhases = 5;
-lasso.phaseIds = 0:4;
+% ---- build lasso struct (grouped format) ----
+% Two distinct controllers: stance (phases 0,1) and swing (phases 2,3,4).
+% The grouped format avoids duplicating parameters for phases that share
+% the same controller, making the CMA-ES optimisation more efficient.
 
-% pre-allocate cells
-lasso.beta = cell(5, 1);
-lasso.bias = cell(5, 1);
-lasso.mask = cell(5, 1);
-
-% stance → phases 0, 1
 betaStance = results.Beta_refit.stance(rowsToKeep, :);  % 22 × 7
 biasStance = results.Intercept_refit.stance(:)';        % 1 × 7
-lasso.beta{1} = betaStance;
-lasso.beta{2} = betaStance;
-lasso.bias{1} = biasStance;
-lasso.bias{2} = biasStance;
+maskStance = abs(betaStance) > nzTol;
 
-% swing → phases 2, 3, 4
 betaSwing = results.Beta_refit.swing(rowsToKeep, :);    % 22 × 7
 biasSwing = results.Intercept_refit.swing(:)';          % 1 × 7
-lasso.beta{3} = betaSwing;
-lasso.beta{4} = betaSwing;
-lasso.beta{5} = betaSwing;
-lasso.bias{3} = biasSwing;
-lasso.bias{4} = biasSwing;
-lasso.bias{5} = biasSwing;
+maskSwing = abs(betaSwing) > nzTol;
 
-% build mask from abs(beta) > 0
-for p = 1:5
-    lasso.mask{p} = abs(lasso.beta{p}) > nzTol;
-end
+lasso = struct();
+lasso.format = 'grouped';
+lasso.nPhases = 5;
+lasso.phaseIds = 0:4;
+lasso.nGroups = 2;
+lasso.groups = struct();
+lasso.groups(1).label  = 'stance';
+lasso.groups(1).phases = [0 1];
+lasso.groups(1).beta   = betaStance;
+lasso.groups(1).bias   = biasStance;
+lasso.groups(1).mask   = maskStance;
+lasso.groups(2).label  = 'swing';
+lasso.groups(2).phases = [2 3 4];
+lasso.groups(2).beta   = betaSwing;
+lasso.groups(2).bias   = biasSwing;
+lasso.groups(2).mask   = maskSwing;
 
 % ---- save ----
 outDir = fullfile(fileparts(scriptFullPath), '..', 'results');
@@ -673,15 +670,15 @@ if ~exist(outDir, 'dir')
 end
 save(fullfile(outDir, 'lasso_controller_result.mat'), 'lasso');
 
-fprintf('\n===== LASSO controller exported =====\n');
+fprintf('\n===== LASSO controller exported (grouped format) =====\n');
 fprintf('  File : %s\n', fullfile(outDir, 'lasso_controller_result.mat'));
 fprintf('  nPhases = 5, phaseIds = [0 1 2 3 4]\n');
-fprintf('  Stance → phases [0,1], Swing → phases [2,3,4]\n');
+fprintf('  nGroups = 2\n');
+fprintf('  Group 1 (stance): phases [0,1],  nnz(beta) = %d\n', nnz(maskStance));
+fprintf('  Group 2 (swing):  phases [2,3,4], nnz(beta) = %d\n', nnz(maskSwing));
 fprintf('  Feature rows trimmed: 26→22 (removed bifemsh, rect_fem)\n');
-fprintf('  Stance nnz(beta): %d\n', nnz(lasso.mask{1}));
-fprintf('  Swing  nnz(beta): %d\n', nnz(lasso.mask{3}));
 fprintf('  Total optimizable params: %d\n', ...
-    nnz(lasso.mask{1}) + 7 + nnz(lasso.mask{3}) + 7);
+    nnz(maskStance) + 7 + nnz(maskSwing) + 7);
 fprintf('=======================================\n');
 
 %% functions

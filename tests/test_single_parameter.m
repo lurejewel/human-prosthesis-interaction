@@ -18,37 +18,50 @@ addpath(genpath('assets\'), genpath('model\'), genpath('functions\'))
 
 %% ---------- user configuration ----------
 projName       = 'coupled_human-prosthesis_model';
-paraSourceFile = 'results\opt_result_2026-06-02_00-10-00.mat';  % <-- change to your result file
+paraSourceFile = 'results\opt_result_2026-06-10_22-32-53.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
 simConfig.stepTime = 0.005;
 simConfig.speed   = 1.0;
 simConfig.slope   = 0;
-showVideo         = true;  % set to false to skip 3D visual playback
+showVideo         = false;  % set to false to skip 3D visual playback
 % -----------------------------------------
 
 %% load the parameter set to test
 loaded = load(paraSourceFile);
 if isfield(loaded, 'result')
     para = loaded.result.bestPara;
+    % ---- LASSO controller metadata (needed for matrix-multiplication form) ----
+    if isfield(loaded.result, 'reflexParamMap') && isfield(loaded.result, 'reflexTemplate')
+        reflexParamMap = loaded.result.reflexParamMap;
+        reflexTemplate = loaded.result.reflexTemplate;
+    else
+        error('Result file does not contain reflexParamMap/reflexTemplate. ' + ...
+              'Re-run the optimisation with the current demo script.');
+    end
     fprintf('Loaded bestPara from: %s  (bestFit = %.6g, %d generations)\n', ...
         paraSourceFile, loaded.result.bestFit, loaded.result.generations);
 else
     para = loaded.bestPara;  % legacy format
     fprintf('Loaded bestPara from: %s (legacy format)\n', paraSourceFile);
+    error('Legacy format does not contain reflexParamMap/reflexTemplate. ' + ...
+          'Re-run the optimisation with the current demo script.');
 end
 
 %% initialise model infrastructure (same pipeline as the main demo)
 initPose = [-0.105763, 0, 0.900237, 0.439316, 0.198813, -0.393922, -1.03755, 0.104714, -0.348473, ...
             -0.0895989, 1.0757, 0.1543, -1.35971, 3.34368, 0.267883, -3.15281, 0.840122, 1.26642];
 modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose);
-[model, modelInfo, ~] = init_infra(projName, modelStaticProp);
-model.setUseVisualizer(true);  % enable 3D visualisation
+[model, modelInfo] = init_infra(projName, modelStaticProp);
 
 %% set parameters and reset state
 modelInfo.reset_record();
 [state, modelInfo] = reset_particle_state(model, modelInfo);
-modelInfo.read_muscleReflex_array(para, zeros(size(para)));  % arz not needed for a single run
+
+% ---- wire LASSO controller metadata BEFORE unpacking parameters ----
+modelInfo.reflexParamMap = reflexParamMap;
+modelInfo.reflexTemplate = reflexTemplate;
+modelInfo.read_muscleReflex_array(para);
 
 %% run forward simulation
 modelInfo = forward_simulation(model, modelInfo, state);
@@ -97,6 +110,77 @@ grfYL = modelInfo.dy.grf.fyl(1:nValid);
 
 % ---- walking speed (m/s, from pelvis_tx gradient) ----
 walkSpeed = gradient(pelvis_tx, simConfig.stepTime);
+
+%% compute net joint torques via inverse dynamics
+fprintf('Computing net joint torques via ID (%d frames)...\n', nValid);
+
+% ---- build ID model (same .osim, muscles disabled) ----
+modelID = org.opensim.modeling.Model(['model/' projName '.osim']);
+stateID = modelID.initSystem();
+nMus    = numel(muscleNames);
+allMusclesID = cell(1, nMus);
+for i = 1 : nMus
+    allMusclesID{i} = modelID.getMuscles().get(i - 1);
+    allMusclesID{i}.setAppliesForce(stateID, false);   % only gravity + contact remain
+end
+
+% coordinate -> mobility index (same order as U / UDot)
+nQ = stateID.getNQ();
+nU = stateID.getNU();
+dt = simConfig.stepTime;
+
+coordIdx_hipR   = modelID.getCoordinateSet().getIndex('hip_flexion_r');
+coordIdx_kneeR  = modelID.getCoordinateSet().getIndex('knee_flexion_r');
+coordIdx_ankleR = modelID.getCoordinateSet().getIndex('ankle_dorsiflexion_r');
+coordIdx_hipL   = modelID.getCoordinateSet().getIndex('hip_flexion_l');
+coordIdx_kneeL  = modelID.getCoordinateSet().getIndex('knee_flexion_l');
+coordIdx_ankleL = modelID.getCoordinateSet().getIndex('ankle_dorsiflexion_l');
+
+idSolver = org.opensim.modeling.InverseDynamicsSolver(modelID);
+
+torque_hipR   = nan(1, nValid);
+torque_kneeR  = nan(1, nValid);
+torque_ankleR = nan(1, nValid);
+torque_hipL   = nan(1, nValid);
+torque_kneeL  = nan(1, nValid);
+torque_ankleL = nan(1, nValid);
+
+% ---- read kinematics directly from stateHistory (no filtering) ----
+% Q_hist = stateHist(1:nQ, 1:nValid);   already available via stateHist
+% U_hist = stateHist(nQ+1:nQ+nU, 1:nValid);
+
+% compute UDot from U via central difference
+UDot_hist = zeros(nU, nValid);
+UDot_hist(:, 1)       = (stateHist(nQ+1:nQ+nU, 2)       - stateHist(nQ+1:nQ+nU, 1))       / dt;
+UDot_hist(:, 2:end-1) = (stateHist(nQ+1:nQ+nU, 3:nValid)   - stateHist(nQ+1:nQ+nU, 1:nValid-2)) / (2*dt);
+UDot_hist(:, end)     = (stateHist(nQ+1:nQ+nU, nValid)     - stateHist(nQ+1:nQ+nU, nValid-1))   / dt;
+
+for fi = 1 : nValid
+    % ---- set kinematics (Q, U) from simulation stateHistory ----
+    Y = stateID.updY();
+    for i = 0 : nQ + nU - 1
+        Y.set(i, stateHist(i + 1, fi));
+    end
+    stateID.setTime(tVec(fi));
+
+    % ---- set UDot on ID state (central diff of simulation U) ----
+    for i = 0 : nU - 1
+        stateID.updUDot().set(i, UDot_hist(i + 1, fi));
+    end
+
+    % ---- solve inverse dynamics (muscles off -> residual = net joint moment) ----
+    modelID.realizeAcceleration(stateID);
+    tauVec = idSolver.solve(stateID);
+
+    % ---- extract per-coordinate torques ----
+    torque_hipR(fi)   = tauVec.get(coordIdx_hipR);
+    torque_kneeR(fi)  = tauVec.get(coordIdx_kneeR);
+    torque_ankleR(fi) = tauVec.get(coordIdx_ankleR);
+    torque_hipL(fi)   = tauVec.get(coordIdx_hipL);
+    torque_kneeL(fi)  = tauVec.get(coordIdx_kneeL);
+    torque_ankleL(fi) = tauVec.get(coordIdx_ankleL);
+end
+fprintf('Joint torque ID computation done.\n');
 
 %% =====================  VISUALISATION  =====================
 
@@ -166,13 +250,14 @@ yline(simConfig.speed, 'r--', 'LineWidth', 1.2);
 ylabel('Speed (m/s)'); xlabel('Time (s)');
 legend('Actual', 'Target', 'Location', 'best'); grid on; title('Walking Speed');
 
-% -------- Panel G: All muscle excitations (heatmap) --------
+% -------- Panel G: Joint Torques (right leg) --------
 subplot(3, 3, 9)
-imagesc(tVec, 1:numel(muscleNames), exc);
-xlabel('Time (s)'); ylabel('Muscle index');
-yticks(1:numel(muscleNames)); yticklabels(muscleNames);
-set(gca, 'YTickLabel', get(gca, 'YTickLabel'), 'FontSize', 7);
-colorbar; title('Muscle Excitations (heatmap)'); colormap(jet);
+plot(tVec, torque_hipR, 'LineWidth', 1.5); hold on
+plot(tVec, torque_kneeR, 'LineWidth', 1.5);
+plot(tVec, torque_ankleR, 'LineWidth', 1.5);
+ylabel('Joint moment (Nm)'); xlabel('Time (s)');
+legend('Hip', 'Knee', 'Ankle', 'Location', 'best');
+grid on; title('Joint Torques (right leg)');
 
 sgtitle(sprintf('Gait Simulation  |  Fitness = %.4g  |  Distance = %.2f m  |  Time = %.2f s', ...
     fit, pelvis_tx(end), modelInfo.dy.lastTime), 'FontSize', 12, 'FontWeight', 'bold');
@@ -207,4 +292,130 @@ if showVideo
         end
     end
     fprintf('3D playback finished.\n');
+end
+
+%% ================  GAIT-CYCLE-NORMALISED PLOTS  ================
+
+% ---- normalisation constants (body weight / mass) ----
+bodyMass   = modelStaticProp.model.totalMass;     % kg
+bodyWeight = bodyMass * 9.80665;                  % N
+
+% ---- detect heel-strike events (phase 4 -> 0 transition) ----
+hsRight = find(phaseR(1:end-1) == 4 & phaseR(2:end) == 0) + 1;
+if length(hsRight) < 2
+    warning('Fewer than 2 right heel strikes detected; skipping gait-cycle plots.');
+else
+    fprintf('Detected %d right heel-strike events. Normalising gait cycles...\n', length(hsRight));
+
+    nCycles = length(hsRight) - 1;
+    nPts    = 101;  % 0..100 %% gait cycle
+    gcPct   = linspace(0, 100, nPts);
+
+    % preallocate: nCycles × nPts
+    gc_hipAngR   = nan(nCycles, nPts);
+    gc_kneeAngR  = nan(nCycles, nPts);
+    gc_ankleAngR = nan(nCycles, nPts);
+    gc_hipTauR   = nan(nCycles, nPts);
+    gc_kneeTauR  = nan(nCycles, nPts);
+    gc_ankleTauR = nan(nCycles, nPts);
+    % muscle forces (all 14) per cycle, raw (N)
+    gc_musForce  = nan(nCycles, nPts, numel(muscleNames));
+
+    for c = 1 : nCycles
+        idxStart = hsRight(c);
+        idxEnd   = hsRight(c + 1);
+        nFrames  = idxEnd - idxStart + 1;
+        framePct = linspace(0, 100, nFrames);
+
+        gc_hipAngR(c, :)   = interp1(framePct, hipR_ang(idxStart:idxEnd),   gcPct, 'pchip');
+        gc_kneeAngR(c, :)  = interp1(framePct, kneeR_ang(idxStart:idxEnd),  gcPct, 'pchip');
+        gc_ankleAngR(c, :) = interp1(framePct, ankleR_ang(idxStart:idxEnd), gcPct, 'pchip');
+        % normalise torques by body mass (Nm/kg)
+        gc_hipTauR(c, :)   = interp1(framePct, torque_hipR(idxStart:idxEnd),   gcPct, 'pchip') / bodyMass;
+        gc_kneeTauR(c, :)  = interp1(framePct, torque_kneeR(idxStart:idxEnd),  gcPct, 'pchip') / bodyMass;
+        gc_ankleTauR(c, :) = interp1(framePct, torque_ankleR(idxStart:idxEnd), gcPct, 'pchip') / bodyMass;
+
+        for m = 1 : numel(muscleNames)
+            fMTU_cycle = modelInfo.dy.muscle.fMTU(m, idxStart:idxEnd);
+            % normalise by body weight (dimensionless, F / BW)
+            gc_musForce(c, :, m) = interp1(framePct, fMTU_cycle, gcPct, 'pchip') / bodyWeight;
+        end
+    end
+
+    % ---- define muscle groups (individual muscles, NOT summed) ----
+    grpNames = {'Hip muscles', 'Knee muscles', 'Ankle muscles'};
+    % each group: list of muscle names (right-leg only for the normalised plot)
+    grpMuscles = { ...
+        {'hamstrings_r','glut_max_r','iliopsoas_r'}, ...
+        {'vasti_r'}, ...
+        {'gastroc_r','soleus_r','tibia_r'} };
+
+    % ---- plot ----
+    figure('Name', 'Gait-Cycle-Normalised Kinetics & Kinematics', ...
+           'Position', [100, 100, 1400, 900]);
+
+    rowLabels = {'Joint Angles (deg)', 'Joint Torques (Nm/kg)', 'Muscle Forces (F / BW)'};
+    colLabels = {'Hip', 'Knee', 'Ankle'};
+
+    angData = {gc_hipAngR, gc_kneeAngR, gc_ankleAngR};
+    tauData = {gc_hipTauR, gc_kneeTauR, gc_ankleTauR};
+
+    for col = 1 : 3
+        % Row 1: angles
+        subplot(3, 3, col);
+        plot_gc_shaded(gcPct, angData{col});
+        if col == 1, ylabel(rowLabels{1}); end
+        title(colLabels{col});
+
+        % Row 2: torques
+        subplot(3, 3, 3 + col);
+        plot_gc_shaded(gcPct, tauData{col});
+        if col == 1, ylabel(rowLabels{2}); end
+
+        % Row 3: individual muscle forces (one curve per muscle)
+        subplot(3, 3, 6 + col);
+        musList = grpMuscles{col};
+        nCurves = numel(musList);
+        colors  = lines(nCurves);
+        legStr  = cell(1, nCurves);
+        for j = 1 : nCurves
+            mIdx = find(strcmp(muscleNames, musList{j}), 1);
+            if ~isempty(mIdx)
+                plot_gc_shaded(gcPct, gc_musForce(:, :, mIdx), colors(j, :));
+                hold on;
+                % build legend: strip '_r' suffix
+                nm = musList{j};
+                if nm(end) == 'r' || (length(nm) > 1 && strcmp(nm(end-1:end), '_r'))
+                    nm = nm(1:end-2);
+                end
+                legStr{j} = nm;
+            end
+        end
+        hold off;
+        if col == 1, ylabel(rowLabels{3}); end
+        xlabel('Gait cycle (%)');
+        legend(legStr, 'Location', 'best', 'Interpreter', 'none');
+        title(sprintf('%s (%s)', colLabels{col}, grpNames{col}));
+    end
+
+    sgtitle(sprintf('Gait-Cycle-Normalised  |  %d cycles  |  Right leg  |  BW = %.0f N', ...
+            nCycles, bodyWeight), 'FontSize', 12, 'FontWeight', 'bold');
+end
+
+%% ====================  LOCAL HELPERS  ====================
+function plot_gc_shaded(x, data, color)
+% plot mean ± shaded std for gait-cycle data (nCycles × nPts)
+%   color (optional) – line and fill colour; default grey
+if nargin < 3 || isempty(color)
+    color = [0.5 0.5 0.5];
+end
+mu = mean(data, 1, 'omitnan');
+sd = std(data, 0, 1, 'omitnan');
+x2 = [x, fliplr(x)];
+fill(x2, [mu - sd, fliplr(mu + sd)], color, ...
+    'FaceAlpha', 0.15, 'EdgeColor', 'none');
+hold on;
+plot(x, mu, 'Color', color, 'LineWidth', 1.8);
+hold off;
+grid on;
 end

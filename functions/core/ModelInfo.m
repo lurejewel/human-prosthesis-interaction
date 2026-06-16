@@ -100,28 +100,29 @@ classdef ModelInfo < handle
 
         end
 
-        function read_muscleReflex_array(obj, arx, arz)
+        function read_muscleReflex_array(obj, arx)
             % Description: convert the muscle-reflex parameters from array
             %   form to struct form.  Supports both the legacy hand-crafted
             %   controller and the new LASSO linear-phase controller.
             %   - LASSO path: uses obj.reflexParamMap + obj.reflexTemplate
             %   - Legacy path: uses muscle_reflex_param_defs()
-            obj.dy.muscle.arx = arx;
-            obj.dy.muscle.arz = arz;
+            % obj.dy.muscle.arx = arx;
+            % obj.dy.muscle.arz = arz;
 
             if ~isempty(obj.reflexParamMap) && ~isempty(obj.reflexTemplate)
                 % ---- LASSO linear-phase controller ----
                 obj.reflexParams = unpack_lasso_reflex_params( ...
                     arx, obj.reflexParamMap, obj.reflexTemplate);
             else
-                % ---- legacy hand-crafted controller ----
-                defs = muscle_reflex_param_defs();
-                muscleReflex = struct();
-                for i = 1 : numel(defs)
-                    d = defs(i);
-                    muscleReflex.(d.path{1}).(d.path{2}) = arx(d.idx);
-                end
-                obj.dy.muscle.para = muscleReflex;
+                error('Legacy hand-crafted code commented.');
+                % % ---- legacy hand-crafted controller ----
+                % defs = muscle_reflex_param_defs();
+                % muscleReflex = struct();
+                % for i = 1 : numel(defs)
+                %     d = defs(i);
+                %     muscleReflex.(d.path{1}).(d.path{2}) = arx(d.idx);
+                % end
+                % obj.dy.muscle.para = muscleReflex;
             end
         end
 

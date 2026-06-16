@@ -25,7 +25,82 @@ The `.mat` file must contain **exactly one** of the following:
 
 ---
 
-## Required fields
+## Format versions
+
+The loader supports two formats, auto-detected:
+
+| Format | Detected by | Description |
+|--------|-------------|-------------|
+| **Grouped (v2)** ✅ recommended | `isfield(lasso, 'groups')` | Controllers are defined per **group**; phases that share the same controller reference the same `beta`/`bias`/`mask`. No parameter duplication. |
+| **Legacy (v1)** | otherwise | Per-phase `beta`/`bias`/`mask` cell arrays (`nPhases × 1`). |
+
+---
+
+## Grouped format (v2) — recommended
+
+### Required fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lasso.format` | `char` | `'grouped'` |
+| `lasso.nPhases` | scalar | Total number of gait phases (e.g., `5`) |
+| `lasso.phaseIds` | `1 × nPhases` | Phase ID numbers (e.g., `[0 1 2 3 4]`) |
+| `lasso.nGroups` | scalar | Number of distinct controller groups (e.g., `2`) |
+| `lasso.groups` | `1 × nGroups` struct array | Each element defines one controller group |
+
+### `lasso.groups(g)` fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `.label` | `char` | Human-readable label (e.g., `'stance'`, `'swing'`) |
+| `.phases` | `1 × k` double | Phase IDs that use this controller (e.g., `[0 1]`) |
+| `.beta` | `22 × 7` double | Coefficient matrix (features × canonical muscles) |
+| `.bias` | `1 × 7` double | Bias/intercept vector |
+| `.mask` | `22 × 7` logical | Structural zero mask (`true` = optimizable entry) |
+
+### Example grouped struct
+
+```matlab
+lasso = struct();
+lasso.format = 'grouped';
+lasso.nPhases = 5;
+lasso.phaseIds = 0:4;
+lasso.nGroups = 2;
+lasso.groups = struct();
+
+% Stance controller — used by phases 0 and 1
+lasso.groups(1).label  = 'stance';
+lasso.groups(1).phases = [0 1];
+lasso.groups(1).beta   = betaStance;     % 22×7 double
+lasso.groups(1).bias   = biasStance;     % 1×7 double
+lasso.groups(1).mask   = maskStance;     % 22×7 logical
+
+% Swing controller — used by phases 2, 3, and 4
+lasso.groups(2).label  = 'swing';
+lasso.groups(2).phases = [2 3 4];
+lasso.groups(2).beta   = betaSwing;      % 22×7 double
+lasso.groups(2).bias   = biasSwing;      % 1×7 double
+lasso.groups(2).mask   = maskSwing;      % 22×7 logical
+
+save('results/lasso_controller_result.mat', 'lasso');
+```
+
+### How the loader expands grouped format
+
+1. **`reflexTemplate.mask`** — expanded to per-phase cells (phases in the same
+   group share the same mask).
+2. **`reflexTemplate.groupOfPhase`** — `1 × nPhases` mapping from phase index
+   → group index.
+3. **`reflexParamMap.groups(g)`** — stores the layout of each group in the
+   flat parameter vector (no duplication).
+4. **`initPara`** — contains only `nGroups` sets of parameters.  The unpacker
+   expands them to per-phase `beta`/`bias` cells at runtime.
+
+---
+
+## Legacy format (v1)
+
+### Required fields
 
 ### `lasso.beta` — coefficient matrices
 
@@ -55,17 +130,16 @@ Each cell `lasso.bias{p}` must have **7 elements** (convertible to `1 × 7`).
 
 ---
 
-## Optional fields
+## Optional fields (both formats)
 
 | Field | Type | Default if missing |
 |-------|------|---------------------|
-| `lasso.mask` | Cell array of `22 × 7` `logical` | Inferred as `abs(beta{p}) > 0` |
 | `lasso.nPhases` | Scalar integer | `numel(lasso.beta)` |
 | `lasso.phaseIds` | Vector (length `nPhases`) | `0 : (nPhases-1)` |
 | `lasso.featureNames` | Cell array `22 × 1` or `1 × 22` of `char` | *(none)* |
 | `lasso.muscleNames` | Cell array `7 × 1` or `1 × 7` of `char` | *(none)* |
 
-### `lasso.mask`
+### `lasso.mask` (legacy format only)
 
 A `logical` matrix of the same size as each `beta{p}`.
 
@@ -143,56 +217,13 @@ The 7 same-side muscles in the canonical (right-leg) order, matching
 
 ---
 
-## Complete MATLAB example
-
-This snippet generates a valid `lasso_controller_result.mat` for the
-5-phase, 22-feature, 7-muscle controller.  Customise `beta` and `bias` with
-your own LASSO-fitted values.
-
-```matlab
-nPhases = 5;
-nFeatures = 22;
-nMuscles = 7;
-
-lasso = struct();
-lasso.nPhases = nPhases;
-lasso.phaseIds = 0:(nPhases-1);          % [0 1 2 3 4]
-lasso.beta = cell(nPhases, 1);
-lasso.bias = cell(nPhases, 1);
-lasso.mask = cell(nPhases, 1);
-
-% Optional labels (display only, not used in computation)
-lasso.featureNames = {
-    'len_ham'; 'len_glu'; 'len_ili'; 'len_vas'; 'len_gas'; 'len_sol'; 'len_tib';
-    'frc_ham'; 'frc_glu'; 'frc_ili'; 'frc_vas'; 'frc_gas'; 'frc_sol'; 'frc_tib';
-    'pelvis_tilt'; 'pelvis_tilt_vel';
-    'hip_ang'; 'hip_vel'; 'knee_ang'; 'knee_vel'; 'ankle_ang'; 'ankle_vel'
-    };
-lasso.muscleNames = {'hamstrings'; 'glut_max'; 'iliopsoas'; 'vasti'; ...
-                      'gastroc'; 'soleus'; 'tibia'};
-
-for p = 1:nPhases
-    % Replace with your LASSO-fitted values
-    lasso.beta{p} = your_fitted_beta_for_phase_p;   % 22 × 7 double
-    lasso.bias{p} = your_fitted_bias_for_phase_p;   % 1 × 7 double
-
-    % Either provide mask explicitly ...
-    lasso.mask{p} = your_mask_for_phase_p;           % 22 × 7 logical
-
-    % ... or let the loader infer it from abs(beta) > 0 (omit mask field).
-end
-
-save('results/lasso_controller_result.mat', 'lasso');
-```
-
----
-
 ## Quick checklist before saving
 
 - [ ] File saved under `results/` as a `.mat`.
 - [ ] Contains either a variable named `lasso`, or exactly one struct variable.
-- [ ] `lasso.beta` is `nPhases × 1` cell, each cell `22 × 7`.
-- [ ] `lasso.bias` (or `lasso.b`) is `nPhases × 1` cell, each cell has 7 values.
-- [ ] Every `beta{p}` entry outside `mask{p}` is exactly `0`.
+- [ ] **Grouped format (recommended):** `lasso.groups(g).beta`/`.bias`/`.mask`/`.phases`/`.label`.
+- [ ] **Legacy format:** `lasso.beta` is `nPhases × 1` cell, each cell `22 × 7`.
+- [ ] **Legacy format:** `lasso.bias` (or `lasso.b`) is `nPhases × 1` cell, each cell has 7 values.
+- [ ] Every `beta` entry outside its `mask` is exactly `0`.
 - [ ] `lasso.phaseIds` matches the phase IDs output by `cal_gait_phase.m` (`0:4`).
 - [ ] Feature rows 1–14 follow the canonical muscle order (ham, glu, ili, vas, gas, sol, tib).

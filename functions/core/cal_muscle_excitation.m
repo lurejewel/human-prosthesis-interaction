@@ -36,14 +36,15 @@ function muscleExcitations = cal_muscle_excitation(modelInfo, frameIndex)
 
 %% ---- dispatch: LASSO vs legacy ----
 if ~isempty(modelInfo.reflexParams) ...
-   && strcmp(modelInfo.reflexParams.controllerType, 'lasso_linear_phase')
+        && strcmp(modelInfo.reflexParams.controllerType, 'lasso_linear_phase')
 
     % ======== LASSO linear-phase controller ========
     muscleExcitations = lasso_excitation(modelInfo, frameIndex);
 
 else
-    % ======== legacy hand-crafted controller ========
-    muscleExcitations = legacy_excitation(modelInfo, frameIndex);
+    error('Legacy hand-crafted controller is commented.');
+    % % ======== legacy hand-crafted controller ========
+    % muscleExcitations = legacy_excitation(modelInfo, frameIndex);
 end
 
 % ---- clip to physiological range [0, 1] ----
@@ -82,110 +83,110 @@ excL = A_L * rp.beta{phaseIdxL} + rp.bias{phaseIdxL};  % 1×7
 exc = [excR(:); excL(:)];
 end
 
-% ========================================================================
-function exc = legacy_excitation(modelInfo, frameIndex)
-% Original hand-crafted muscle-reflex controller (preserved as fallback).
-
-map = modelInfo.st.model.map;
-p   = modelInfo.dy.muscle.para;
-
-fATN_frame = modelInfo.dy.muscle.fATN(:, frameIndex);
-lCEN_frame = modelInfo.dy.muscle.lCEN(:, frameIndex);
-
-if frameIndex == 1
-    initPose  = modelInfo.st.model.initPose;
-    pelvisTilt  = initPose(map('pelvis_tilt/value'));
-    pelvisTiltV = initPose(map('pelvis_tilt/speed'));
-    kneeAngR = initPose(map('knee_flexion_r/value'));
-    kneeVelR = initPose(map('knee_flexion_r/speed'));
-    kneeAngL = initPose(map('knee_flexion_l/value'));
-    kneeVelL = initPose(map('knee_flexion_l/speed'));
-else
-    sh = modelInfo.dy.stateHistory;
-    pelvisTilt  = sh(map('pelvis_tilt/value'), frameIndex - 1);
-    pelvisTiltV = sh(map('pelvis_tilt/speed'), frameIndex - 1);
-    kneeAngR = sh(map('knee_flexion_r/value'), frameIndex - 1);
-    kneeVelR = sh(map('knee_flexion_r/speed'), frameIndex - 1);
-    kneeAngL = sh(map('knee_flexion_l/value'), frameIndex - 1);
-    kneeVelL = sh(map('knee_flexion_l/speed'), frameIndex - 1);
-end
-
-nMusPerLeg = numel(modelInfo.st.muscle.names) / 2;
-baseIdxR = 0;
-baseIdxL = nMusPerLeg;
-muscleIdx = modelInfo.st.muscle.legIdx;
-
-excR = compute_leg_excitation(modelInfo.dy.phase.r(frameIndex), fATN_frame, lCEN_frame, ...
-    p, pelvisTilt, pelvisTiltV, kneeAngR, kneeVelR, baseIdxR, muscleIdx);
-excL = compute_leg_excitation(modelInfo.dy.phase.l(frameIndex), fATN_frame, lCEN_frame, ...
-    p, pelvisTilt, pelvisTiltV, kneeAngL, kneeVelL, baseIdxL, muscleIdx);
-
-exc = [excR; excL];
-end
-
-% ========================================================================
-function exc = compute_leg_excitation(phase, fATN, lCEN, p, ...
-    pelvisTilt, pelvisTiltV, kneeAng, kneeVel, baseIdx, muscleIdx)
-% Legacy per-leg excitation (preserved from original code).
-
-HAM = muscleIdx('hamstrings');
-GLU = muscleIdx('glut_max');
-ILI = muscleIdx('iliopsoas');
-VAS = muscleIdx('vasti');
-GAS = muscleIdx('gastroc');
-SOL = muscleIdx('soleus');
-TIB = muscleIdx('tibia');
-
-gluFN = fATN(baseIdx + GLU);
-vasFN = fATN(baseIdx + VAS);
-gasFN = fATN(baseIdx + GAS);
-solFN = fATN(baseIdx + SOL);
-hamLN = lCEN(baseIdx + HAM);
-iliLN = lCEN(baseIdx + ILI);
-tibLN = lCEN(baseIdx + TIB);
-
-P0_pq = -0.1944;
-deltaVas = double(kneeAng < p.vas_knee.pos_max || kneeVel <= 0);
-exc = zeros(7, 1);
-
-switch phase
-    case {0, 1}
-        exc(HAM) = p.ham_pelvis_tilt.C0 - (p.ham_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.ham_pelvis_tilt.KV * pelvisTiltV);
-        exc(GLU) = p.glu_pelvis_tilt.C0 - (p.glu_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.glu_pelvis_tilt.KV * pelvisTiltV);
-        exc(ILI) = p.ili_pelvis_tilt.C0 - (p.ili_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.ili_pelvis_tilt.KV * pelvisTiltV);
-        if phase == 0
-            exc(VAS) = p.vas.C0 + deltaVas * p.vas.KF1 * vasFN;
-        else
-            exc(VAS) = p.vas.C0 + deltaVas * p.vas.KF2 * vasFN;
-        end
-        exc(GAS) = p.gas.KF * gasFN;
-        exc(SOL) = p.sol.KF * solFN;
-        exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
-
-    case 2
-        exc(ILI) = p.ili.C0;
-        exc(GAS) = p.gas.KF * gasFN;
-        exc(SOL) = p.sol.KF * solFN;
-        exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
-
-    case 3
-        exc(GLU) = p.glu.KF * gluFN;
-        exc(ILI) = p.ili.KL * (iliLN - p.ili.L0) ...
-                 - p.ili_pelvis_tilt.KP2 * (pelvisTilt - p.ili_pelvis_tilt.P02) ...
-                 + p.ili_ham.KL * (hamLN - p.ili_ham.L0) ...
-                 - p.ili_pelvis_tilt.KV2 * pelvisTiltV;
-        exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
-
-    case 4
-        exc(HAM) = p.ham_glu.KF * gluFN;
-        exc(GLU) = p.glu.KF * gluFN;
-        exc(ILI) = p.ili.KL * (iliLN - p.ili.L0) ...
-                 - p.ili_pelvis_tilt.KP2 * (pelvisTilt - p.ili_pelvis_tilt.P02) ...
-                 + p.ili_ham.KL * (hamLN - p.ili_ham.L0) ...
-                 - p.ili_pelvis_tilt.KV2 * pelvisTiltV;
-        exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
-
-    otherwise
-        error('Invalid gait phase: %d', phase);
-end
-end
+% % ========================================================================
+% function exc = legacy_excitation(modelInfo, frameIndex)
+% % Original hand-crafted muscle-reflex controller (preserved as fallback).
+%
+% map = modelInfo.st.model.map;
+% p   = modelInfo.dy.muscle.para;
+%
+% fATN_frame = modelInfo.dy.muscle.fATN(:, frameIndex);
+% lCEN_frame = modelInfo.dy.muscle.lCEN(:, frameIndex);
+%
+% if frameIndex == 1
+%     initPose  = modelInfo.st.model.initPose;
+%     pelvisTilt  = initPose(map('pelvis_tilt/value'));
+%     pelvisTiltV = initPose(map('pelvis_tilt/speed'));
+%     kneeAngR = initPose(map('knee_flexion_r/value'));
+%     kneeVelR = initPose(map('knee_flexion_r/speed'));
+%     kneeAngL = initPose(map('knee_flexion_l/value'));
+%     kneeVelL = initPose(map('knee_flexion_l/speed'));
+% else
+%     sh = modelInfo.dy.stateHistory;
+%     pelvisTilt  = sh(map('pelvis_tilt/value'), frameIndex - 1);
+%     pelvisTiltV = sh(map('pelvis_tilt/speed'), frameIndex - 1);
+%     kneeAngR = sh(map('knee_flexion_r/value'), frameIndex - 1);
+%     kneeVelR = sh(map('knee_flexion_r/speed'), frameIndex - 1);
+%     kneeAngL = sh(map('knee_flexion_l/value'), frameIndex - 1);
+%     kneeVelL = sh(map('knee_flexion_l/speed'), frameIndex - 1);
+% end
+%
+% nMusPerLeg = numel(modelInfo.st.muscle.names) / 2;
+% baseIdxR = 0;
+% baseIdxL = nMusPerLeg;
+% muscleIdx = modelInfo.st.muscle.legIdx;
+%
+% excR = compute_leg_excitation(modelInfo.dy.phase.r(frameIndex), fATN_frame, lCEN_frame, ...
+%     p, pelvisTilt, pelvisTiltV, kneeAngR, kneeVelR, baseIdxR, muscleIdx);
+% excL = compute_leg_excitation(modelInfo.dy.phase.l(frameIndex), fATN_frame, lCEN_frame, ...
+%     p, pelvisTilt, pelvisTiltV, kneeAngL, kneeVelL, baseIdxL, muscleIdx);
+%
+% exc = [excR; excL];
+% end
+%
+% % ========================================================================
+% function exc = compute_leg_excitation(phase, fATN, lCEN, p, ...
+%     pelvisTilt, pelvisTiltV, kneeAng, kneeVel, baseIdx, muscleIdx)
+% % Legacy per-leg excitation (preserved from original code).
+%
+% HAM = muscleIdx('hamstrings');
+% GLU = muscleIdx('glut_max');
+% ILI = muscleIdx('iliopsoas');
+% VAS = muscleIdx('vasti');
+% GAS = muscleIdx('gastroc');
+% SOL = muscleIdx('soleus');
+% TIB = muscleIdx('tibia');
+%
+% gluFN = fATN(baseIdx + GLU);
+% vasFN = fATN(baseIdx + VAS);
+% gasFN = fATN(baseIdx + GAS);
+% solFN = fATN(baseIdx + SOL);
+% hamLN = lCEN(baseIdx + HAM);
+% iliLN = lCEN(baseIdx + ILI);
+% tibLN = lCEN(baseIdx + TIB);
+%
+% P0_pq = -0.1944;
+% deltaVas = double(kneeAng < p.vas_knee.pos_max || kneeVel <= 0);
+% exc = zeros(7, 1);
+%
+% switch phase
+%     case {0, 1}
+%         exc(HAM) = p.ham_pelvis_tilt.C0 - (p.ham_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.ham_pelvis_tilt.KV * pelvisTiltV);
+%         exc(GLU) = p.glu_pelvis_tilt.C0 - (p.glu_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.glu_pelvis_tilt.KV * pelvisTiltV);
+%         exc(ILI) = p.ili_pelvis_tilt.C0 - (p.ili_pelvis_tilt.KP * (pelvisTilt - P0_pq) + p.ili_pelvis_tilt.KV * pelvisTiltV);
+%         if phase == 0
+%             exc(VAS) = p.vas.C0 + deltaVas * p.vas.KF1 * vasFN;
+%         else
+%             exc(VAS) = p.vas.C0 + deltaVas * p.vas.KF2 * vasFN;
+%         end
+%         exc(GAS) = p.gas.KF * gasFN;
+%         exc(SOL) = p.sol.KF * solFN;
+%         exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
+%
+%     case 2
+%         exc(ILI) = p.ili.C0;
+%         exc(GAS) = p.gas.KF * gasFN;
+%         exc(SOL) = p.sol.KF * solFN;
+%         exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
+%
+%     case 3
+%         exc(GLU) = p.glu.KF * gluFN;
+%         exc(ILI) = p.ili.KL * (iliLN - p.ili.L0) ...
+%                  - p.ili_pelvis_tilt.KP2 * (pelvisTilt - p.ili_pelvis_tilt.P02) ...
+%                  + p.ili_ham.KL * (hamLN - p.ili_ham.L0) ...
+%                  - p.ili_pelvis_tilt.KV2 * pelvisTiltV;
+%         exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
+%
+%     case 4
+%         exc(HAM) = p.ham_glu.KF * gluFN;
+%         exc(GLU) = p.glu.KF * gluFN;
+%         exc(ILI) = p.ili.KL * (iliLN - p.ili.L0) ...
+%                  - p.ili_pelvis_tilt.KP2 * (pelvisTilt - p.ili_pelvis_tilt.P02) ...
+%                  + p.ili_ham.KL * (hamLN - p.ili_ham.L0) ...
+%                  - p.ili_pelvis_tilt.KV2 * pelvisTiltV;
+%         exc(TIB) = p.tib.KL * (tibLN - p.tib.L0) + p.tib_sol.KF * solFN;
+%
+%     otherwise
+%         error('Invalid gait phase: %d', phase);
+% end
+% end

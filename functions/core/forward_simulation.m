@@ -4,6 +4,7 @@ frameIndex = 1;
 
 % ---- build simulation cache once (avoid per-frame Java lookups / allocations) ----
 nMus = numel(modelInfo.st.muscle.names);
+fopt = modelInfo.st.muscle.fopt;
 muscleSet = model.getMuscles();
 
 % muscle handles
@@ -68,11 +69,11 @@ for t = modelInfo.st.simInfo.timeSeries % for every frame
     % update & record
     model.realizeDynamics(state);
     if frameIndex < width(modelInfo.st.simInfo.timeSeries)
-        modelInfo = update_modelInfo(modelInfo, state, simCache.allMuscles, frameIndex);
+        modelInfo = update_modelInfo(modelInfo, state, simCache.allMuscles, frameIndex, fopt);
     end
 
     % fall detection
-    if modelInfo.dy.stateHistory(modelInfo.st.model.map('pelvis_ty/value'), frameIndex) < 0.6
+    if modelInfo.dy.stateHistory(modelInfo.st.model.map('pelvis_ty/value'), frameIndex) < 0.85
         break;
     end
     frameIndex = frameIndex + 1;
