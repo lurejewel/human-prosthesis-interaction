@@ -14,17 +14,19 @@
 % -------------------------------------------------------------------------
 
 clear all; close all; clc
-addpath(genpath('assets\'), genpath('model\'), genpath('functions\'))
+cd(fileparts(mfilename('fullpath')));
+cd('..');
+addpath(genpath('assets'), genpath('model'), genpath('functions'))
 
 %% ---------- user configuration ----------
-projName       = 'coupled_human-prosthesis_model';
-paraSourceFile = 'results\opt_result_2026-06-10_22-32-53.mat';  % <-- change to your result file
+projName       = 'human0714';  % <-- change to your model name (without .osim)
+paraSourceFile = 'results\opt_result_2026-06-16_23-19-29.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
 simConfig.stepTime = 0.005;
 simConfig.speed   = 1.0;
 simConfig.slope   = 0;
-showVideo         = false;  % set to false to skip 3D visual playback
+showVideo         = 0;  % set to false to skip 3D visual playback
 % -----------------------------------------
 
 %% load the parameter set to test
@@ -111,33 +113,34 @@ grfYL = modelInfo.dy.grf.fyl(1:nValid);
 % ---- walking speed (m/s, from pelvis_tx gradient) ----
 walkSpeed = gradient(pelvis_tx, simConfig.stepTime);
 
-%% compute net joint torques via inverse dynamics
-fprintf('Computing net joint torques via ID (%d frames)...\n', nValid);
+%% compute net joint torques via muscle moment summation
+% Net joint torque ≈ Σ (moment_arm_i × tendon_force_i) for all muscles.
+% Uses the forward-simulation model directly — no separate ID model needed.
+fprintf('Computing net joint torques via muscle moment summation (%d frames)...\n', nValid);
 
-% ---- build ID model (same .osim, muscles disabled) ----
-modelID = org.opensim.modeling.Model(['model/' projName '.osim']);
-stateID = modelID.initSystem();
-nMus    = numel(muscleNames);
-allMusclesID = cell(1, nMus);
+% ---- coordinate handles (retrieved once for efficiency) ----
+coord_hipR   = model.getCoordinateSet().get('hip_flexion_r');
+coord_kneeR  = model.getCoordinateSet().get('knee_flexion_r');
+coord_ankleR = model.getCoordinateSet().get('ankle_dorsiflexion_r');
+coord_hipL   = model.getCoordinateSet().get('hip_flexion_l');
+coord_kneeL  = model.getCoordinateSet().get('knee_flexion_l');
+coord_ankleL = model.getCoordinateSet().get('ankle_dorsiflexion_l');
+coords = {coord_hipR, coord_kneeR, coord_ankleR, ...
+          coord_hipL, coord_kneeL, coord_ankleL};
+
+% ---- muscle handles ----
+nMus = numel(muscleNames);
+nQ = model.getNumCoordinates();  % same as state.getNQ()
+muscleRefs = cell(1, nMus);
 for i = 1 : nMus
-    allMusclesID{i} = modelID.getMuscles().get(i - 1);
-    allMusclesID{i}.setAppliesForce(stateID, false);   % only gravity + contact remain
+    muscleRefs{i} = model.getMuscles().get(i - 1);
 end
 
-% coordinate -> mobility index (same order as U / UDot)
-nQ = stateID.getNQ();
-nU = stateID.getNU();
-dt = simConfig.stepTime;
+% ---- state for moment-arm queries (fresh copy, kinematics set per frame) ----
+stateMA = model.initSystem();
+nStates = stateMA.getNQ() + stateMA.getNU();
 
-coordIdx_hipR   = modelID.getCoordinateSet().getIndex('hip_flexion_r');
-coordIdx_kneeR  = modelID.getCoordinateSet().getIndex('knee_flexion_r');
-coordIdx_ankleR = modelID.getCoordinateSet().getIndex('ankle_dorsiflexion_r');
-coordIdx_hipL   = modelID.getCoordinateSet().getIndex('hip_flexion_l');
-coordIdx_kneeL  = modelID.getCoordinateSet().getIndex('knee_flexion_l');
-coordIdx_ankleL = modelID.getCoordinateSet().getIndex('ankle_dorsiflexion_l');
-
-idSolver = org.opensim.modeling.InverseDynamicsSolver(modelID);
-
+% ---- preallocate ----
 torque_hipR   = nan(1, nValid);
 torque_kneeR  = nan(1, nValid);
 torque_ankleR = nan(1, nValid);
@@ -145,42 +148,38 @@ torque_hipL   = nan(1, nValid);
 torque_kneeL  = nan(1, nValid);
 torque_ankleL = nan(1, nValid);
 
-% ---- read kinematics directly from stateHistory (no filtering) ----
-% Q_hist = stateHist(1:nQ, 1:nValid);   already available via stateHist
-% U_hist = stateHist(nQ+1:nQ+nU, 1:nValid);
-
-% compute UDot from U via central difference
-UDot_hist = zeros(nU, nValid);
-UDot_hist(:, 1)       = (stateHist(nQ+1:nQ+nU, 2)       - stateHist(nQ+1:nQ+nU, 1))       / dt;
-UDot_hist(:, 2:end-1) = (stateHist(nQ+1:nQ+nU, 3:nValid)   - stateHist(nQ+1:nQ+nU, 1:nValid-2)) / (2*dt);
-UDot_hist(:, end)     = (stateHist(nQ+1:nQ+nU, nValid)     - stateHist(nQ+1:nQ+nU, nValid-1))   / dt;
-
 for fi = 1 : nValid
-    % ---- set kinematics (Q, U) from simulation stateHistory ----
-    Y = stateID.updY();
-    for i = 0 : nQ + nU - 1
+    % ---- set kinematics from simulation stateHistory ----
+    Y = stateMA.updY();
+    for i = 0 : nStates - 1
         Y.set(i, stateHist(i + 1, fi));
     end
-    stateID.setTime(tVec(fi));
+    stateMA.setTime(tVec(fi));
 
-    % ---- set UDot on ID state (central diff of simulation U) ----
-    for i = 0 : nU - 1
-        stateID.updUDot().set(i, UDot_hist(i + 1, fi));
+    % Realize to Velocity stage (required for path-based muscle moment arms)
+    model.realizeVelocity(stateMA);
+
+    % ---- accumulate muscle moments ----
+    tau = zeros(6, 1);
+    for m = 1 : nMus
+        fT = modelInfo.dy.muscle.fATN(m, fi) * muscleRefs{m}.getMaxIsometricForce;
+        if fT == 0 || isnan(fT)
+            continue;
+        end
+        for c = 1 : 6
+            ma = muscleRefs{m}.computeMomentArm(stateMA, coords{c});
+            tau(c) = tau(c) + ma * fT;
+        end
     end
 
-    % ---- solve inverse dynamics (muscles off -> residual = net joint moment) ----
-    modelID.realizeAcceleration(stateID);
-    tauVec = idSolver.solve(stateID);
-
-    % ---- extract per-coordinate torques ----
-    torque_hipR(fi)   = tauVec.get(coordIdx_hipR);
-    torque_kneeR(fi)  = tauVec.get(coordIdx_kneeR);
-    torque_ankleR(fi) = tauVec.get(coordIdx_ankleR);
-    torque_hipL(fi)   = tauVec.get(coordIdx_hipL);
-    torque_kneeL(fi)  = tauVec.get(coordIdx_kneeL);
-    torque_ankleL(fi) = tauVec.get(coordIdx_ankleL);
+    torque_hipR(fi)   = tau(1);
+    torque_kneeR(fi)  = tau(2);
+    torque_ankleR(fi) = tau(3);
+    torque_hipL(fi)   = tau(4);
+    torque_kneeL(fi)  = tau(5);
+    torque_ankleL(fi) = tau(6);
 end
-fprintf('Joint torque ID computation done.\n');
+fprintf('Muscle moment summation done.\n');
 
 %% =====================  VISUALISATION  =====================
 
@@ -273,6 +272,7 @@ if showVideo
     playbackSpeed = 1.0;   % >1 = faster, <1 = slower, 1 = real-time
     frameStep     = 1;     % render every N-th frame (1 = every frame)
 
+    model.setUseVisualizer(true);
     stateVis = model.initSystem();
     nStates  = size(stateHist, 1);
 
@@ -336,9 +336,9 @@ else
         gc_ankleTauR(c, :) = interp1(framePct, torque_ankleR(idxStart:idxEnd), gcPct, 'pchip') / bodyMass;
 
         for m = 1 : numel(muscleNames)
-            fMTU_cycle = modelInfo.dy.muscle.fMTU(m, idxStart:idxEnd);
+            fATN_cycle = modelInfo.dy.muscle.fATN(m, idxStart:idxEnd);
             % normalise by body weight (dimensionless, F / BW)
-            gc_musForce(c, :, m) = interp1(framePct, fMTU_cycle, gcPct, 'pchip') / bodyWeight;
+            gc_musForce(c, :, m) = interp1(framePct, fATN_cycle, gcPct, 'pchip') / bodyWeight;
         end
     end
 

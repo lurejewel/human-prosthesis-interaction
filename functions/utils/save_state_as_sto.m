@@ -29,7 +29,7 @@ function save_state_as_sto(model, modelInfo, showVideoFlag)
     
     if showVideoFlag
         % play the video
-        read_sto_file('model/coupled_human-prosthesis_model.osim', filename, 1);
+        read_sto_file(model, filename, 1);
     end
     
 end

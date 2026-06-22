@@ -68,6 +68,7 @@ for t = modelInfo.st.simInfo.timeSeries % for every frame
 
     % update & record
     model.realizeDynamics(state);
+
     if frameIndex < width(modelInfo.st.simInfo.timeSeries)
         modelInfo = update_modelInfo(modelInfo, state, simCache.allMuscles, frameIndex, fopt);
     end
@@ -79,7 +80,8 @@ for t = modelInfo.st.simInfo.timeSeries % for every frame
     frameIndex = frameIndex + 1;
 
 end
+
 modelInfo.dy.lastTime = t;
 modelInfo.dy.hasRun  = true;
-
+modelInfo.dy.totalMetabolic = model.getProbeSet.get(0).getProbeOutputs(state).get(0);
 end

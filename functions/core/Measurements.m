@@ -50,8 +50,8 @@ classdef Measurements < handle
             obj.lastTime  = modelInfo.dy.lastTime;
             obj.npts = find(all(~isnan(modelInfo.dy.stateHistory)), 1, 'last');
 
-            obj.muscleMass   = modelInfo.st.muscle.mass;
-            obj.muscleLambda = modelInfo.st.muscle.lambda;
+            % obj.muscleMass   = modelInfo.st.muscle.mass;
+            % obj.muscleLambda = modelInfo.st.muscle.lambda;
 
             % pre-allocate and collect heelstrike events
             obj.heelstrikeEventR = zeros(1, obj.npts);
@@ -158,34 +158,41 @@ classdef Measurements < handle
 
         function fit = effort_measure(obj, weight)
 
-            nMuscles = numel(obj.muscleMass);
-            Effort   = zeros(1, obj.npts);
-            mi       = obj.modelInfo.dy.muscle;
-            massVec  = obj.muscleMass;
-            lambdaVec = obj.muscleLambda;
+            sh      = obj.modelInfo.dy.stateHistory;
+            sm      = obj.modelInfo.st.model.map;
+            pelvisX = sh(sm('pelvis_tx/value'), obj.npts);
+            m       = obj.mass;
 
-            for i = 2 : obj.npts
-                dE = zeros(1, nMuscles);
-                for j = 1 : nMuscles
-                    m  = massVec(j);
-                    la = lambdaVec(j);
-                    u  = mi.exc(j, i);
-                    a  = mi.act(j, i);
-                    lCEN = mi.lCEN(j, i);
-                    vCE  = max(-mi.vCE(j, i), 0);
-                    fMTU = mi.fMTU(j, i);
-                    fCE  = mi.fCE(j, i);
+            fit = weight * obj.modelInfo.dy.totalMetabolic / m / pelvisX;
 
-                    dA = m * Measurements.fAFcn(la, u);
-                    dM = m * Measurements.gFcn(lCEN) * Measurements.fMFcn(la, a);
-                    dS = 0.25 * fMTU * vCE;
-                    dW = fCE * vCE;
-                    dE(j) = dA + dM + dS + dW;
-                end
-                Effort(i) = sum(dE);
-            end
-
-            fit = weight * (mean(Effort) / obj.mass + 1.51);
+            % nMuscles = numel(obj.muscleMass);
+            % Effort   = zeros(1, obj.npts);
+            % mi       = obj.modelInfo.dy.muscle;
+            % massVec  = obj.muscleMass;
+            % lambdaVec = obj.muscleLambda;
+            % 
+            % for i = 2 : obj.npts
+            %     dE = zeros(1, nMuscles);
+            %     for j = 1 : nMuscles
+            %         m  = massVec(j);
+            %         la = lambdaVec(j);
+            %         u  = mi.exc(j, i);
+            %         a  = mi.act(j, i);
+            %         lCEN = mi.lCEN(j, i);
+            %         vCE  = max(-mi.vCE(j, i), 0);
+            %         fMTU = mi.fMTU(j, i);
+            %         fCE  = mi.fCE(j, i);
+            % 
+            %         dA = m * Measurements.fAFcn(la, u);
+            %         dM = m * Measurements.gFcn(lCEN) * Measurements.fMFcn(la, a);
+            %         dS = 0.25 * fMTU * vCE;
+            %         dW = fCE * vCE;
+            %         dE(j) = dA + dM + dS + dW;
+            %     end
+            %     Effort(i) = sum(dE);
+            % end
+            % 
+            % fit = weight * (mean(Effort) / obj.mass + 1.51);
         end
     end
     methods (Static)

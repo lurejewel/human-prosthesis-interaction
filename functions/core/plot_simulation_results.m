@@ -13,27 +13,27 @@ switch dataCategory
             xlabel('time/s')
         end
 
-    case 'activation'
-        for i = 0 : nMuscles-1
-            figure, plot(time, modelInfo.dy.muscle.act(i+1, :), 'LineWidth',2);
-            grid on, title(['activation of ' char(model.getMuscles.get(i).getName)], 'Interpreter','none')
-            xlabel('time/s')
-        end
+    % case 'activation'    % DEPRECATED: act field removed
+    %     for i = 0 : nMuscles-1
+    %         figure, plot(time, modelInfo.dy.muscle.act(i+1, :), 'LineWidth',2);
+    %         grid on, title(['activation of ' char(model.getMuscles.get(i).getName)], 'Interpreter','none')
+    %         xlabel('time/s')
+    %     end
 
-    case 'excitation&activation'
-        for i = 0 : nMuscles-1
-            figure, plot(time, modelInfo.dy.muscle.exc(i+1, 1:end-modelInfo.st.muscle.delay), 'LineWidth',2);
-            hold on, plot(time, modelInfo.dy.muscle.act(i+1, :), '--', 'LineWidth',2);
-            grid on, title(['excitation & activation of ' char(model.getMuscles.get(i).getName)], 'Interpreter','none')
-            xlabel('time/s'), legend('excitation', 'activation')
-        end
+    % case 'excitation&activation'    % DEPRECATED: act field removed
+    %     for i = 0 : nMuscles-1
+    %         figure, plot(time, modelInfo.dy.muscle.exc(i+1, 1:end-modelInfo.st.muscle.delay), 'LineWidth',2);
+    %         hold on, plot(time, modelInfo.dy.muscle.act(i+1, :), '--', 'LineWidth',2);
+    %         grid on, title(['excitation & activation of ' char(model.getMuscles.get(i).getName)], 'Interpreter','none')
+    %         xlabel('time/s'), legend('excitation', 'activation')
+    %     end
 
-    case 'muscleForce'
-        for i = 0 : nMuscles-1
-            figure, plot(time, modelInfo.dy.muscle.fMTU(i+1, :), 'LineWidth',2);
-            grid on, title(['force of ' char(model.getMuscles.get(i).getName)], 'Interpreter','none')
-            xlabel('time/s')
-        end
+    % case 'muscleForce'    % DEPRECATED: fMTU field removed
+    %     for i = 0 : nMuscles-1
+    %         figure, plot(time, modelInfo.dy.muscle.fMTU(i+1, :), 'LineWidth',2);
+    %         grid on, title(['force of ' char(model.getMuscles.get(i).getName)], 'Interpreter','none')
+    %         xlabel('time/s')
+    %     end
 
     case 'phase'
         figure, plot(time, modelInfo.dy.phase.r, 'LineWidth',2);

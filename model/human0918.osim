@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="40500">	
-	<Model name="coupled_human-prosthesis_model">
+<OpenSimDocument Version="40500">
+	<Model name="human0918">
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
 			<!--The geometry used to display the axes of this Frame.-->
@@ -1068,6 +1068,80 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="bifemsh_r">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The path of the actuator which defines length and lengthening speed.-->
+					<GeometryPath name="path">
+						<!--Default appearance attributes for this AbstractGeometryPath.-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="bifemsh_r-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/femur_r</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.0050000000000000001 -0.21110000000000001 0.023400000000000001</location>
+								</PathPoint>
+								<PathPoint name="bifemsh_r-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/tibia_r</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.028000000000000001 -0.02 0.029430000000000001</location>
+								</PathPoint>
+								<PathPoint name="bifemsh_r-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/tibia_r</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.021000000000000001 -0.040000000000000001 0.034299999999999997</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>804</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.1103</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.095000000000000001</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.2147</pennation_angle_at_optimal>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="bifemsh_r_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="bifemsh_r_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="bifemsh_r_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="bifemsh_r_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="glut_max_r">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0.01</min_control>
@@ -1225,6 +1299,80 @@
 					</FiberForceLengthCurve>
 					<!--Tendon-force-length curve.-->
 					<TendonForceLengthCurve name="iliopsoas_r_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="rect_fem_r">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The path of the actuator which defines length and lengthening speed.-->
+					<GeometryPath name="path">
+						<!--Default appearance attributes for this AbstractGeometryPath.-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="rect_fem_r-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/pelvis</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.029499999999999998 -0.031099999999999999 0.096799999999999997</location>
+								</PathPoint>
+								<PathPoint name="rect_fem_r-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/femur_r</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.037999999999999999 -0.34000000000000002 0.0040000000000000001</location>
+								</PathPoint>
+								<PathPoint name="rect_fem_r-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/tibia_r</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.037999999999999999 0.025000000000000001 0.0018</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>1169</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.075899999999999995</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.34489999999999998</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.24260000000000001</pennation_angle_at_optimal>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="rect_fem_r_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="rect_fem_r_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="rect_fem_r_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="rect_fem_r_TendonForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
@@ -1586,6 +1734,80 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="bifemsh_l">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The path of the actuator which defines length and lengthening speed.-->
+					<GeometryPath name="path">
+						<!--Default appearance attributes for this AbstractGeometryPath.-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="bifemsh_l-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/femur_l</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.0050000000000000001 -0.21110000000000001 -0.023400000000000001</location>
+								</PathPoint>
+								<PathPoint name="bifemsh_l-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/tibia_l</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.028000000000000001 -0.02 -0.029430000000000001</location>
+								</PathPoint>
+								<PathPoint name="bifemsh_l-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/tibia_l</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.021000000000000001 -0.040000000000000001 -0.034299999999999997</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>804</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.1103</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.095000000000000001</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.2147</pennation_angle_at_optimal>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="bifemsh_l_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="bifemsh_l_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="bifemsh_l_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="bifemsh_l_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="glut_max_l">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0.01</min_control>
@@ -1743,6 +1965,80 @@
 					</FiberForceLengthCurve>
 					<!--Tendon-force-length curve.-->
 					<TendonForceLengthCurve name="iliopsoas_l_TendonForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
+				</Millard2012EquilibriumMuscle>
+				<Millard2012EquilibriumMuscle name="rect_fem_l">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0.01</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>1</max_control>
+					<!--The path of the actuator which defines length and lengthening speed.-->
+					<GeometryPath name="path">
+						<!--Default appearance attributes for this AbstractGeometryPath.-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
+						<!--The set of points defining the path-->
+						<PathPointSet>
+							<objects>
+								<PathPoint name="rect_fem_l-P1">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/pelvis</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>-0.029499999999999998 -0.031099999999999999 -0.096799999999999997</location>
+								</PathPoint>
+								<PathPoint name="rect_fem_l-P2">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/femur_l</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.037999999999999999 -0.34000000000000002 -0.0040000000000000001</location>
+								</PathPoint>
+								<PathPoint name="rect_fem_l-P3">
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame>/bodyset/tibia_l</socket_parent_frame>
+									<!--The fixed location of the path point expressed in its parent frame.-->
+									<location>0.037999999999999999 0.025000000000000001 -0.0018</location>
+								</PathPoint>
+							</objects>
+							<groups />
+						</PathPointSet>
+					</GeometryPath>
+					<!--Maximum isometric force that the fibers can generate-->
+					<max_isometric_force>1169</max_isometric_force>
+					<!--Optimal length of the muscle fibers-->
+					<optimal_fiber_length>0.075899999999999995</optimal_fiber_length>
+					<!--Resting length of the tendon-->
+					<tendon_slack_length>0.34489999999999998</tendon_slack_length>
+					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+					<pennation_angle_at_optimal>0.24260000000000001</pennation_angle_at_optimal>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve name="rect_fem_l_ActiveForceLengthCurve">
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve name="rect_fem_l_ForceVelocityCurve">
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.14999999999999999</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve name="rect_fem_l_FiberForceLengthCurve">
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve name="rect_fem_l_TendonForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
@@ -2199,115 +2495,5 @@
 			</objects>
 			<groups />
 		</ContactGeometrySet>
-		<!--Probes in the model.-->
-		<ProbeSet name="probeset">
-			<objects>
-				<Umberger2010MuscleMetabolicsProbe name="metabolics">
-					<!--The operation to perform on the probe input value: 'value'(no operation, just return the probe value), 'integrate', 'differentiate', 'minimum', 'minabs', 'maximum', 'maxabs'.-->
-					<probe_operation>integrate</probe_operation>
-					<!--Specify whether activation & maintenance heat rate is to be calculated (true/false).-->
-					<activation_maintenance_rate_on>true</activation_maintenance_rate_on>
-					<!--Specify whether shortening heat rate is to be calculated (true/false).-->
-					<shortening_rate_on>true</shortening_rate_on>
-					<!--Specify whether basal heat rate is to be calculated (true/false).-->
-					<basal_rate_on>true</basal_rate_on>
-					<!--Specify whether mechanical work rate is to be calculated (true/false).-->
-					<mechanical_work_rate_on>true</mechanical_work_rate_on>
-					<!--If set to false, the individual muscle metabolics, basal rate, and total summation will be reported. If set to true, only the total summation will be reported.-->
-					<report_total_metabolics_only>true</report_total_metabolics_only>
-					<!--A set containing, for each muscle, the parameters required to calculate muscle metabolic power.-->
-					<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet>
-						<objects>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="hamstrings_r">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.496</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="glut_max_r">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.524</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="iliopsoas_r">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.492</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="vasti_r">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.474</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="gastroc_r">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.489</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="soleus_r">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.877</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="tibia_r">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.73</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="hamstrings_l">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.496</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="glut_max_l">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.524</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="iliopsoas_l">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.492</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="vasti_l">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.474</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="gastroc_l">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.489</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="soleus_l">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.877</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="tibia_l">
-								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
-								<ratio_slow_twitch_fibers>0.73</ratio_slow_twitch_fibers>
-								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
-								<use_provided_muscle_mass>false</use_provided_muscle_mass>
-							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-						</objects>
-						<groups />
-					</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet>
-				</Umberger2010MuscleMetabolicsProbe>
-			</objects>
-			<groups />
-		</ProbeSet>
 	</Model>
 </OpenSimDocument>

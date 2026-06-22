@@ -47,12 +47,12 @@ classdef ModelInfo < handle
         % │   ├── arx                       para in array form
         % │   ├── arz
         % │   ├── exc                       muscle excitations (u)
-        % │   ├── act                       muscle activations (a)
-        % │   ├── fMTU                      muscle-tendon unit forces, needed for calculation muscle effort
-        % │   ├── fCE                       muscle fiber forces, needed for calculation muscle effort
+        % │   ├── [DEPRECATED] act          muscle activations (a)
+        % │   ├── [DEPRECATED] fMTU         muscle-tendon unit forces
+        % │   ├── [DEPRECATED] fCE          muscle fiber forces
         % │   ├── fATN                      muscle fiber forces along tendon, normalized, needed for calculation muscle excitation
         % │   ├── lCEN                      muscle fiber lengths, normalized
-        % │   └── vCE                       velocity of lCEN
+        % │   └── [DEPRECATED] vCE          velocity of lCEN
         % ├── grf                       GROUND REACTION FORCES
         % │   ├── fyr                       normal reaction force for the right leg
         % │   ├── fxr                       friction force for the right leg
@@ -82,12 +82,12 @@ classdef ModelInfo < handle
             npts = ceil(obj.st.simInfo.endTime / obj.st.simInfo.stepTime)+1;
             nStates = obj.st.model.map.Count;
             obj.dy.muscle.exc = nan(nMuscles, npts+obj.st.muscle.delay);
-            obj.dy.muscle.act = nan(nMuscles, npts);
-            obj.dy.muscle.fMTU = nan(nMuscles, npts);
-            obj.dy.muscle.fCE = nan(nMuscles, npts);
+            % obj.dy.muscle.act = nan(nMuscles, npts);    % DEPRECATED
+            % obj.dy.muscle.fMTU = nan(nMuscles, npts);    % DEPRECATED
+            % obj.dy.muscle.fCE = nan(nMuscles, npts);    % DEPRECATED
             obj.dy.muscle.fATN = nan(nMuscles, npts);
             obj.dy.muscle.lCEN = nan(nMuscles, npts);
-            obj.dy.muscle.vCE = nan(nMuscles, npts);
+            % obj.dy.muscle.vCE = nan(nMuscles, npts);    % DEPRECATED
             obj.dy.stateHistory = nan(nStates, npts);
             obj.dy.grf.fyr = nan(1, npts);
             obj.dy.grf.fxr = nan(1, npts);
@@ -131,12 +131,12 @@ classdef ModelInfo < handle
         function reset_record(obj)
             
             obj.dy.muscle.exc(:) = nan;
-            obj.dy.muscle.act(:) = nan;
-            obj.dy.muscle.fMTU(:) = nan;
-            obj.dy.muscle.fCE(:) = nan;
+            % obj.dy.muscle.act(:) = nan;    % DEPRECATED
+            % obj.dy.muscle.fMTU(:) = nan;    % DEPRECATED
+            % obj.dy.muscle.fCE(:) = nan;    % DEPRECATED
             obj.dy.muscle.fATN(:,2:end) = nan;
             obj.dy.muscle.lCEN(:,2:end) = nan;
-            obj.dy.muscle.vCE(:) = nan;
+            % obj.dy.muscle.vCE(:) = nan;    % DEPRECATED
             obj.dy.stateHistory(:) = nan;
             obj.dy.grf.fyr(:) = nan;
             obj.dy.grf.fxr(:) = nan;

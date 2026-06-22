@@ -32,12 +32,16 @@ for i = 0 : nMus-1
     lopt(i+1) = model.getMuscles.get(names{i+1}).getOptimalFiberLength;
     fopt(i+1) = model.getMuscles.get(names{i+1}).getMaxIsometricForce;
 end
-[lambda, mass, map] = read_muscle_lambda_and_mass(['assets/' projName '_muscleProp.csv']);
+% Build muscle name -> index map directly from model order (1-based)
+map = containers.Map('KeyType', 'char', 'ValueType', 'int32');
+for i = 1:nMus
+    map(names{i}) = i;
+end
 delay = round(10/1000/simConfig.stepTime); % 10 ms delay for muscle reflex mechanism to take effect
 
 st.muscle.names = names;
-st.muscle.lambda = lambda;
-st.muscle.mass = mass;
+% st.muscle.lambda = lambda;
+% st.muscle.mass = mass;
 st.muscle.lopt = lopt;
 st.muscle.fopt = fopt;
 st.muscle.map = map;
@@ -67,9 +71,10 @@ for i = 0 : state.getNQ-1 % value & speed of generalized coordinates
     keys(i+1) = string([char(model.getCoordinateSet.get(i)),'/value']);
     keys(i+state.getNQ+1) = string([char(model.getCoordinateSet.get(i)),'/speed']);
 end
-for i = state.getNQ+state.getNU : state.getNQ+state.getNU+state.getNZ-1 % value of variables in forceset
+for i = state.getNQ+state.getNU : state.getNQ+state.getNU+state.getNZ-2 % value of variables in forceset
     keys(i+1) = string(model.getStateVariableNames.get(i));
 end
+keys(state.getNQ+state.getNU+state.getNZ) = "totalMetabolic"; % metabolic expenditure (integrated) of the total body
 map = containers.Map(keys, 1:numel(keys));
 
 st.model.totalMass = totalMass;

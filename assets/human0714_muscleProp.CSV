@@ -1,6 +1,5 @@
 abbr,muscle_name,type_i_ratio,mass
 hamstrings_r,hamstrings,0.44,1.2
-bifemsh_r,biceps_femoris_short_head,0.5,0.06
 glut_max_r,gluteus_maximus,0.5,0.65
 iliopsoas_r,iliopsoas,0.5,0.87
 vasti_r,vastus,0.5,1.9
@@ -8,15 +7,9 @@ gastroc_r,gastrocnemius,0.54,0.3
 soleus_r,soleus,0.81,0.63
 tibia_r,tibialis_anterior,0.7,0.19
 hamstrings_l,hamstrings,0.44,1.2
-bifemsh_l,biceps_femoris_short_head,0.5,0.06
 glut_max_l,gluteus_maximus,0.5,0.65
 iliopsoas_l,iliopsoas,0.5,0.87
 vasti_l,vastus,0.5,1.9
 gastroc_l,gastrocnemius,0.54,0.3
 soleus_l,soleus,0.81,0.63
 tibia_l,tibialis_anterior,0.7,0.19
-,,,
-%%%END%%%,,,
-References:,,,
-muscle mass,"Ward S R, Eng C M, Smallwood L H, et al. Are current measurements of lower extremity muscle architecture accurate?[J]. Clinical orthopaedics and related research, 2009, 467(4): 1074-1082.",,
-type I ratio,,,

@@ -25,8 +25,7 @@
 % 3. 目前是2D还是3D？如何改变地形（上下坡、上下台阶等）？
 clear all; close all; clc
 addpath(genpath('assets\'), genpath('model\'), genpath('functions\'), genpath('results\'))
-% import org.opensim.modeling.*
-projName = 'coupled_human-prosthesis_model';
+projName = 'human0714';
 
 %% =======================================================================
 %  CHECKPOINT CONFIGURATION
@@ -201,8 +200,9 @@ else
 
 end  % ====================  END FRESH-START / RESUME BLOCK  ====================
 
+% OUTER LOOP: for each generation
 while g < optConfig.gMax && ~stop
-    tic % , profile on
+    tic
     % generate parameters (particles) to be optimized
     [arx, arz] = optConfig.generate_parameters(g - gAtRestartStart);
 
@@ -218,9 +218,6 @@ while g < optConfig.gMax && ~stop
         % INNER LOOP: for each particle
         for p = 1 : optConfig.nParticles(w) % optConfig.core.lambda
             k = sum(optConfig.nParticles(1:w)) - optConfig.nParticles(w) + p;
-            % Create a local copy of modelInfo for this parfor iteration.
-            % This avoids the "temporary variable" classification error.
-            % mi = modelInfo;
             modelInfo.reset_record();
             [state, modelInfo] = reset_particle_state(model, modelInfo);  % per-particle deterministic reset
             modelInfo.read_muscleReflex_array(arx(:,k)); % read muscle reflex parameters
@@ -228,12 +225,12 @@ while g < optConfig.gMax && ~stop
             % forward dynamic simulation and fitness evaluation
             modelInfo = forward_simulation(model, modelInfo, state);
             fits_local(p) = measure_simResults(modelInfo);
-
         end % END INNER LOOP: dynamic evaluation for at most (lambda/6) particles
-        fits_cell{w} = fits_local;
-    end % END MIDDLE LOOP: dynamic evaluation for 1 generation (lambda particles)
 
-    % update elite particles (best & big3) and CMA-ES parameters
+        fits_cell{w} = fits_local;
+    end % END MIDDLE LOOP [PARALLEL]: dynamic evaluation for 1 generation (lambda particles)
+
+    % update elite particles (best3) and CMA-ES parameters
     fits = vertcat(fits_cell{:});
     optConfig.update_elite_fit(fits, arx, arz);
     optConfig.update_core(fits, g - gAtRestartStart);
@@ -261,6 +258,7 @@ while g < optConfig.gMax && ~stop
         lastImprovementGen = g;
         softBoostTriggered = false;     % a fresh improvement -> arm soft boost again
     end
+
     stallGens = g - lastImprovementGen;
 
     % --- staged stall handling : (a) soft sigma-boost, (b) IPOP restart, (c) stop ---
@@ -281,8 +279,8 @@ while g < optConfig.gMax && ~stop
                 stallGens, restartCount);
             stop = true;
         end
+
     end
-    % profile viewer
 
 end % END OUTER LOOP: CMA-ES optimization (g generations)
 
