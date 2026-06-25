@@ -108,7 +108,7 @@ classdef Measurements < handle
         end
 
         function fit = knee_limit_measure(obj, weight)
-            th = 5; angUpTh = -3; angLowTh = -120;
+            th = 5; angUpTh = -5; angLowTh = -120;
 
             sh  = obj.modelInfo.dy.stateHistory;
             sm  = obj.modelInfo.st.model.map;
@@ -197,8 +197,8 @@ classdef Measurements < handle
     end
     methods (Static)
         function force = limit_force_calculation(ang, vel, angUpTh, angLowTh)
-            kUp = 2;
-            kLow = 2;
+            kUp = 10;
+            kLow = 10;
             damp = 0.2;
 
             kUp_ = kUp * ( atan(10*(ang-angUpTh))/pi + 0.5 );

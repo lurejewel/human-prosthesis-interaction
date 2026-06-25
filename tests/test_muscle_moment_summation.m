@@ -5,7 +5,7 @@ function test_muscle_moment_summation()
 %   1. 通过 OpenSim API 读取 UN.sto
 %   2. 对右侧腿, 读取所有肌肉绕各个 coordinate 的 moment
 %      (格式: <muscle>_r.<coord>.moment, 例如 rect_fem_r.knee_angle_r.moment)
-%   3. 按 coordinate 加总肌肉力矩
+%   3. 按 coordinate 加总肌肉力矩, 膝关节减去被动约束力 (knee_r.torque)
 %   4. 与 UN.sto 中的净关节力矩 (hip_flexion_r.moment 等) 画图对比
 %
 % 依赖: OpenSim 4.x MATLAB API
@@ -115,32 +115,45 @@ for j = 1 : 3
 end
 fprintf('  已读取: %s\n', strjoin(stoMomentLabels, ', '));
 
+% 读取膝关节被动约束力
+kneePassiveTorque = readCol('knee_r.torque');
+fprintf('  已读取: knee_r.torque (膝关节被动约束力)\n');
+
+% 修正后的肌肉力矩总和: 膝关节减去被动约束力
+sumMomentsAdjusted = sumMoments;
+sumMomentsAdjusted(:, 2) = sumMoments(:, 2) - kneePassiveTorque;
+
 %% ====== 4. 画图对比 ======
 fprintf('[4/4] 画图对比 ...\n');
 
 jointTitles = {'Hip Flexion R', 'Knee Angle R', 'Ankle Angle R'};
 
-% ---- 图1: 净力矩 vs 肌肉力矩总和 ----
+% ---- 图1: 净力矩 vs 肌肉力矩总和 (膝关节已减去被动约束力 knee_r.torque) ----
 figure('Color', 'w', 'Position', [50, 50, 1300, 850], 'Name', 'Muscle Moment Summation');
 
 for j = 1 : 3
     subplot(3, 1, j);
     
     plot(time, stoMoments(:, j), 'b-', 'LineWidth', 1.5); hold on;
-    plot(time, sumMoments(:, j), 'r--', 'LineWidth', 1.5);
+    plot(time, sumMomentsAdjusted(:, j), 'r--', 'LineWidth', 1.5);
     
     xlabel('Time (s)', 'FontSize', 11);
     ylabel('Moment (N\cdotm)', 'FontSize', 11);
-    title(sprintf('%s — Net Joint Moment vs Sum of Muscle Moments', jointTitles{j}), ...
-        'FontSize', 12);
-    legend({'STO Net Moment', 'Sum of Muscle Moments'}, 'Location', 'best', 'FontSize', 10);
+    if j == 2
+        title(sprintf('%s — Net Joint Moment vs Sum (Muscle - Passive Torque)', jointTitles{j}), ...
+            'FontSize', 12);
+    else
+        title(sprintf('%s — Net Joint Moment vs Sum of Muscle Moments', jointTitles{j}), ...
+            'FontSize', 12);
+    end
+    legend({'STO Net Moment', 'Sum (Adjusted)'}, 'Location', 'best', 'FontSize', 10);
     grid on; box on;
     
-    mask = ~isnan(sumMoments(:, j)) & ~isnan(stoMoments(:, j));
+    mask = ~isnan(sumMomentsAdjusted(:, j)) & ~isnan(stoMoments(:, j));
     if sum(mask) > 5
-        e = stoMoments(mask, j) - sumMoments(mask, j);
+        e = stoMoments(mask, j) - sumMomentsAdjusted(mask, j);
         rmse = sqrt(mean(e.^2));
-        rho  = corr(stoMoments(mask, j), sumMoments(mask, j));
+        rho  = corr(stoMoments(mask, j), sumMomentsAdjusted(mask, j));
         xl = xlim; yl = ylim;
         text(xl(1) + 0.02 * range(xl), yl(2) - 0.12 * range(yl), ...
             sprintf('RMSE = %.4f N·m    r = %.4f', rmse, rho), ...
@@ -148,10 +161,10 @@ for j = 1 : 3
     end
 end
 
-sgtitle('Muscle Moment Summation: Net Joint Moment vs Sum of Individual Muscle Moments', ...
+sgtitle('Muscle Moment Summation: Net Joint Moment vs Sum of Muscle Moments (Knee - Passive Torque)', ...
     'FontSize', 14, 'FontWeight', 'bold');
 
-% ---- 图2: 各肌肉 moment 堆叠图 (可选, 便于查看各肌肉贡献) ----
+% ---- 图2: 各肌肉 moment 堆叠图 (膝关节含被动约束力) ----
 figure('Color', 'w', 'Position', [100, 100, 1300, 850], ...
     'Name', 'Individual Muscle Moments');
 
@@ -164,40 +177,56 @@ for j = 1 : 3
         continue;
     end
     
-    % 堆叠面积图
-    h = area(time, detail);
-    cmap = lines(size(detail, 2));
-    for k = 1 : size(detail, 2)
-        h(k).FaceColor = cmap(k, :);
-        h(k).EdgeColor = 'none';
-        h(k).FaceAlpha = 0.7;
+    % 对于膝关节 (j=2)，在堆叠中加入被动约束力 (-knee_r.torque)
+    if j == 2
+        detailWithPassive = [detail, -kneePassiveTorque];
+        h = area(time, detailWithPassive);
+        cmap = lines(size(detailWithPassive, 2));
+        for k = 1 : size(detailWithPassive, 2)
+            h(k).FaceColor = cmap(k, :);
+            h(k).EdgeColor = 'none';
+            h(k).FaceAlpha = 0.7;
+        end
+    else
+        h = area(time, detail);
+        cmap = lines(size(detail, 2));
+        for k = 1 : size(detail, 2)
+            h(k).FaceColor = cmap(k, :);
+            h(k).EdgeColor = 'none';
+            h(k).FaceAlpha = 0.7;
+        end
     end
+    
     hold on;
     plot(time, stoMoments(:, j), 'k-', 'LineWidth', 2);
-    plot(time, sumMoments(:, j), 'k--', 'LineWidth', 1.5);
+    plot(time, sumMomentsAdjusted(:, j), 'k--', 'LineWidth', 1.5);
     
     xlabel('Time (s)', 'FontSize', 11);
     ylabel('Moment (N\cdotm)', 'FontSize', 11);
     title(sprintf('%s — Individual Muscle Contributions', jointTitles{j}), ...
         'FontSize', 12);
     
-    % 图例 (简化: 只用肌肉简称)
+    % 图例
     legLabels = momentLabels{j};
     shortNames = cell(size(legLabels));
     for k = 1 : length(legLabels)
         tokens = regexp(legLabels{k}, '^(.+?)\.', 'tokens', 'once');
         if ~isempty(tokens), shortNames{k} = tokens{1}; else shortNames{k} = legLabels{k}; end
     end
-    legend([shortNames, {'STO Net', 'Sum'}], 'Location', 'bestoutside', 'FontSize', 8, 'Interpreter','none');
+    if j == 2
+        shortNames{end + 1} = '-PassiveTorque';
+    end
+    legend([shortNames, {'STO Net', 'Sum (Adj)'}], 'Location', 'bestoutside', 'FontSize', 8, 'Interpreter','none');
     grid on; box on;
 end
 
-sgtitle('Individual Muscle Moment Contributions (Stacked)', ...
+sgtitle('Individual Muscle Moment Contributions (Stacked, Knee includes Passive Torque)', ...
     'FontSize', 14, 'FontWeight', 'bold');
 
 %% ====== 保存 ======
 savePath = fullfile(resultsDir, 'muscle_moment_summation_results.mat');
-save(savePath, 'time', 'stoMoments', 'sumMoments', 'momentDetail', ...
+save(savePath, 'time', 'stoMoments', 'sumMoments', 'sumMomentsAdjusted', ...
+    'kneePassiveTorque', 'momentDetail', ...
     'momentLabels', 'targetCoords', 'jointTitles');
 fprintf('\n结果已保存至: %s\n', savePath);
 fprintf('========== 测试完成 ==========\n');

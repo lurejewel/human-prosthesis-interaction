@@ -9,7 +9,7 @@ function save_state_as_sto(model, modelInfo, showVideoFlag)
     for stateIndex = 0 : state.getNU-1 % speed of jointset
         labels.append([char(model.getCoordinateSet.get(stateIndex)) '/speed']);
     end
-    for stateIndex = state.getNQ + state.getNU : state.getNQ + state.getNU + state.getNZ-1 % value of forceset
+    for stateIndex = state.getNQ + state.getNU : state.getNQ + state.getNU + state.getNZ-1 - 1 % value of forceset (an extra "-1" is because the end of state is the total metabolic expenditure)
         labels.append([char(model.getStateVariableNames.get(stateIndex))]); % NOTE that the order of state in Model class (model.getState...) is not the same as that in State class (state from model.initSystem())
     end
 

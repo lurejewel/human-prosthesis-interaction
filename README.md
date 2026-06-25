@@ -30,10 +30,11 @@ predefined joint trajectories are required.
 
 | Module | Description |
 |--------|-------------|
-| **Musculoskeletal Model** | 16 DOF, 14 Hill-type muscles (lower limbs only). Forward-dynamic simulation via OpenSim. |
+| **Musculoskeletal Model** | 9 DOF (lower limbs + pelvis), 14 Hill-type muscles (7 per leg). Forward-dynamic simulation via OpenSim. |
+| **Static Optimisation** | Iterative QP solver determines physiologically accurate initial muscle activations from first-frame kinematics and joint moments, replacing the uniform 0.05 default. |
 | **Gait Phase Detection** | Real-time per-leg phase identification (5 phases: Early Stance, Late Stance, Liftoff, Swing, Landing). |
-| **Muscle Reflex Controller** | Two interchangeable backends: (a) hand-crafted CNS-inspired reflex laws, (b) LASSO sparse linear per-phase model. |
-| **Optimisation (IPOP-CMA-ES)** | Restart strategy with sigma boosts; population size doubles on restart. Parallelised over 6 workers. |
+| **Muscle Reflex Controller** | Two interchangeable backends: (a) hand-crafted CNS-inspired reflex laws (legacy), (b) LASSO sparse linear per-phase model (active). |
+| **Optimisation (IPOP-CMA-ES)** | Restart strategy with sigma boosts; population size doubles on restart. Parallelised over all available cores. |
 | **Fitness Evaluation** | Multi-objective: gait completeness, velocity tracking, joint hyperextension, GRF ceiling, metabolic effort. |
 
 ---
@@ -48,12 +49,12 @@ predefined joint trajectories are required.
 ├── model/                                          % OpenSim .osim model + geometry
 ├── results/                                        % Optimisation output (.mat) and simulation logs
 ├── functions/
-│   ├── core/          % Simulation pipeline, CMA-ES, controllers, fitness
-│   └── utils/         % I/O helpers (sto/trc/mat), vector conversion
-├── tests/              % Unit tests (pure MATLAB, no OpenSim required)
+│   ├── core/          % Simulation pipeline, CMA-ES, controllers, SO, fitness
+│   └── utils/         % I/O helpers (sto/trc/mat), checkpoint, vector conversion
+├── tests/              % Unit + validation tests (static optimisation, LASSO, muscle moments)
 ├── docs/               % Format specifications
 ├── tools/              % OpenSim pipeline scripts (scale, IK, ID, RRA, SO)
-├── Sparse Group LASSO Validation/  % LASSO fitting experiments + .mat export
+├── Sparse Group LASSO Validation/  % LASSO fitting experiments + UN.sto reference data
 └── README.md
 ```
 
@@ -65,6 +66,7 @@ predefined joint trajectories are required.
 |----------|-----------------|
 | **MATLAB** | R2024b recommended |
 | Parallel Computing Toolbox | required for `parfor` |
+| Optimization Toolbox | required for `quadprog` (iterative static optimisation) |
 | **OpenSim** | 4.0 or later, with the MATLAB API configured |
 
 > **OpenSim-MATLAB Interface**
@@ -83,8 +85,17 @@ predefined joint trajectories are required.
 demo_predictiveForwardSimulation_humanModel
 ```
 
-The script loads a controller definition, initialises CMA-ES, and iterates until
-stall criteria are met.  Results are automatically saved to `results/opt_result_*.mat`.
+On a fresh start, the script:
+1. Reads initial kinematics and joint moments from `UN.sto` (first frame).
+2. Runs **iterative static optimisation** to compute physiologically accurate
+   initial muscle activations (`a_opt`) via convex QP.
+3. Initialises the LASSO controller and CMA-ES.
+4. Iterates until stall criteria are met, injecting `a_opt` at every particle
+   reset.
+
+Results are automatically checkpointed every 10 generations and saved to
+`results/opt_result_*.mat` on completion.  Set `resumeFromCheckpoint = true`
+to restart from the last saved snapshot.
 
 ### 2. Quick single-parameter test
 
@@ -92,10 +103,22 @@ stall criteria are met.  Results are automatically saved to `results/opt_result_
 test_single_parameter
 ```
 
-Loads a previously saved `result.bestPara`, runs **one** forward simulation,
-prints the fitness breakdown, and displays a 3×3 diagnostic figure (joint
-angles, pelvis trajectory, gait phases, muscle excitations, GRF, speed).
+Loads a previously saved `result.bestPara`, runs **one** forward simulation
+(with static-optimisation initial activations), prints the fitness breakdown,
+and displays diagnostic figures (joint angles, pelvis trajectory, gait phases,
+muscle excitations, GRF, joint torques, gait-cycle-normalised plots).
 Optionally plays a 3D visualisation of the gait.
+
+### 3. Static optimisation validation (standalone)
+
+```matlab
+test_static_optimization_validation
+```
+
+Compares QP-computed initial muscle activations against the UN.sto reference:
+scatter plot, grouped bar chart, joint moment reconstruction, and convergence
+history.  Useful for verifying the static optimisation setup independently of
+the full simulation pipeline.
 
 ---
 
@@ -127,12 +150,15 @@ data using the scripts in `Sparse Group LASSO Validation/`.
 | Target walking speed | 1.0 m/s | |
 | Simulation duration | 10 s | |
 | Integration time step | 0.005 s | |
+| Static optimisation (SO) max iterations | 10 | inner QP loop |
+| SO convergence tolerance | 1e-4 | infinity-norm of activation change |
+| SO activation bounds | [0.01, 1.0] | |
 | `sigma` (CMA-ES initial step) | 0.02 | |
 | `softPatience` | 30 gens | stall before sigma boost (×2.0) |
 | `patience` | 100 gens | stall before IPOP restart |
 | `maxRestarts` | 3 | IPOP restarts before hard stop |
 | `gMax` | 1000 | absolute generation cap |
-| Parallel workers | 6 | adjust to your CPU core count |
+| Parallel workers | `feature('numcores')` | auto-detected |
 
 The optimisation terminates when:
 - No fitness improvement occurs for `patience` generations **and** all
@@ -155,6 +181,8 @@ The optimisation terminates when:
 ## Scope and Limitations
 
 - Focused on **level-ground, steady-state walking** at 1.0 m/s
+- Initial kinematics and joint moments are read from `UN.sto` (a pre-computed
+  SCONE reference simulation); the static optimisation depends on this file
 - Reflex parameters are **bilaterally symmetric** (left and right legs share
   the same parameters)
 - Upper-body dynamics are not included
@@ -163,13 +191,26 @@ The optimisation terminates when:
 
 ---
 
+## Recent Changes (v2.1)
+
+- **Iterative static optimisation**: first-frame muscle activations are now
+  computed via convex QP instead of using a uniform 0.05 default.  The solver
+  accounts for muscle force-length-velocity relationships, passive forces, and
+  knee coordinate-limit torques.
+- **UN.sto-driven initialisation**: `initPose` is read from the SCONE reference
+  simulation (`UN.sto`) rather than hardcoded.
+- **Refactored entry point**: fresh-start setup is encapsulated in
+  `prepare_fresh_start.m`; the iterative SO solver lives in
+  `iterative_static_optimization.m`.
+- **Checkpoint now stores `a_opt`**: resume is fully transparent.
+
 ## Planned Extensions
 
-- **Independent reflex parameters for left and right muscles** *(next minor release)*
+- **Independent reflex parameters for left and right muscles**
 - **Extended musculoskeletal models** with additional muscle actuators
-- **Human-prosthesis coupled models** *(next major release)*
+- **Human-prosthesis coupled models**
 - **Additional motor tasks** beyond walking (slope walking, running, stair
-  climbing; timeline TBD)
+  climbing)
 
 ---
 

@@ -26,7 +26,7 @@ simConfig.endTime = 10;
 simConfig.stepTime = 0.005;
 simConfig.speed   = 1.0;
 simConfig.slope   = 0;
-showVideo         = 0;  % set to false to skip 3D visual playback
+showVideo         = 1;  % set to false to skip 3D visual playback
 % -----------------------------------------
 
 %% load the parameter set to test
@@ -50,15 +50,54 @@ else
           'Re-run the optimisation with the current demo script.');
 end
 
+%% read initial pose and joint moments from UN.sto
+stoPath = 'Sparse Group LASSO Validation\UN.sto';
+assert(isfile(stoPath), 'UN.sto not found: %s', stoPath);
+
+fid = fopen(stoPath, 'r');
+for k = 1:6, fgetl(fid); end
+headerLine = fgetl(fid);
+dataLine   = str2double(strsplit(fgetl(fid), '\t'));
+fclose(fid);
+colNames = strsplit(headerLine, '\t');
+colMap = containers.Map('KeyType', 'char', 'ValueType', 'int32');
+for i = 1:numel(colNames), colMap(colNames{i}) = i; end
+
+% 9 DOF (Q then U → 18 elements)
+dofNames = {'pelvis_tilt','pelvis_tx','pelvis_ty', ...
+            'hip_flexion_r','knee_flexion_r','ankle_dorsiflexion_r', ...
+            'hip_flexion_l','knee_flexion_l','ankle_dorsiflexion_l'};
+nDof = numel(dofNames);
+initPose = zeros(2 * nDof, 1);
+for j = 1:nDof
+    initPose(j)        = dataLine(colMap(dofNames{j}));
+    initPose(nDof + j) = dataLine(colMap([dofNames{j} '_u']));
+end
+
 %% initialise model infrastructure (same pipeline as the main demo)
-initPose = [-0.105763, 0, 0.900237, 0.439316, 0.198813, -0.393922, -1.03755, 0.104714, -0.348473, ...
-            -0.0895989, 1.0757, 0.1543, -1.35971, 3.34368, 0.267883, -3.15281, 0.840122, 1.26642];
 modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose);
-[model, modelInfo] = init_infra(projName, modelStaticProp);
+
+% ---- iterative static optimisation for first-frame muscle activations ----
+fprintf('Running iterative static optimisation ...\n');
+soCoordNames = {'hip_flexion_r','hip_flexion_l', ...
+                'knee_flexion_r','knee_flexion_l', ...
+                'ankle_dorsiflexion_r','ankle_dorsiflexion_l'};
+nSoCoords = numel(soCoordNames);
+tauTarget = zeros(nSoCoords, 1);
+for j = 1:nSoCoords
+    tauTarget(j) = dataLine(colMap([soCoordNames{j} '.moment']));
+end
+tauLimit = zeros(nSoCoords, 1);
+tauLimit(strcmp(soCoordNames, 'knee_flexion_r')) = dataLine(colMap('knee_r.torque'));
+tauLimit(strcmp(soCoordNames, 'knee_flexion_l')) = dataLine(colMap('knee_l.torque'));
+a_opt = iterative_static_optimization(projName, initPose, dofNames, ...
+    tauTarget, tauLimit, soCoordNames);
+
+[model, modelInfo] = init_infra(projName, modelStaticProp, a_opt);
 
 %% set parameters and reset state
 modelInfo.reset_record();
-[state, modelInfo] = reset_particle_state(model, modelInfo);
+[state, modelInfo] = reset_particle_state(model, modelInfo, a_opt);
 
 % ---- wire LASSO controller metadata BEFORE unpacking parameters ----
 modelInfo.reflexParamMap = reflexParamMap;
@@ -172,6 +211,10 @@ for fi = 1 : nValid
         end
     end
 
+    % ---- add knee coordinate limit forces ----
+    tau(2) = tau(2) + modelInfo.dy.limitForce.kneeR(fi);
+    tau(5) = tau(5) + modelInfo.dy.limitForce.kneeL(fi);
+
     torque_hipR(fi)   = tau(1);
     torque_kneeR(fi)  = tau(2);
     torque_ankleR(fi) = tau(3);
@@ -223,7 +266,7 @@ legend('Right', 'Left', 'Location', 'best');
 
 % -------- Panel D: Muscle Excitations (4 representative muscles) --------
 subplot(3, 3, 6)
-musclesToPlot = {'glut_max_r', 'vasti_r', 'gastroc_r', 'tibia_r'};
+musclesToPlot = {'glut_max_r', 'vasti_r', 'gastroc_r', 'tib_ant_r'};
 colors = lines(numel(musclesToPlot));
 for j = 1:numel(musclesToPlot)
     idx = find(strcmp(muscleNames, musclesToPlot{j}), 1);
@@ -348,7 +391,7 @@ else
     grpMuscles = { ...
         {'hamstrings_r','glut_max_r','iliopsoas_r'}, ...
         {'vasti_r'}, ...
-        {'gastroc_r','soleus_r','tibia_r'} };
+        {'gastroc_r','soleus_r','tib_ant_r'} };
 
     % ---- plot ----
     figure('Name', 'Gait-Cycle-Normalised Kinetics & Kinematics', ...

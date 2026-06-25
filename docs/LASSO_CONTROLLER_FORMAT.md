@@ -208,7 +208,7 @@ The 7 same-side muscles in the canonical (right-leg) order, matching
 | 4 | `vasti` | `vasti_r` / `vasti_l` |
 | 5 | `gastroc` | `gastroc_r` / `gastroc_l` |
 | 6 | `soleus` | `soleus_r` / `soleus_l` |
-| 7 | `tibia` | `tibia_r` / `tibia_l` |
+| 7 | `tib_ant` | `tib_ant_r` / `tib_ant_l` |
 
 > **Bilateral symmetry**: the same `beta{p}` and `bias{p}` are used for
 > both the right leg and the left leg.  The only difference between right

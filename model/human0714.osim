@@ -1438,7 +1438,7 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<Millard2012EquilibriumMuscle name="tibia_r">
+				<Millard2012EquilibriumMuscle name="tib_ant_r">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0.01</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -1484,12 +1484,12 @@
 					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
 					<pennation_angle_at_optimal>0.087266462599716474</pennation_angle_at_optimal>
 					<!--Active-force-length curve.-->
-					<ActiveForceLengthCurve name="tibia_r_ActiveForceLengthCurve">
+					<ActiveForceLengthCurve name="tib_ant_r_ActiveForceLengthCurve">
 						<!--Minimum value of the active-force-length curve-->
 						<minimum_value>0</minimum_value>
 					</ActiveForceLengthCurve>
 					<!--Force-velocity curve.-->
-					<ForceVelocityCurve name="tibia_r_ForceVelocityCurve">
+					<ForceVelocityCurve name="tib_ant_r_ForceVelocityCurve">
 						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
 						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
 						<!--Curve slope just before reaching concentric_slope_at_vmax-->
@@ -1504,11 +1504,11 @@
 						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
 					</ForceVelocityCurve>
 					<!--Passive-force-length curve.-->
-					<FiberForceLengthCurve name="tibia_r_FiberForceLengthCurve">
+					<FiberForceLengthCurve name="tib_ant_r_FiberForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</FiberForceLengthCurve>
 					<!--Tendon-force-length curve.-->
-					<TendonForceLengthCurve name="tibia_r_TendonForceLengthCurve">
+					<TendonForceLengthCurve name="tib_ant_r_TendonForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
@@ -1956,7 +1956,7 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<Millard2012EquilibriumMuscle name="tibia_l">
+				<Millard2012EquilibriumMuscle name="tib_ant_l">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>0.01</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -2002,12 +2002,12 @@
 					<!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
 					<pennation_angle_at_optimal>0.087266462599716474</pennation_angle_at_optimal>
 					<!--Active-force-length curve.-->
-					<ActiveForceLengthCurve name="tibia_l_ActiveForceLengthCurve">
+					<ActiveForceLengthCurve name="tib_ant_l_ActiveForceLengthCurve">
 						<!--Minimum value of the active-force-length curve-->
 						<minimum_value>0</minimum_value>
 					</ActiveForceLengthCurve>
 					<!--Force-velocity curve.-->
-					<ForceVelocityCurve name="tibia_l_ForceVelocityCurve">
+					<ForceVelocityCurve name="tib_ant_l_ForceVelocityCurve">
 						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
 						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
 						<!--Curve slope just before reaching concentric_slope_at_vmax-->
@@ -2022,11 +2022,11 @@
 						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
 					</ForceVelocityCurve>
 					<!--Passive-force-length curve.-->
-					<FiberForceLengthCurve name="tibia_l_FiberForceLengthCurve">
+					<FiberForceLengthCurve name="tib_ant_l_FiberForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</FiberForceLengthCurve>
 					<!--Tendon-force-length curve.-->
-					<TendonForceLengthCurve name="tibia_l_TendonForceLengthCurve">
+					<TendonForceLengthCurve name="tib_ant_l_TendonForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
@@ -2122,7 +2122,7 @@
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>0.01</transition>
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
-					<compute_dissipation_energy>true</compute_dissipation_energy>
+					<compute_dissipation_energy>false</compute_dissipation_energy>
 				</CoordinateLimitForce>
 				<CoordinateLimitForce name="knee_flexion_l_LimitForce">
 					<!--Coordinate (name) to be limited.-->
@@ -2140,7 +2140,7 @@
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>0.01</transition>
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
-					<compute_dissipation_energy>true</compute_dissipation_energy>
+					<compute_dissipation_energy>false</compute_dissipation_energy>
 				</CoordinateLimitForce>
 			</objects>
 			<groups />
@@ -2254,7 +2254,7 @@
 								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
 								<use_provided_muscle_mass>false</use_provided_muscle_mass>
 							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="tibia_r">
+							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="tib_ant_r">
 								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
 								<ratio_slow_twitch_fibers>0.73</ratio_slow_twitch_fibers>
 								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
@@ -2296,7 +2296,7 @@
 								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->
 								<use_provided_muscle_mass>false</use_provided_muscle_mass>
 							</Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter>
-							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="tibia_l">
+							<Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter name="tib_ant_l">
 								<!--Ratio of slow twitch fibers in the muscle (must be between 0 and 1).-->
 								<ratio_slow_twitch_fibers>0.73</ratio_slow_twitch_fibers>
 								<!--An optional flag that allows the user to explicitly specify a muscle mass. If set to true, the <provided_muscle_mass> property must be specified.-->

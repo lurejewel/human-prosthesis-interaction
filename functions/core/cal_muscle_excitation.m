@@ -135,7 +135,7 @@ end
 % VAS = muscleIdx('vasti');
 % GAS = muscleIdx('gastroc');
 % SOL = muscleIdx('soleus');
-% TIB = muscleIdx('tibia');
+% TIB = muscleIdx('tib_ant');
 %
 % gluFN = fATN(baseIdx + GLU);
 % vasFN = fATN(baseIdx + VAS);

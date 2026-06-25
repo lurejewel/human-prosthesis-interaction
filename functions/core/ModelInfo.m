@@ -58,6 +58,9 @@ classdef ModelInfo < handle
         % │   ├── fxr                       friction force for the right leg
         % │   ├── fyl                       normal reaction force for the left leg
         % │   ├── fxl                       friction force for the left leg
+        % ├── limitForce                COORDINATE LIMIT FORCES
+        % │   ├── kneeR                     knee joint limit force, right
+        % │   └── kneeL                     knee joint limit force, left
         % ├── phase                     GAIT PHASES
         % │   ├── r
         % │   └── l
@@ -93,6 +96,8 @@ classdef ModelInfo < handle
             obj.dy.grf.fxr = nan(1, npts);
             obj.dy.grf.fyl = nan(1, npts);
             obj.dy.grf.fxl = nan(1, npts);
+            obj.dy.limitForce.kneeR = nan(1, npts);
+            obj.dy.limitForce.kneeL = nan(1, npts);
             obj.dy.phase.r = nan(1, npts);
             obj.dy.phase.l = nan(1, npts);
             obj.dy.lastTime = -1;
@@ -142,11 +147,45 @@ classdef ModelInfo < handle
             obj.dy.grf.fxr(:) = nan;
             obj.dy.grf.fyl(:) = nan;
             obj.dy.grf.fxl(:) = nan;
+            obj.dy.limitForce.kneeR(:) = nan;
+            obj.dy.limitForce.kneeL(:) = nan;
             obj.dy.phase.r(:) = nan;
             obj.dy.phase.l(:) = nan;
             obj.dy.lastTime = -1;
             obj.dy.hasRun  = false;
 
+        end
+
+        function update(obj, state, allMuscles, kneeLimitForceR, kneeLimitForceL, idx)
+            % Name: update
+            % Description: update the muscle-related information in the Class modelInfo
+            %   for the muscle excitation in the next loop. The recorded information
+            %   includes:
+            %   - obj.dy.muscle.fATN: normalized fiber force along tendon
+            %   - obj.dy.muscle.lCEN: normalized fiber length
+            %   - obj.dy.stateHistory: state of the model
+            %   - obj.dy.limitForce.kneeR / kneeL: knee joint coordinate limit forces
+
+            fopt = obj.st.muscle.fopt;
+            map = obj.st.model.map;
+            Y = state.getY.getAsMat();
+
+            for i = 1 : numel(fopt)
+                muscle = allMuscles{i};
+                obj.dy.muscle.fATN(i, idx+1) = muscle.getFiberForceAlongTendon(state) / fopt(i);
+                obj.dy.muscle.lCEN(i, idx+1) = muscle.getNormalizedFiberLength(state);
+                % obj.dy.muscle.vCE(i, idx+1) = muscle.getFiberVelocity(state);
+                % obj.dy.muscle.act(i, idx+1) = muscle.getActivation(state);
+                % obj.dy.muscle.fMTU(i, idx+1) = muscle.getFiberForce(state);
+                % obj.dy.muscle.fCE(i, idx+1) = muscle.getActiveFiberForce(state);
+
+                key = ['/forceset/' char(allMuscles{i}.getName) '/activation'];
+                Y(map(key)) = muscle.getActivation(state);
+            end
+
+            obj.dy.stateHistory(:, idx) = Y;
+            obj.dy.limitForce.kneeR(idx) = kneeLimitForceR.getRecordValues(state).get(0);
+            obj.dy.limitForce.kneeL(idx) = kneeLimitForceL.getRecordValues(state).get(0);
         end
 
     end

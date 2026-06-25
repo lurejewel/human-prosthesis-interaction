@@ -2458,7 +2458,7 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<Millard2012EquilibriumMuscle name="tibia_post_r">
+				<Millard2012EquilibriumMuscle name="tib_post_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
 					<!--The path of the actuator which defines length and lengthening speed.-->
@@ -2511,12 +2511,12 @@
 					<!--Activation lower bound.-->
 					<minimum_activation>0.01</minimum_activation>
 					<!--Active-force-length curve.-->
-					<ActiveForceLengthCurve name="tibia_post_r_ActiveForceLengthCurve">
+					<ActiveForceLengthCurve name="tib_post_r_ActiveForceLengthCurve">
 						<!--Minimum value of the active-force-length curve-->
 						<minimum_value>0</minimum_value>
 					</ActiveForceLengthCurve>
 					<!--Force-velocity curve.-->
-					<ForceVelocityCurve name="tibia_post_r_ForceVelocityCurve">
+					<ForceVelocityCurve name="tib_post_r_ForceVelocityCurve">
 						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
 						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
 						<!--Curve slope just before reaching concentric_slope_at_vmax-->
@@ -2531,11 +2531,11 @@
 						<max_eccentric_velocity_force_multiplier>1.3999999999999999</max_eccentric_velocity_force_multiplier>
 					</ForceVelocityCurve>
 					<!--Passive-force-length curve.-->
-					<FiberForceLengthCurve name="tibia_post_r_FiberForceLengthCurve">
+					<FiberForceLengthCurve name="tib_post_r_FiberForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</FiberForceLengthCurve>
 					<!--Tendon-force-length curve.-->
-					<TendonForceLengthCurve name="tibia_post_r_TendonForceLengthCurve">
+					<TendonForceLengthCurve name="tib_post_r_TendonForceLengthCurve">
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>

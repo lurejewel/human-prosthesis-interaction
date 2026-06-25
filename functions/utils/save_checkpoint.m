@@ -2,7 +2,7 @@ function save_checkpoint(checkpointFile, g, gAtRestartStart, lastImprovementGen,
                         bestFitEver, softBoostTriggered, restartCount, stop, ...
                         bestFits, computationLoad, optConfig, optCfg, projName, ...
                         reflexParamMap, reflexTemplate, initPara, sigma, nWorkers, ...
-                        simConfig, initPose, lassoFile)
+                        simConfig, initPose, lassoFile, a_opt)
 % Name: save_checkpoint
 % Description: Save all CMA-ES optimization state for crash recovery.
 %   Call this periodically (e.g. every 10 generations) and at the end of
@@ -58,6 +58,13 @@ if exist('lassoFile', 'var') && ~isempty(lassoFile)
     ckp.lassoFile = lassoFile;
 else
     ckp.lassoFile = '';
+end
+
+% static-optimisation initial activations (may be empty if not computed)
+if exist('a_opt', 'var') && ~isempty(a_opt)
+    ckp.a_opt = a_opt;
+else
+    ckp.a_opt = [];
 end
 
 ckp.timestamp = datetime;
