@@ -41,6 +41,7 @@ end
 delay = round(10/1000/simConfig.stepTime); % 10 ms delay for muscle reflex mechanism to take effect
 
 st.muscle.names = names;
+st.muscle.act0Order = names;  % muscle-name order matching act0 (from iterative_static_optimization)
 % st.muscle.lambda = lambda;
 % st.muscle.mass = mass;
 st.muscle.lopt = lopt;

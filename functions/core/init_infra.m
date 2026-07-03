@@ -31,10 +31,14 @@ for j = 1:nDof
 end
 
 % ---- optionally inject static-optimisation activations ----
+% NOTE: activations are assigned by muscle NAME (via act0Order), not by
+% ForceSet index, because the iteration order may differ from act0 layout.
 if ~isempty(act0)
-    nMus = numel(modelInfo.st.muscle.names);
+    act0Order = modelInfo.st.muscle.act0Order;
+    nMus = numel(act0Order);
     for i = 1:nMus
-        org.opensim.modeling.Muscle.safeDownCast(model.getMuscles().get(i-1)).setActivation(state, act0(i));
+        musc = org.opensim.modeling.Muscle.safeDownCast(model.getMuscles().get(act0Order{i}));
+        musc.setActivation(state, act0(i));
     end
 end
 

@@ -30,16 +30,16 @@ simCache.calcnRCOMLocal = simCache.bodyCalcnR.getMassCenter();
 simCache.calcnLCOMLocal = simCache.bodyCalcnL.getMassCenter();
 
 % force handles for GRF reading
-simCache.frcHeelR = model.getForceSet().get('heelR_ground_contact_force');
-simCache.frcHeelL = model.getForceSet().get('heelL_ground_contact_force');
-simCache.frcToeR  = model.getForceSet().get('toeR_ground_contact_force');
-simCache.frcToeL  = model.getForceSet().get('toeL_ground_contact_force');
-% simCache.grfR = model.getForceSet().get('foot_r');
-% simCache.grfL = model.getForceSet().get('foot_l');
+% simCache.frcHeelR = model.getForceSet().get('heelR_ground_contact_force');
+% simCache.frcHeelL = model.getForceSet().get('heelL_ground_contact_force');
+% simCache.frcToeR  = model.getForceSet().get('toeR_ground_contact_force');
+% simCache.frcToeL  = model.getForceSet().get('toeL_ground_contact_force');
+simCache.grfR = model.getForceSet().get('foot_r');
+simCache.grfL = model.getForceSet().get('foot_l');
 
 % force handles for knee limit force reading
-simCache.frcKneeLimitR = model.getForceSet().get(18);
-simCache.frcKneeLimitL = model.getForceSet().get(19);
+simCache.frcKneeLimitR = model.getForceSet().get(16);
+simCache.frcKneeLimitL = model.getForceSet().get(17);
 
 % precomputed constants
 simCache.totalMass = model.getTotalMass(state);

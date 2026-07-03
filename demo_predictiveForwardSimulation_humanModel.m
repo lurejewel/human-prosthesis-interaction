@@ -20,12 +20,11 @@
 % considered?
 % -------------------------------------------------------------------------
 % 目前的问题：
-% 1. 增加独立的处理模块：导入\导出数据；显示trc数据；显示mot数据，etc.
-% 2. 反射参数换成Map映射的赋值形式
-% 3. 目前是2D还是3D？如何改变地形（上下坡、上下台阶等）？
+% 1. 肌骨模型由human0714扩充到human0918
+% 如何改变地形（上下坡、上下台阶等）？
 clear all; close all; clc
 addpath(genpath('assets\'), genpath('model\'), genpath('functions\'), genpath('results\'))
-projName = 'human0714';
+projName = 'human0714_new'; % name of the .osim model
 
 %% =======================================================================
 %  CHECKPOINT CONFIGURATION
@@ -280,4 +279,4 @@ fprintf('[%s] Optimization finished. %d generations, best fit = %.6g. Saved to %
 % bestPara = optConfig.recordForBestParticle.arx;
 % save('bestPara.mat', "bestPara");
 % save the states to .sto file
-% save_state_as_sto(1, model, modelInfo);
+% save_state_as_sto(model, modelInfo, 1);
