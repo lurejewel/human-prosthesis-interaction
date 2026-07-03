@@ -13,8 +13,8 @@ try
     %% ---- build synthetic LASSO struct (legacy per-phase format) ----
     rng(2026, 'threefry');
     nPhases = 5;
-    nFeatures = 22;
-    nMusclesPerSide = 7;
+    nFeatures = 26;
+    nMusclesPerSide = 9;
 
     lasso = struct();
     lasso.nPhases = nPhases;
@@ -27,11 +27,11 @@ try
     origBias = cell(nPhases, 1);
     for p = 1:nPhases
         % random sparse mask (~30% non-zero)
-        lasso.mask{p} = rand(22, 7) > 0.7;
-        betaMat = zeros(22, 7);
+        lasso.mask{p} = rand(26, 9) > 0.7;
+        betaMat = zeros(26, 9);
         betaMat(lasso.mask{p}) = randn(nnz(lasso.mask{p}), 1);
         lasso.beta{p} = betaMat;
-        lasso.bias{p} = randn(1, 7);
+        lasso.bias{p} = randn(1, 9);
         origBeta{p} = betaMat;
         origBias{p} = lasso.bias{p};
     end
@@ -45,7 +45,7 @@ try
 
     expectedLen = 0;
     for p = 1:nPhases
-        expectedLen = expectedLen + nnz(lasso.mask{p}) + 7;
+        expectedLen = expectedLen + nnz(lasso.mask{p}) + 9;
     end
     assert(numel(initPara) == expectedLen, ...
         'initPara length %d != expected %d', numel(initPara), expectedLen);
@@ -127,10 +127,10 @@ try
     groupOrigMask = cell(nGroups, 1);
 
     for g = 1:nGroups
-        maskG = rand(22, 7) > 0.7;
-        betaG = zeros(22, 7);
+        maskG = rand(26, 9) > 0.7;
+        betaG = zeros(26, 9);
         betaG(maskG) = randn(nnz(maskG), 1);
-        biasG = randn(1, 7);
+        biasG = randn(1, 9);
 
         grpLasso.groups(g).label  = groupLabels{g};
         grpLasso.groups(g).phases = groupPhases{g};
@@ -153,7 +153,7 @@ try
     % verify no parameter duplication: totalLen = sum_g (nnz(mask_g) + 7)
     expectedGrpLen = 0;
     for g = 1:nGroups
-        expectedGrpLen = expectedGrpLen + nnz(groupOrigMask{g}) + 7;
+        expectedGrpLen = expectedGrpLen + nnz(groupOrigMask{g}) + 9;
     end
     assert(numel(initParaGrp) == expectedGrpLen, ...
         'Grouped initPara length %d != expected %d.', numel(initParaGrp), expectedGrpLen);

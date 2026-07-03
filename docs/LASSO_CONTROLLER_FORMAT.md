@@ -72,15 +72,15 @@ lasso.groups = struct();
 lasso.groups(1).label  = 'stance';
 lasso.groups(1).phases = [0 1];
 lasso.groups(1).beta   = betaStance;     % 22×7 double
-lasso.groups(1).bias   = biasStance;     % 1×7 double
-lasso.groups(1).mask   = maskStance;     % 22×7 logical
+lasso.groups(1).bias   = biasStance;     % 1×9 double
+lasso.groups(1).mask   = maskStance;     % 26×9 logical
 
 % Swing controller — used by phases 2, 3, and 4
 lasso.groups(2).label  = 'swing';
 lasso.groups(2).phases = [2 3 4];
-lasso.groups(2).beta   = betaSwing;      % 22×7 double
-lasso.groups(2).bias   = biasSwing;      % 1×7 double
-lasso.groups(2).mask   = maskSwing;      % 22×7 logical
+lasso.groups(2).beta   = betaSwing;      % 26×9 double
+lasso.groups(2).bias   = biasSwing;      % 1×9 double
+lasso.groups(2).mask   = maskSwing;      % 26×9 logical
 
 save('results/lasso_controller_result.mat', 'lasso');
 ```
@@ -106,12 +106,12 @@ save('results/lasso_controller_result.mat', 'lasso');
 
 Cell array, size **`nPhases × 1`** (or `1 × nPhases`).
 
-Each cell `lasso.beta{p}` must be a **22 × 7** `double` matrix.
+Each cell `lasso.beta{p}` must be a **26 × 9** `double` matrix.
 
 | Dimension | Meaning |
 |-----------|---------|
-| 22 rows   | Features (see §Feature ordering below) |
-| 7 columns | Canonical same-side muscles (see §Muscle ordering below) |
+| 26 rows   | Features (see §Feature ordering below) |
+| 9 columns | Canonical same-side muscles (see §Muscle ordering below) |
 
 Entry `beta{p}(i, j)` is the linear coefficient from feature `i` to
 canonical muscle `j` in phase `p`.
@@ -123,7 +123,7 @@ canonical muscle `j` in phase `p`.
 
 Cell array, size **`nPhases × 1`** (or `1 × nPhases`).
 
-Each cell `lasso.bias{p}` must have **7 elements** (convertible to `1 × 7`).
+Each cell `lasso.bias{p}` must have **9 elements** (convertible to `1 × 9`).
 
 > **Alias**: if `lasso.bias` does not exist, the loader also checks for
 > `lasso.b` and uses it as the bias field.
@@ -136,8 +136,8 @@ Each cell `lasso.bias{p}` must have **7 elements** (convertible to `1 × 7`).
 |-------|------|---------------------|
 | `lasso.nPhases` | Scalar integer | `numel(lasso.beta)` |
 | `lasso.phaseIds` | Vector (length `nPhases`) | `0 : (nPhases-1)` |
-| `lasso.featureNames` | Cell array `22 × 1` or `1 × 22` of `char` | *(none)* |
-| `lasso.muscleNames` | Cell array `7 × 1` or `1 × 7` of `char` | *(none)* |
+| `lasso.featureNames` | Cell array `26 × 1` or `1 × 26` of `char` | *(none)* |
+| `lasso.muscleNames` | Cell array `9 × 1` or `1 × 9` of `char` | *(none)* |
 
 ### `lasso.mask` (legacy format only)
 
@@ -177,38 +177,40 @@ For the current 5-phase gait model, expected values are:
 
 | Index | Feature | Source |
 |-------|---------|--------|
-| 1–7 | Normalised fibre length of same-side muscles 1–7 | `modelInfo.dy.muscle.lCEN` |
-| 8–14 | Normalised MTU force of same-side muscles 1–7 | `modelInfo.dy.muscle.fATN` |
-| 15 | Pelvis tilt angle | `stateHistory('pelvis_tilt/value')` |
-| 16 | Pelvis tilt angular velocity | `stateHistory('pelvis_tilt/speed')` |
-| 17 | Same-side hip angle | `stateHistory('hip_flexion_{r/l}/value')` |
-| 18 | Same-side hip angular velocity | `stateHistory('hip_flexion_{r/l}/speed')` |
-| 19 | Same-side knee angle | `stateHistory('knee_extension_{r/l}/value')` |
-| 20 | Same-side knee angular velocity | `stateHistory('knee_extension_{r/l}/speed')` |
-| 21 | Same-side ankle angle | `stateHistory('ankle_dorsiflexion_{r/l}/value')` |
-| 22 | Same-side ankle angular velocity | `stateHistory('ankle_dorsiflexion_{r/l}/speed')` |
+| 1–9 | Normalised fibre length of same-side muscles 1–9 | `modelInfo.dy.muscle.lCEN` |
+| 10–18 | Normalised MTU force of same-side muscles 1–9 | `modelInfo.dy.muscle.fATN` |
+| 19 | Pelvis tilt angle | `stateHistory('pelvis_tilt/value')` |
+| 20 | Pelvis tilt angular velocity | `stateHistory('pelvis_tilt/speed')` |
+| 21 | Same-side hip angle | `stateHistory('hip_flexion_{r/l}/value')` |
+| 22 | Same-side hip angular velocity | `stateHistory('hip_flexion_{r/l}/speed')` |
+| 23 | Same-side knee angle | `stateHistory('knee_extension_{r/l}/value')` |
+| 24 | Same-side knee angular velocity | `stateHistory('knee_extension_{r/l}/speed')` |
+| 25 | Same-side ankle angle | `stateHistory('ankle_dorsiflexion_{r/l}/value')` |
+| 26 | Same-side ankle angular velocity | `stateHistory('ankle_dorsiflexion_{r/l}/speed')` |
 
 > All joint kinematics use the same state-map indexing and sign conventions
-> as the original hand-crafted controller.  Features 15–22 are read from
+> as the original hand-crafted controller.  Features 19–26 are read from
 > `modelInfo.st.model.initPose` for `frameIndex == 1`, otherwise from
 > `modelInfo.dy.stateHistory` at `frameIndex - 1`.
 
 ---
 
-## Canonical muscle ordering — 7 per side (columns of `beta`)
+## Canonical muscle ordering — 9 per side (columns of `beta`)
 
-The 7 same-side muscles in the canonical (right-leg) order, matching
-`assets/coupled_human-prosthesis_model_muscleProp.CSV` rows 2–8:
+The 9 same-side muscles in the canonical (right-leg) order, matching
+the `human0918.osim` model ForceSet order:
 
 | Column | Muscle name (canonical, without suffix) | Full name (OpenSim) |
 |--------|----------------------------------------|---------------------|
 | 1 | `hamstrings` | `hamstrings_r` / `hamstrings_l` |
-| 2 | `glut_max` | `glut_max_r` / `glu_max_l` |
-| 3 | `iliopsoas` | `iliopsoas_r` / `iliopsoas_l` |
-| 4 | `vasti` | `vasti_r` / `vasti_l` |
-| 5 | `gastroc` | `gastroc_r` / `gastroc_l` |
-| 6 | `soleus` | `soleus_r` / `soleus_l` |
-| 7 | `tib_ant` | `tib_ant_r` / `tib_ant_l` |
+| 2 | `bifemsh` | `bifemsh_r` / `bifemsh_l` |
+| 3 | `glut_max` | `glut_max_r` / `glut_max_l` |
+| 4 | `iliopsoas` | `iliopsoas_r` / `iliopsoas_l` |
+| 5 | `rect_fem` | `rect_fem_r` / `rect_fem_l` |
+| 6 | `vasti` | `vasti_r` / `vasti_l` |
+| 7 | `gastroc` | `gastroc_r` / `gastroc_l` |
+| 8 | `soleus` | `soleus_r` / `soleus_l` |
+| 9 | `tib_ant` | `tib_ant_r` / `tib_ant_l` |
 
 > **Bilateral symmetry**: the same `beta{p}` and `bias{p}` are used for
 > both the right leg and the left leg.  The only difference between right
@@ -222,8 +224,8 @@ The 7 same-side muscles in the canonical (right-leg) order, matching
 - [ ] File saved under `results/` as a `.mat`.
 - [ ] Contains either a variable named `lasso`, or exactly one struct variable.
 - [ ] **Grouped format (recommended):** `lasso.groups(g).beta`/`.bias`/`.mask`/`.phases`/`.label`.
-- [ ] **Legacy format:** `lasso.beta` is `nPhases × 1` cell, each cell `22 × 7`.
-- [ ] **Legacy format:** `lasso.bias` (or `lasso.b`) is `nPhases × 1` cell, each cell has 7 values.
+- [ ] **Legacy format:** `lasso.beta` is `nPhases × 1` cell, each cell `26 × 9`.
+- [ ] **Legacy format:** `lasso.bias` (or `lasso.b`) is `nPhases × 1` cell, each cell has 9 values.
 - [ ] Every `beta` entry outside its `mask` is exactly `0`.
 - [ ] `lasso.phaseIds` matches the phase IDs output by `cal_gait_phase.m` (`0:4`).
-- [ ] Feature rows 1–14 follow the canonical muscle order (ham, glu, ili, vas, gas, sol, tib).
+- [ ] Feature rows 1–18 follow the canonical muscle order (ham, bif, glu, ili, rec, vas, gas, sol, tib).

@@ -19,7 +19,7 @@ cd('..');
 addpath(genpath('assets'), genpath('model'), genpath('functions'))
 
 %% ---------- user configuration ----------
-projName       = 'human0714';  % <-- change to your model name (without .osim)
+projName       = 'human0918';  % <-- change to your model name (without .osim)
 paraSourceFile = 'results\opt_result_2026-06-16_23-19-29.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
@@ -264,9 +264,9 @@ ylim([-0.2, 4.2]); ylabel('Left leg phase');
 xlabel('Time (s)'); grid on; title('Gait Phases (0-ES,1-LS,2-LO,3-SW,4-LD)');
 legend('Right', 'Left', 'Location', 'best');
 
-% -------- Panel D: Muscle Excitations (4 representative muscles) --------
+% -------- Panel D: Muscle Excitations (6 representative muscles) --------
 subplot(3, 3, 6)
-musclesToPlot = {'glut_max_r', 'vasti_r', 'gastroc_r', 'tib_ant_r'};
+musclesToPlot = {'bifemsh_r', 'glut_max_r', 'rect_fem_r', 'vasti_r', 'gastroc_r', 'tib_ant_r'};
 colors = lines(numel(musclesToPlot));
 for j = 1:numel(musclesToPlot)
     idx = find(strcmp(muscleNames, musclesToPlot{j}), 1);
@@ -389,8 +389,8 @@ else
     grpNames = {'Hip muscles', 'Knee muscles', 'Ankle muscles'};
     % each group: list of muscle names (right-leg only for the normalised plot)
     grpMuscles = { ...
-        {'hamstrings_r','glut_max_r','iliopsoas_r'}, ...
-        {'vasti_r'}, ...
+        {'hamstrings_r','bifemsh_r','glut_max_r','iliopsoas_r'}, ...
+        {'rect_fem_r','vasti_r'}, ...
         {'gastroc_r','soleus_r','tib_ant_r'} };
 
     % ---- plot ----

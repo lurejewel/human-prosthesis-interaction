@@ -1,17 +1,17 @@
 function A = extract_lasso_reflex_features(modelInfo, side, frameIndex)
 % Name: extract_lasso_reflex_features
-% Description: Build the 1×22 feature row vector for one leg side.
-%   Feature order (22 elements):
-%     1-7   : normalized fiber length  of 7 same-side muscles
-%     8-14  : normalized MTU force     of 7 same-side muscles
-%     15    : pelvis tilt angle
-%     16    : pelvis tilt angular velocity
-%     17    : same-side hip angle
-%     18    : same-side hip angular velocity
-%     19    : same-side knee angle
-%     20    : same-side knee angular velocity
-%     21    : same-side ankle angle
-%     22    : same-side ankle angular velocity
+% Description: Build the 1×26 feature row vector for one leg side.
+%   Feature order (26 elements):
+%     1-9   : normalized fiber length  of 9 same-side muscles
+%     10-18 : normalized MTU force     of 9 same-side muscles
+%     19    : pelvis tilt angle
+%     20    : pelvis tilt angular velocity
+%     21    : same-side hip angle
+%     22    : same-side hip angular velocity
+%     23    : same-side knee angle
+%     24    : same-side knee angular velocity
+%     25    : same-side ankle angle
+%     26    : same-side ankle angular velocity
 %
 %   All joint angles/velocities reuse the same stateMap indexing and sign
 %   conventions as the original cal_muscle_excitation / compute_leg_excitation.
@@ -23,7 +23,7 @@ function A = extract_lasso_reflex_features(modelInfo, side, frameIndex)
 
 validatestring(side, {'right', 'left'});
 
-nMusPerSide = 7;
+nMusPerSide = 9;
 if strcmp(side, 'right')
     muscleIdx = 1:nMusPerSide;
     legSuffix = 'r';
@@ -32,11 +32,11 @@ else
     legSuffix = 'l';
 end
 
-% ---- muscle-level features (indices 1-14) ----
+% ---- muscle-level features (indices 1-18) ----
 fiberLen = modelInfo.dy.muscle.lCEN(muscleIdx, frameIndex);
 mtuForce = modelInfo.dy.muscle.fATN(muscleIdx, frameIndex);
 
-% ---- joint kinematic features (indices 15-22) ----
+% ---- joint kinematic features (indices 19-26) ----
 % Reuse the exact same indexing from the old cal_muscle_excitation
 map = modelInfo.st.model.map;
 
@@ -67,7 +67,7 @@ else
     ankleVel = sh(map(['ankle_dorsiflexion_' legSuffix '/speed']), frameIndex - 1);
 end
 
-% ---- assemble 1×22 row vector ----
+% ---- assemble 1×26 row vector ----
 A = [fiberLen(:)', mtuForce(:)', ...
      pelvisTilt, pelvisTiltV, ...
      hipAng, hipVel, ...
@@ -75,7 +75,7 @@ A = [fiberLen(:)', mtuForce(:)', ...
      ankleAng, ankleVel];
 
 % ---- validation ----
-assert(isequal(size(A), [1, 22]), 'Feature vector must be 1×22.');
+assert(isequal(size(A), [1, 26]), 'Feature vector must be 1×26.');
 assert(all(isfinite(A)), 'Feature vector contains non-finite values.');
 
 end

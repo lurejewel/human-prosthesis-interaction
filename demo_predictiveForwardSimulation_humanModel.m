@@ -24,7 +24,7 @@
 % 如何改变地形（上下坡、上下台阶等）？
 clear all; close all; clc
 addpath(genpath('assets\'), genpath('model\'), genpath('functions\'), genpath('results\'))
-projName = 'human0714_new'; % name of the .osim model
+projName = 'human0918'; % name of the musculoskeletal model (.osim)
 
 %% =======================================================================
 %  CHECKPOINT CONFIGURATION
@@ -150,7 +150,7 @@ while g < optConfig.gMax && ~stop
 
     fits_cell = cell(nWorkers,1); % initialize fit in cell
     % MIDDLE LOOP: for each PARALLEL worker (batch of particles)
-    for w = 1 : nWorkers
+    parfor w = 1 : nWorkers
 
         fits_local = nan(optConfig.nParticles(w),1);
         [model, modelInfo] = init_infra(projName, modelStaticProp, a_opt);

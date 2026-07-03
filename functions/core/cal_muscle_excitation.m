@@ -30,9 +30,9 @@ function muscleExcitations = cal_muscle_excitation(modelInfo, frameIndex)
 %     - LASSO linear-phase controller (if modelInfo.reflexParams is nonempty)
 %     - Legacy hand-crafted reflex controller (fallback)
 %
-%   Muscle order (7 per leg, R then L):
-%     1=hamR, 2=gluR, 3=iliR, 4=vasR, 5=gasR, 6=solR, 7=tibR
-%     8=hamL, 9=gluL, 10=iliL, 11=vasL, 12=gasL, 13=solL, 14=tibL
+%   Muscle order (9 per leg, R then L):
+%     1=hamR, 2=bifR, 3=gluR, 4=iliR, 5=recR, 6=vasR, 7=gasR, 8=solR, 9=tibR
+%     10=hamL, 11=bifL, 12=gluL, 13=iliL, 14=recL, 15=vasL, 16=gasL, 17=solL, 18=tibL
 
 %% ---- dispatch: LASSO vs legacy ----
 if ~isempty(modelInfo.reflexParams) ...
@@ -68,7 +68,7 @@ if isempty(phaseIdxR)
     error('LASSO: unknown right-leg phase ID %d at frame %d.', phaseR, frameIndex);
 end
 A_R = extract_lasso_reflex_features(modelInfo, 'right', frameIndex);
-excR = A_R * rp.beta{phaseIdxR} + rp.bias{phaseIdxR};  % 1×7
+excR = A_R * rp.beta{phaseIdxR} + rp.bias{phaseIdxR};  % 1×9
 
 % ---- left leg (same canonical beta/bias, different features) ----
 phaseL = modelInfo.dy.phase.l(frameIndex);
@@ -77,7 +77,7 @@ if isempty(phaseIdxL)
     error('LASSO: unknown left-leg phase ID %d at frame %d.', phaseL, frameIndex);
 end
 A_L = extract_lasso_reflex_features(modelInfo, 'left', frameIndex);
-excL = A_L * rp.beta{phaseIdxL} + rp.bias{phaseIdxL};  % 1×7
+excL = A_L * rp.beta{phaseIdxL} + rp.bias{phaseIdxL};  % 1×9
 
 % ---- assemble 14×1 column: [right 1:7; left 8:14] ----
 exc = [excR(:); excL(:)];

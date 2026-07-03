@@ -46,12 +46,12 @@ if isfield(reflexParamMap, 'nGroups') && ~isempty(reflexParamMap.groups)
         gm = reflexParamMap.groups(g);
 
         % ---- reconstruct group beta ----
-        betaMat = zeros(22, 7);
+        betaMat = zeros(26, 9);
         betaMat(gm.betaLinIdx) = paramVec(gm.betaStart : gm.betaEnd);
         groupBeta{g} = betaMat;
 
         % ---- reconstruct group bias ----
-        groupBias{g} = paramVec(gm.biasStart : gm.biasEnd)';  % 1×7
+        groupBias{g} = paramVec(gm.biasStart : gm.biasEnd)';  % 1×9
     end
 
     % ---- expand groups to per-phase cells ----
@@ -72,12 +72,12 @@ else
         ph = reflexParamMap.phases(p);
 
         % ---- reconstruct beta ----
-        betaMat = zeros(22, 7);
+        betaMat = zeros(26, 9);
         betaMat(ph.betaLinIdx) = paramVec(ph.betaStart : ph.betaEnd);
         reflexParams.beta{p} = betaMat;
 
         % ---- reconstruct bias ----
-        reflexParams.bias{p} = paramVec(ph.biasStart : ph.biasEnd)';  % 1×7
+        reflexParams.bias{p} = paramVec(ph.biasStart : ph.biasEnd)';  % 1×9
 
         % ---- structural-zero enforcement ----
         maskMat = reflexTemplate.mask{p};

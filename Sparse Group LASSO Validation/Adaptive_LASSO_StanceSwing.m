@@ -63,10 +63,8 @@ fprintf('Logging to %s\n', logFilePath);
 %% ===== STEP 1: DATA LOADING & PREPROCESSING =====
 % Load target muscle excitations and one shared biomechanical feature matrix.
 stoFilePath = 'UN.sto';
-% muscleNames = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', ...
-%     'rect_fem_r', 'vasti_r'};
-muscleNames = {'hamstrings_r', 'glut_max_r', 'iliopsoas_r', 'vasti_r', ...
-    'gastroc_r', 'soleus_r', 'tib_ant_r'};
+muscleNames = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', ...
+    'rect_fem_r', 'vasti_r', 'gastroc_r', 'soleus_r', 'tib_ant_r'};
 numTargets = numel(muscleNames);
 
 % Tunable parameters (adaptive LASSO + censoring)
@@ -627,23 +625,19 @@ results.LambdaPath = LambdaPath;
 % Phase mapping:  stance → phases 0,1    swing → phases 2,3,4
 %
 % The LASSO feature matrix has 26 rows (9 muscles × 2 + 8 kinematics).
-% The demo expects 22 rows (7 muscles × 2 + 8 kinematics).
-% Rows to remove: 2 (bifemsh len), 5 (rect_fem len),
-%                 11 (bifemsh force), 14 (rect_fem force).
-
-rowsToKeep = setdiff(1:26, [2, 5, 11, 14]);  % 22 rows
+% All 9 muscles and 26 features are exported directly.
 
 % ---- build lasso struct (grouped format) ----
 % Two distinct controllers: stance (phases 0,1) and swing (phases 2,3,4).
 % The grouped format avoids duplicating parameters for phases that share
 % the same controller, making the CMA-ES optimisation more efficient.
 
-betaStance = results.Beta_refit.stance(rowsToKeep, :);  % 22 × 7
-biasStance = results.Intercept_refit.stance(:)';        % 1 × 7
+betaStance = results.Beta_refit.stance;  % 26 × 9
+biasStance = results.Intercept_refit.stance(:)';  % 1 × 9
 maskStance = abs(betaStance) > nzTol;
 
-betaSwing = results.Beta_refit.swing(rowsToKeep, :);    % 22 × 7
-biasSwing = results.Intercept_refit.swing(:)';          % 1 × 7
+betaSwing = results.Beta_refit.swing;   % 26 × 9
+biasSwing = results.Intercept_refit.swing(:)';    % 1 × 9
 maskSwing = abs(betaSwing) > nzTol;
 
 lasso = struct();
@@ -676,9 +670,9 @@ fprintf('  nPhases = 5, phaseIds = [0 1 2 3 4]\n');
 fprintf('  nGroups = 2\n');
 fprintf('  Group 1 (stance): phases [0,1],  nnz(beta) = %d\n', nnz(maskStance));
 fprintf('  Group 2 (swing):  phases [2,3,4], nnz(beta) = %d\n', nnz(maskSwing));
-fprintf('  Feature rows trimmed: 26→22 (removed bifemsh, rect_fem)\n');
+fprintf('  Feature rows: 26 (9 muscles × 2 + 8 kinematics)\n');
 fprintf('  Total optimizable params: %d\n', ...
-    nnz(maskStance) + 7 + nnz(maskSwing) + 7);
+    nnz(maskStance) + 9 + nnz(maskSwing) + 9);
 fprintf('=======================================\n');
 
 %% functions

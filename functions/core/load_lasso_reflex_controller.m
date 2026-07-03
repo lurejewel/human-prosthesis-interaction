@@ -49,8 +49,8 @@ end
 %% ---- build reflexTemplate ----
 reflexTemplate = struct();
 reflexTemplate.controllerType  = 'lasso_linear_phase';
-reflexTemplate.nFeatures       = 22;
-reflexTemplate.nMusclesPerSide = 7;
+reflexTemplate.nFeatures       = 26;
+reflexTemplate.nMusclesPerSide = 9;
 reflexTemplate.nPhases         = nPhases;
 reflexTemplate.phaseIds        = lasso.phaseIds(:).';
 
@@ -99,8 +99,8 @@ end
 %% ---- build reflexParamMap ----
 reflexParamMap = struct();
 reflexParamMap.controllerType  = 'lasso_linear_phase';
-reflexParamMap.nFeatures       = 22;
-reflexParamMap.nMusclesPerSide = 7;
+reflexParamMap.nFeatures       = 26;
+reflexParamMap.nMusclesPerSide = 9;
 reflexParamMap.nPhases         = nPhases;
 reflexParamMap.phaseIds        = lasso.phaseIds(:).';
 reflexParamMap.phases          = [];
@@ -114,9 +114,9 @@ if useGrouped
 
     for g = 1:nGroups
         grp = lasso.groups(g);
-        betaMat = grp.beta;         % 22×7
-        biasVec = grp.bias(:)';     % 1×7
-        maskMat = grp.mask;         % 22×7 logical
+        betaMat = grp.beta;         % 26×9
+        biasVec = grp.bias(:)';     % 1×9
+        maskMat = grp.mask;         % 26×9 logical
 
         % ---- validate mask consistency ----
         nonzeroOutsideMask = abs(betaMat(~maskMat)) > 0;
@@ -131,7 +131,7 @@ if useGrouped
         betaStart = numel(initPara) + 1;
         betaEnd   = betaStart + nBeta - 1;
         biasStart = betaEnd + 1;
-        biasEnd   = biasStart + 6;   % 7 bias values
+        biasEnd   = biasStart + 8;   % 9 bias values
 
         initPara = [initPara; betaMat(betaLinIdx); biasVec(:)];  %#ok<AGROW>
 
@@ -161,8 +161,8 @@ if useGrouped
 else
     % ---- legacy: per-phase layout ----
     for p = 1:nPhases
-        betaMat  = lasso.beta{p};   % 22×7
-        biasVec  = lasso.bias{p}(:)';  % 1×7
+        betaMat  = lasso.beta{p};   % 26×9
+        biasVec  = lasso.bias{p}(:)';  % 1×9
         maskMat  = reflexTemplate.mask{p};
 
         % ---- validate mask consistency ----
@@ -172,13 +172,13 @@ else
         end
 
         % ---- column-major linear indices of sparse beta entries ----
-        betaLinIdx = find(maskMat);   % column-major into 22×7
+        betaLinIdx = find(maskMat);   % column-major into 26×9
         nBeta      = numel(betaLinIdx);
 
         betaStart = numel(initPara) + 1;
         betaEnd   = betaStart + nBeta - 1;
         biasStart = betaEnd + 1;
-        biasEnd   = biasStart + 6;   % 7 bias values
+        biasEnd   = biasStart + 8;   % 9 bias values
 
         % ---- append to flat vector ----
         initPara = [initPara; betaMat(betaLinIdx); biasVec(:)];  %#ok<AGROW>
@@ -203,14 +203,14 @@ if useGrouped
         nGroups, nPhases, reflexParamMap.totalLen);
     for g = 1:nGroups
         gm = reflexParamMap.groups(g);
-        fprintf('  Group %d (%s): phases [%s], %d non-zero beta entries, 7 bias entries\n', ...
+        fprintf('  Group %d (%s): phases [%s], %d non-zero beta entries, 9 bias entries\n', ...
             g, gm.label, strjoin(string(gm.phases), ', '), gm.nBeta);
     end
 else
     fprintf('[LASSO controller] %d phases loaded, %d total optimizable parameters.\n', ...
         nPhases, reflexParamMap.totalLen);
     for p = 1:nPhases
-        fprintf('  Phase %d: %d non-zero beta entries, 7 bias entries\n', ...
+        fprintf('  Phase %d: %d non-zero beta entries, 9 bias entries\n', ...
             lasso.phaseIds(p), reflexParamMap.phases(p).nBeta);
     end
 end
@@ -261,17 +261,17 @@ assert(numel(lasso.bias) == nPhases, ...
 
 for p = 1:nPhases
     [br, bc] = size(lasso.beta{p});
-    assert(br == 22 && bc == 7, ...
-        'Phase %d: beta must be 22×7, got %d×%d.', p, br, bc);
+    assert(br == 26 && bc == 9, ...
+        'Phase %d: beta must be 26×9, got %d×%d.', p, br, bc);
     biasVec = lasso.bias{p}(:)';
-    assert(numel(biasVec) == 7, ...
-        'Phase %d: bias must have 7 elements, got %d.', p, numel(biasVec));
+    assert(numel(biasVec) == 9, ...
+        'Phase %d: bias must have 9 elements, got %d.', p, numel(biasVec));
     lasso.bias{p} = biasVec;
 
     if isfield(lasso, 'mask')
         [mr, mc] = size(lasso.mask{p});
-        assert(mr == 22 && mc == 7, ...
-            'Phase %d: mask must be 22×7, got %d×%d.', p, mr, mc);
+        assert(mr == 26 && mc == 9, ...
+            'Phase %d: mask must be 26×9, got %d×%d.', p, mr, mc);
         assert(islogical(lasso.mask{p}), ...
             'Phase %d: mask must be logical.', p);
     end
