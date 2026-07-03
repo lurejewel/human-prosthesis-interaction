@@ -4,7 +4,7 @@ function test_muscle_moment_summation()
 % Pipeline:
 %   1. 通过 OpenSim API 读取 UN.sto
 %   2. 对右侧腿, 读取所有肌肉绕各个 coordinate 的 moment
-%      (格式: <muscle>_r.<coord>.moment, 例如 rect_fem_r.knee_angle_r.moment)
+%      (格式: <muscle>_r.<coord>.moment, 例如 rect_fem_r.knee_extension_r.moment)
 %   3. 按 coordinate 加总肌肉力矩, 膝关节减去被动约束力 (knee_r.torque)
 %   4. 与 UN.sto 中的净关节力矩 (hip_flexion_r.moment 等) 画图对比
 %
@@ -63,7 +63,7 @@ muscleNames = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', ...
                'rect_fem_r', 'vasti_r', 'gastroc_r', 'soleus_r', 'tib_ant_r'};
 
 % 目标关节坐标
-targetCoords = {'hip_flexion_r', 'knee_angle_r', 'ankle_angle_r'};
+targetCoords = {'hip_flexion_r', 'knee_extension_r', 'ankle_dorsiflexion_r'};
 
 % 搜索所有 <muscle>_r.<coord>.moment 列
 % momentMap{coordIdx} = Nframes x nM 矩阵, 每列是一个肌肉的 moment
@@ -108,7 +108,7 @@ end
 %% ====== 3. 读取 STO 中的净关节力矩 ======
 fprintf('[3/4] 读取 STO 净关节力矩 ...\n');
 
-stoMomentLabels = {'hip_flexion_r.moment', 'knee_angle_r.moment', 'ankle_angle_r.moment'};
+stoMomentLabels = {'hip_flexion_r.moment', 'knee_extension_r.moment', 'ankle_dorsiflexion_r.moment'};
 stoMoments = zeros(nFrames, 3);
 for j = 1 : 3
     stoMoments(:, j) = readCol(stoMomentLabels{j});

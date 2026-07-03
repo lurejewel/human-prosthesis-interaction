@@ -14,15 +14,20 @@ modelInfo = ModelInfo(modelStaticProp);
 model = add_muscle_actuator(model, org.opensim.modeling.PrescribedController()); % add the central controller and muscle actuators
 
 % initial states fetched from a dynamically consistent gait state
-% order of coordinates in model:
-% pelvis_tilt, pelvis_tx, pelvis_ty,
-% hip_flexion_r, hip_flexion_l, knee_flexion_r,
-% knee_flexion_l, ankle_dorsiflexion_r, ankle_dorsiflexion_l
+% NOTE: initial kinematics are assigned by coordinate NAME, not by state
+% vector index, because the index ordering depends on the .osim file
+% layout and may differ from the initPose row ordering.
 
-% overwrite initial kinematics (Q and U)
+% overwrite initial kinematics (Q and U) — assign by coordinate name
 state = model.initSystem();
-for i = 0 : state.getNQ+state.getNU-1
-    state.updY.set(i, modelInfo.st.model.initPose(i+1));
+dofNames = modelInfo.st.model.initPoseDofOrder;
+initPose = modelInfo.st.model.initPose;
+nDof = numel(dofNames);
+coordSet = model.getCoordinateSet();
+for j = 1:nDof
+    coord = coordSet.get(dofNames{j});
+    coord.setValue(state, initPose(j));
+    coord.setSpeedValue(state, initPose(nDof + j));
 end
 
 % ---- optionally inject static-optimisation activations ----

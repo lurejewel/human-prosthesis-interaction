@@ -700,7 +700,7 @@
 					<socket_child_frame>tibia_r_offset</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
-						<Coordinate name="knee_flexion_r">
+						<Coordinate name="knee_extension_r">
 							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
 							<range>-2.0943951023931953 0.17453292519943295</range>
 						</Coordinate>
@@ -763,7 +763,7 @@
 						</TransformAxis>
 						<TransformAxis name="rotation3">
 							<!--Names of the coordinates that serve as the independent variables         of the transform function.-->
-							<coordinates>knee_flexion_r</coordinates>
+							<coordinates>knee_extension_r</coordinates>
 							<!--Rotation or translation axis for the transform.-->
 							<axis>0 0 1</axis>
 							<!--Transform function of the generalized coordinates used to        represent the amount of displacement along a specified axis.-->
@@ -811,7 +811,7 @@
 					<socket_child_frame>tibia_l_offset</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
-						<Coordinate name="knee_flexion_l">
+						<Coordinate name="knee_extension_l">
 							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
 							<range>-2.0943951023931953 0.17453292519943295</range>
 							<!--Flag indicating whether or not the values of the coordinates should be limited to the range, above.-->
@@ -2106,9 +2106,9 @@
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
 					<transition_velocity>0.14999999999999999</transition_velocity>
 				</HuntCrossleyForce>
-				<CoordinateLimitForce name="knee_flexion_r_LimitForce">
+				<CoordinateLimitForce name="knee_extension_r_LimitForce">
 					<!--Coordinate (name) to be limited.-->
-					<coordinate>knee_flexion_r</coordinate>
+					<coordinate>knee_extension_r</coordinate>
 					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
 					<upper_stiffness>10</upper_stiffness>
 					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->
@@ -2124,9 +2124,9 @@
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
 					<compute_dissipation_energy>false</compute_dissipation_energy>
 				</CoordinateLimitForce>
-				<CoordinateLimitForce name="knee_flexion_l_LimitForce">
+				<CoordinateLimitForce name="knee_extension_l_LimitForce">
 					<!--Coordinate (name) to be limited.-->
-					<coordinate>knee_flexion_l</coordinate>
+					<coordinate>knee_extension_l</coordinate>
 					<!--Stiffness of the passive limit force when coordinate exceeds upper limit. Note, rotational stiffness expected in N*m/degree.-->
 					<upper_stiffness>10</upper_stiffness>
 					<!--The upper limit of the coordinate range of motion (rotations in degrees).-->

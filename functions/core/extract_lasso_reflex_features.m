@@ -53,16 +53,16 @@ end
 if frameIndex == 1
     hipAng  = initPose(map(['hip_flexion_' legSuffix '/value']));
     hipVel  = initPose(map(['hip_flexion_' legSuffix '/speed']));
-    kneeAng = initPose(map(['knee_flexion_' legSuffix '/value']));
-    kneeVel = initPose(map(['knee_flexion_' legSuffix '/speed']));
+    kneeAng = initPose(map(['knee_extension_' legSuffix '/value']));
+    kneeVel = initPose(map(['knee_extension_' legSuffix '/speed']));
     ankleAng = initPose(map(['ankle_dorsiflexion_' legSuffix '/value']));
     ankleVel = initPose(map(['ankle_dorsiflexion_' legSuffix '/speed']));
 else
     sh = modelInfo.dy.stateHistory;
     hipAng  = sh(map(['hip_flexion_' legSuffix '/value']), frameIndex - 1);
     hipVel  = sh(map(['hip_flexion_' legSuffix '/speed']), frameIndex - 1);
-    kneeAng = sh(map(['knee_flexion_' legSuffix '/value']), frameIndex - 1);
-    kneeVel = sh(map(['knee_flexion_' legSuffix '/speed']), frameIndex - 1);
+    kneeAng = sh(map(['knee_extension_' legSuffix '/value']), frameIndex - 1);
+    kneeVel = sh(map(['knee_extension_' legSuffix '/speed']), frameIndex - 1);
     ankleAng = sh(map(['ankle_dorsiflexion_' legSuffix '/value']), frameIndex - 1);
     ankleVel = sh(map(['ankle_dorsiflexion_' legSuffix '/speed']), frameIndex - 1);
 end

@@ -97,18 +97,18 @@ end
 %     initPose  = modelInfo.st.model.initPose;
 %     pelvisTilt  = initPose(map('pelvis_tilt/value'));
 %     pelvisTiltV = initPose(map('pelvis_tilt/speed'));
-%     kneeAngR = initPose(map('knee_flexion_r/value'));
-%     kneeVelR = initPose(map('knee_flexion_r/speed'));
-%     kneeAngL = initPose(map('knee_flexion_l/value'));
-%     kneeVelL = initPose(map('knee_flexion_l/speed'));
+%     kneeAngR = initPose(map('knee_extension_r/value'));
+%     kneeVelR = initPose(map('knee_extension_r/speed'));
+%     kneeAngL = initPose(map('knee_extension_l/value'));
+%     kneeVelL = initPose(map('knee_extension_l/speed'));
 % else
 %     sh = modelInfo.dy.stateHistory;
 %     pelvisTilt  = sh(map('pelvis_tilt/value'), frameIndex - 1);
 %     pelvisTiltV = sh(map('pelvis_tilt/speed'), frameIndex - 1);
-%     kneeAngR = sh(map('knee_flexion_r/value'), frameIndex - 1);
-%     kneeVelR = sh(map('knee_flexion_r/speed'), frameIndex - 1);
-%     kneeAngL = sh(map('knee_flexion_l/value'), frameIndex - 1);
-%     kneeVelL = sh(map('knee_flexion_l/speed'), frameIndex - 1);
+%     kneeAngR = sh(map('knee_extension_r/value'), frameIndex - 1);
+%     kneeVelR = sh(map('knee_extension_r/speed'), frameIndex - 1);
+%     kneeAngL = sh(map('knee_extension_l/value'), frameIndex - 1);
+%     kneeVelL = sh(map('knee_extension_l/speed'), frameIndex - 1);
 % end
 %
 % nMusPerLeg = numel(modelInfo.st.muscle.names) / 2;

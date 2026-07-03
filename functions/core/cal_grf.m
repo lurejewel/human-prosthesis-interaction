@@ -13,10 +13,12 @@ modelInfo.dy.grf.fxr(frameIndex) = heelRX + toeRX;
 modelInfo.dy.grf.fxl(frameIndex) = heelLX + toeLX;
 modelInfo.dy.grf.fyr(frameIndex) = heelRY + toeRY;
 modelInfo.dy.grf.fyl(frameIndex) = heelLY + toeLY;
-% modelInfo.grf.frictionR(frameIndex) = heelRX + toeRX;
-% modelInfo.grf.frictionL(frameIndex) = heelLX + toeLX;
-% modelInfo.grf.normalR(frameIndex) = heelRY + toeRY;
-% modelInfo.grf.normalL(frameIndex) = heelLY + toeLY;
+
+% modelInfo.dy.grf.fxr(frameIndex) = simCache.grfR.getRecordValues(state).get(0);
+% modelInfo.dy.grf.fxl(frameIndex) = simCache.grfL.getRecordValues(state).get(0);
+% modelInfo.dy.grf.fxr(frameIndex) = simCache.grfR.getRecordValues(state).get(1);
+% modelInfo.dy.grf.fxl(frameIndex) = simCache.grfL.getRecordValues(state).get(1);
+
 
 end
 

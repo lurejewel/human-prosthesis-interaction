@@ -39,8 +39,7 @@ nDof      = numel(dofNames);
 nSoCoords = numel(soCoordNames);
 
 % ---- load model & set kinematics ----
-import org.opensim.modeling.*
-soModel = Model(['model/' projName '.osim']);
+soModel = org.opensim.modeling.Model(['model/' projName '.osim']);
 nMusTotal = soModel.getMuscles().getSize();
 soState = soModel.initSystem();
 soCoordSet = soModel.getCoordinateSet();
@@ -65,7 +64,7 @@ end
 % ---- moment-arm matrix R (once, purely kinematic) ----
 a_opt = 0.05 * ones(nMusTotal, 1);
 for i = 1:nMusTotal
-    Muscle.safeDownCast(soModel.getMuscles().get(i - 1)).setActivation(soState, a_opt(i));
+    org.opensim.modeling.Muscle.safeDownCast(soModel.getMuscles().get(i - 1)).setActivation(soState, a_opt(i));
 end
 soModel.equilibrateMuscles(soState);
 soModel.realizeVelocity(soState);
@@ -87,7 +86,7 @@ qpOpts = optimoptions('quadprog', 'Display', 'off', 'Algorithm', 'interior-point
 for iter = 1:maxIter
     % Set activations on model
     for i = 1:nMusTotal
-        Muscle.safeDownCast(soModel.getMuscles().get(i - 1)).setActivation(soState, a_opt(i));
+        org.opensim.modeling.Muscle.safeDownCast(soModel.getMuscles().get(i - 1)).setActivation(soState, a_opt(i));
     end
     soModel.equilibrateMuscles(soState);
     soModel.realizeVelocity(soState);

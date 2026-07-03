@@ -1,8 +1,7 @@
 function varargout = read_sto_file(model, stoFilePath, showVideo)
 % Name: read_sto_file
 % Description: visualize the .sto file (state history of model).
-import org.opensim.modeling.*
-stoFile = Storage(stoFilePath, false);
+stoFile = org.opensim.modeling.Storage(stoFilePath, false);
 % model = Model(modelFilePath);
 model.setUseVisualizer(true);
 

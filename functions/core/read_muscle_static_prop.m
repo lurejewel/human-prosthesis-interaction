@@ -1,4 +1,4 @@
-function st = read_muscle_static_prop(projName, simConfig, initPose)
+function st = read_muscle_static_prop(projName, simConfig, initPose, dofNames)
 % st: static properties of the model, corresponding to obj.st in the
 % ModelInfo class.
 % st
@@ -13,6 +13,7 @@ function st = read_muscle_static_prop(projName, simConfig, initPose)
 % ├── model
 % │   ├── totalMass
 % │   ├── initPose
+% │   ├── initPoseDofOrder          cell array, DOF names in initPose row order
 % │   └── map
 % └── simInfo
 %     ├── stepTime
@@ -79,6 +80,7 @@ map = containers.Map(keys, 1:numel(keys));
 
 st.model.totalMass = totalMass;
 st.model.initPose = initPose;
+st.model.initPoseDofOrder = dofNames(:);
 st.model.map = map;
 
 %% simulation-level static property

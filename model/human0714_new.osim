@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="40500">	
-	<Model name="coupled_human-prosthesis_model">
+<OpenSimDocument Version="40500">
+	<Model name="human0714">
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
 			<!--The geometry used to display the axes of this Frame.-->
@@ -2030,13 +2030,13 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<HuntCrossleyForce name="heelR_ground_contact_force">
+				<HuntCrossleyForce name="foot_r">
 					<!--Material properties.-->
 					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
 						<objects>
 							<HuntCrossleyForce::ContactParameters>
 								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>heelR_contact_geo ground_contact_geo</geometry>
+								<geometry>heelR_contact_geo toeR_contact_geo ground_contact_geo</geometry>
 								<stiffness>2000000</stiffness>
 								<dissipation>1</dissipation>
 								<static_friction>0.90000000000000002</static_friction>
@@ -2049,51 +2049,13 @@
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
 					<transition_velocity>0.14999999999999999</transition_velocity>
 				</HuntCrossleyForce>
-				<HuntCrossleyForce name="heelL_ground_contact_force">
+				<HuntCrossleyForce name="foot_l">
 					<!--Material properties.-->
 					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
 						<objects>
 							<HuntCrossleyForce::ContactParameters>
 								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>heelL_contact_geo ground_contact_geo</geometry>
-								<stiffness>2000000</stiffness>
-								<dissipation>1</dissipation>
-								<static_friction>0.90000000000000002</static_friction>
-								<dynamic_friction>0.59999999999999998</dynamic_friction>
-								<viscous_friction>0.59999999999999998</viscous_friction>
-							</HuntCrossleyForce::ContactParameters>
-						</objects>
-						<groups />
-					</HuntCrossleyForce::ContactParametersSet>
-					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.14999999999999999</transition_velocity>
-				</HuntCrossleyForce>
-				<HuntCrossleyForce name="toeR_ground_contact_force">
-					<!--Material properties.-->
-					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
-						<objects>
-							<HuntCrossleyForce::ContactParameters>
-								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>toeR_contact_geo ground_contact_geo</geometry>
-								<stiffness>2000000</stiffness>
-								<dissipation>1</dissipation>
-								<static_friction>0.90000000000000002</static_friction>
-								<dynamic_friction>0.59999999999999998</dynamic_friction>
-								<viscous_friction>0.59999999999999998</viscous_friction>
-							</HuntCrossleyForce::ContactParameters>
-						</objects>
-						<groups />
-					</HuntCrossleyForce::ContactParametersSet>
-					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.14999999999999999</transition_velocity>
-				</HuntCrossleyForce>
-				<HuntCrossleyForce name="toeL_ground_contact_force">
-					<!--Material properties.-->
-					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
-						<objects>
-							<HuntCrossleyForce::ContactParameters>
-								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>toeL_contact_geo ground_contact_geo</geometry>
+								<geometry>heelL_contact_geo toeL_contact_geo ground_contact_geo</geometry>
 								<stiffness>2000000</stiffness>
 								<dissipation>1</dissipation>
 								<static_friction>0.90000000000000002</static_friction>
@@ -2122,7 +2084,7 @@
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>0.01</transition>
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
-					<compute_dissipation_energy>true</compute_dissipation_energy>
+					<compute_dissipation_energy>false</compute_dissipation_energy>
 				</CoordinateLimitForce>
 				<CoordinateLimitForce name="knee_extension_l_LimitForce">
 					<!--Coordinate (name) to be limited.-->
@@ -2140,7 +2102,7 @@
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>0.01</transition>
 					<!--Option to compute the dissipation energy due to damping in the CoordinateLimitForce. If true the dissipation power is automatically integrated to provide energy. Default is false.-->
-					<compute_dissipation_energy>true</compute_dissipation_energy>
+					<compute_dissipation_energy>false</compute_dissipation_energy>
 				</CoordinateLimitForce>
 			</objects>
 			<groups />

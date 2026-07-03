@@ -4,7 +4,7 @@ function test_inverse_dynamics_validation()
 % Pipeline:
 %   1. 通过 OpenSim API 读取 UN.sto
 %   2. 提取逆动力学所需的数据 (coordinate values + 地反力)
-%   3. 执行逆动力学，得到 hip_flexion_r / knee_angle_r / ankle_angle_r 关节力矩
+%   3. 执行逆动力学，得到 hip_flexion_r / knee_extension_r / ankle_dorsiflexion_r 关节力矩
 %   4. 将 ID 计算结果与 UN.sto 中已有的 .moment 数据画图对比
 %
 % 依赖: OpenSim 4.x MATLAB API + human0918.osim 模型
@@ -107,7 +107,7 @@ for s = 1 : 2
 end
 
 % --- 2b. STO 参考力矩 ---
-stoMomentLabels = {'hip_flexion_r.moment', 'knee_angle_r.moment', 'ankle_angle_r.moment'};
+stoMomentLabels = {'hip_flexion_r.moment', 'knee_extension_r.moment', 'ankle_dorsiflexion_r.moment'};
 stoMoments = zeros(nFrames, 3);
 for i = 1 : 3
     stoMoments(:, i) = readCol(stoMomentLabels{i});
@@ -157,8 +157,8 @@ legBodies{2} = calcnLFull;   % leg0_l → 左脚
 % --- STO→模型 坐标名映射 (别名处理) ---
 sto2modelName = containers.Map();
 knownAliases = { ...
-    'knee_angle_r',      'knee_flexion_r'; ...
-    'knee_angle_l',      'knee_flexion_l'; ...
+    'knee_angle_r',      'knee_extension_r'; ...
+    'knee_angle_l',      'knee_extension_l'; ...
     'ankle_angle_r',     'ankle_dorsiflexion_r'; ...
     'ankle_angle_l',     'ankle_dorsiflexion_l'};
 
@@ -197,7 +197,7 @@ knownAliases = { ...
 fprintf('  匹配 STO 列 → 模型坐标 ...\n');
 coordMatch = {};
 targetJointModelIdx = zeros(1, 3);  % hip, knee, ankle 在模型中的 0-based 索引
-targetJointStoName = {'hip_flexion_r', 'knee_angle_r', 'ankle_angle_r'};
+targetJointStoName = {'hip_flexion_r', 'knee_extension_r', 'ankle_dorsiflexion_r'};
 
 for ci = 0 : nCoord - 1
     modelCN = coordNameList{ci + 1};
@@ -205,7 +205,7 @@ for ci = 0 : nCoord - 1
     % 从模型坐标名反向查找 STO 列:
     % 1) 模型名本身在 STO 中?
     [~, foundQ] = tryReadCol(modelCN);
-    % 2) 别名反向查找: STO 名 → 模型名, 已知 knee_flexion → knee_angle
+    % 2) 别名反向查找: STO 名 → 模型名, 已知 knee_extension → knee_angle (旧 STO 兼容)
     stoCN = '';
     if foundQ
         stoCN = modelCN;

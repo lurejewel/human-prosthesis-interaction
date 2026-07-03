@@ -114,10 +114,10 @@ classdef Measurements < handle
             sm  = obj.modelInfo.st.model.map;
             n   = obj.npts;
 
-            kneeAngLeft  = rad2deg(sh(sm('knee_flexion_l/value'), 1:n));
-            kneeAngRight = rad2deg(sh(sm('knee_flexion_r/value'), 1:n));
-            kneeVelLeft  = rad2deg(sh(sm('knee_flexion_l/speed'), 1:n));
-            kneeVelRight = rad2deg(sh(sm('knee_flexion_r/speed'), 1:n));
+            kneeAngLeft  = rad2deg(sh(sm('knee_extension_l/value'), 1:n));
+            kneeAngRight = rad2deg(sh(sm('knee_extension_r/value'), 1:n));
+            kneeVelLeft  = rad2deg(sh(sm('knee_extension_l/speed'), 1:n));
+            kneeVelRight = rad2deg(sh(sm('knee_extension_r/speed'), 1:n));
 
             fAvg = mean(abs(Measurements.limit_force_calculation(kneeAngLeft, kneeVelLeft, angUpTh, angLowTh)));
             fitL = weight * fAvg * (fAvg > th);

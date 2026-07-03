@@ -65,8 +65,8 @@ for i = 1:numel(colNames), colMap(colNames{i}) = i; end
 
 % 9 DOF (Q then U → 18 elements)
 dofNames = {'pelvis_tilt','pelvis_tx','pelvis_ty', ...
-            'hip_flexion_r','knee_flexion_r','ankle_dorsiflexion_r', ...
-            'hip_flexion_l','knee_flexion_l','ankle_dorsiflexion_l'};
+            'hip_flexion_r','knee_extension_r','ankle_dorsiflexion_r', ...
+            'hip_flexion_l','knee_extension_l','ankle_dorsiflexion_l'};
 nDof = numel(dofNames);
 initPose = zeros(2 * nDof, 1);
 for j = 1:nDof
@@ -75,12 +75,12 @@ for j = 1:nDof
 end
 
 %% initialise model infrastructure (same pipeline as the main demo)
-modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose);
+modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose, dofNames);
 
 % ---- iterative static optimisation for first-frame muscle activations ----
 fprintf('Running iterative static optimisation ...\n');
 soCoordNames = {'hip_flexion_r','hip_flexion_l', ...
-                'knee_flexion_r','knee_flexion_l', ...
+                'knee_extension_r','knee_extension_l', ...
                 'ankle_dorsiflexion_r','ankle_dorsiflexion_l'};
 nSoCoords = numel(soCoordNames);
 tauTarget = zeros(nSoCoords, 1);
@@ -88,8 +88,8 @@ for j = 1:nSoCoords
     tauTarget(j) = dataLine(colMap([soCoordNames{j} '.moment']));
 end
 tauLimit = zeros(nSoCoords, 1);
-tauLimit(strcmp(soCoordNames, 'knee_flexion_r')) = dataLine(colMap('knee_r.torque'));
-tauLimit(strcmp(soCoordNames, 'knee_flexion_l')) = dataLine(colMap('knee_l.torque'));
+tauLimit(strcmp(soCoordNames, 'knee_extension_r')) = dataLine(colMap('knee_r.torque'));
+tauLimit(strcmp(soCoordNames, 'knee_extension_l')) = dataLine(colMap('knee_l.torque'));
 a_opt = iterative_static_optimization(projName, initPose, dofNames, ...
     tauTarget, tauLimit, soCoordNames);
 
@@ -127,8 +127,8 @@ tVec       = modelInfo.st.simInfo.timeSeries(1:nValid);
 % ---- joint angles (deg) ----
 hipR_ang   = rad2deg(stateHist(stateMap('hip_flexion_r/value'),      1:nValid));
 hipL_ang   = rad2deg(stateHist(stateMap('hip_flexion_l/value'),      1:nValid));
-kneeR_ang  = rad2deg(stateHist(stateMap('knee_flexion_r/value'),     1:nValid));
-kneeL_ang  = rad2deg(stateHist(stateMap('knee_flexion_l/value'),     1:nValid));
+kneeR_ang  = rad2deg(stateHist(stateMap('knee_extension_r/value'),     1:nValid));
+kneeL_ang  = rad2deg(stateHist(stateMap('knee_extension_l/value'),     1:nValid));
 ankleR_ang = rad2deg(stateHist(stateMap('ankle_dorsiflexion_r/value'),1:nValid));
 ankleL_ang = rad2deg(stateHist(stateMap('ankle_dorsiflexion_l/value'),1:nValid));
 
@@ -159,10 +159,10 @@ fprintf('Computing net joint torques via muscle moment summation (%d frames)...\
 
 % ---- coordinate handles (retrieved once for efficiency) ----
 coord_hipR   = model.getCoordinateSet().get('hip_flexion_r');
-coord_kneeR  = model.getCoordinateSet().get('knee_flexion_r');
+coord_kneeR  = model.getCoordinateSet().get('knee_extension_r');
 coord_ankleR = model.getCoordinateSet().get('ankle_dorsiflexion_r');
 coord_hipL   = model.getCoordinateSet().get('hip_flexion_l');
-coord_kneeL  = model.getCoordinateSet().get('knee_flexion_l');
+coord_kneeL  = model.getCoordinateSet().get('knee_extension_l');
 coord_ankleL = model.getCoordinateSet().get('ankle_dorsiflexion_l');
 coords = {coord_hipR, coord_kneeR, coord_ankleR, ...
           coord_hipL, coord_kneeL, coord_ankleL};

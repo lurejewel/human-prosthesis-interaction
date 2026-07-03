@@ -183,8 +183,8 @@ For the current 5-phase gait model, expected values are:
 | 16 | Pelvis tilt angular velocity | `stateHistory('pelvis_tilt/speed')` |
 | 17 | Same-side hip angle | `stateHistory('hip_flexion_{r/l}/value')` |
 | 18 | Same-side hip angular velocity | `stateHistory('hip_flexion_{r/l}/speed')` |
-| 19 | Same-side knee angle | `stateHistory('knee_flexion_{r/l}/value')` |
-| 20 | Same-side knee angular velocity | `stateHistory('knee_flexion_{r/l}/speed')` |
+| 19 | Same-side knee angle | `stateHistory('knee_extension_{r/l}/value')` |
+| 20 | Same-side knee angular velocity | `stateHistory('knee_extension_{r/l}/speed')` |
 | 21 | Same-side ankle angle | `stateHistory('ankle_dorsiflexion_{r/l}/value')` |
 | 22 | Same-side ankle angular velocity | `stateHistory('ankle_dorsiflexion_{r/l}/speed')` |
 

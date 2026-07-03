@@ -56,8 +56,8 @@ for i = 1:numel(colNames), colMap(colNames{i}) = i; end
 
 % 9 DOF (Q then U → 18 elements)
 dofNames = {'pelvis_tilt','pelvis_tx','pelvis_ty', ...
-            'hip_flexion_r','knee_flexion_r','ankle_dorsiflexion_r', ...
-            'hip_flexion_l','knee_flexion_l','ankle_dorsiflexion_l'};
+            'hip_flexion_r','knee_extension_r','ankle_dorsiflexion_r', ...
+            'hip_flexion_l','knee_extension_l','ankle_dorsiflexion_l'};
 nDof = numel(dofNames);
 initPose = zeros(2 * nDof, 1);
 for j = 1:nDof
@@ -67,7 +67,7 @@ end
 
 % Joint moments + knee limit torques for static optimisation
 soCoordNames = {'hip_flexion_r','hip_flexion_l', ...
-                'knee_flexion_r','knee_flexion_l', ...
+                'knee_extension_r','knee_extension_l', ...
                 'ankle_dorsiflexion_r','ankle_dorsiflexion_l'};
 nSoCoords = numel(soCoordNames);
 tauTarget = zeros(nSoCoords, 1);
@@ -75,11 +75,11 @@ for j = 1:nSoCoords
     tauTarget(j) = dataLine(colMap([soCoordNames{j} '.moment']));
 end
 tauLimit = zeros(nSoCoords, 1);
-tauLimit(strcmp(soCoordNames, 'knee_flexion_r')) = dataLine(colMap('knee_r.torque'));
-tauLimit(strcmp(soCoordNames, 'knee_flexion_l')) = dataLine(colMap('knee_l.torque'));
+tauLimit(strcmp(soCoordNames, 'knee_extension_r')) = dataLine(colMap('knee_r.torque'));
+tauLimit(strcmp(soCoordNames, 'knee_extension_l')) = dataLine(colMap('knee_l.torque'));
 
 %% ---- model static properties ----
-modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose);
+modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose, dofNames);
 
 %% ---- iterative static optimisation for initial muscle activations ----
 fprintf('[%s] Running iterative static optimisation ...\n', char(datetime));
@@ -130,5 +130,6 @@ s.softBoostTriggered  = softBoostTriggered;
 s.restartCount        = restartCount;
 s.stop                = stop;
 s.lassoFile           = lassoFile;
+s.dofNames            = dofNames;
 
 end

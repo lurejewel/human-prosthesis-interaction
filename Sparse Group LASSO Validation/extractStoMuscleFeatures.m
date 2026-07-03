@@ -74,11 +74,11 @@ if isempty(forceLabels)
 end
 
 hipLabel = pickExistingLabel(labels, {['hip_flexion_', side], 'hip_flexion', 'hip_flexion_x'}, 'hip angle');
-kneeLabel = pickExistingLabel(labels, {['knee_angle_', side], 'knee_angle', 'knee_angle_x'}, 'knee angle');
-ankleLabel = pickExistingLabel(labels, {['ankle_angle_', side], 'ankle_angle', 'ankle_angle_x'}, 'ankle angle');
+kneeLabel = pickExistingLabel(labels, {['knee_extension_', side], ['knee_angle_', side], 'knee_angle', 'knee_angle_x'}, 'knee angle');
+ankleLabel = pickExistingLabel(labels, {['ankle_dorsiflexion_', side], ['ankle_dorsiflexion_', side], 'ankle_dorsiflexion', 'ankle_angle_x'}, 'ankle angle');
 hipULabel = pickExistingLabel(labels, {['hip_flexion_', side, '_u']}, 'hip angle velocity');
-kneeULabel = pickExistingLabel(labels, {['knee_angle_', side, '_u']}, 'knee angle velocity');
-ankleULabel = pickExistingLabel(labels, {['ankle_angle_', side, '_u']}, 'ankle angle velocity');
+kneeULabel = pickExistingLabel(labels, {['knee_extension_', side, '_u'], ['knee_angle_', side, '_u']}, 'knee angle velocity');
+ankleULabel = pickExistingLabel(labels, {['ankle_dorsiflexion_', side, '_u']}, 'ankle angle velocity');
 pelvisLabel = pickExistingLabel(labels, {'pelvis_tilt'}, 'pelvis tilt');
 pelvisULabel = pickExistingLabel(labels, {'pelvis_tilt_u'}, 'pelvis tilt velocity');
 

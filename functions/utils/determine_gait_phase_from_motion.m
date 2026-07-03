@@ -14,19 +14,17 @@
 % - [Landing]: ending at the next heel strike.
 
 addpath(genpath('..\assets\'), genpath('..\model\'), genpath('..\functions\'))
-import org.opensim.modeling.*
-
 %% load model
-model = Model('model\coupled_human-prosthesis_model_scaledFinal.osim');
+model = org.opensim.modeling.Model('model\coupled_human-prosthesis_model_scaledFinal.osim');
 model.setUseVisualizer(true);
 state = model.initSystem();
 
 %% load motion and GRFdata
-motData = Storage('assets\subject01_walk1_ik.mot');
+motData = org.opensim.modeling.Storage('assets\subject01_walk1_ik.mot');
 rate = motData.getSize / (motData.getLastTime - motData.getFirstTime);
 phase = nan(motData.getSize, 2);
 
-motDataGRF = Storage('assets\subject01_walk1_grf.mot');
+motDataGRF = org.opensim.modeling.Storage('assets\subject01_walk1_grf.mot');
 
 %% determine gait phase
 for t = 0 : motData.getSize - 1 % for each frame/state

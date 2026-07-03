@@ -71,7 +71,15 @@ if resumeFromCheckpoint && isfile(checkpointFile)
     end
 
     % --- recompute model static properties (needed by init_infra) ---
-    modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose);
+    if isfield(ckp, 'dofNames')
+        dofNames = ckp.dofNames;
+    else
+        % fallback for legacy checkpoints that predate dofNames storage
+        dofNames = {'pelvis_tilt','pelvis_tx','pelvis_ty', ...
+                    'hip_flexion_r','knee_extension_r','ankle_dorsiflexion_r', ...
+                    'hip_flexion_l','knee_extension_l','ankle_dorsiflexion_l'};
+    end
+    modelStaticProp = read_muscle_static_prop(projName, simConfig, initPose, dofNames);
 
     % --- restore & re-pad history arrays ---
     bestFits        = ckp.bestFits(:);
@@ -131,6 +139,7 @@ else
     restartCount        = s.restartCount;
     stop                = s.stop;
     lassoFile           = s.lassoFile;
+    dofNames            = s.dofNames;
 
 end  % ====================  END FRESH-START / RESUME BLOCK  ====================
 
@@ -183,7 +192,7 @@ while g < optConfig.gMax && ~stop
             bestFitEver, softBoostTriggered, restartCount, stop, ...
             bestFits, computationLoad, optConfig, optCfg, projName, ...
             reflexParamMap, reflexTemplate, initPara, sigma, nWorkers, ...
-            simConfig, initPose, lassoFile, a_opt);
+            simConfig, initPose, dofNames, lassoFile, a_opt);
     end
 
     % --- track improvement -------------------------------------------------

@@ -72,7 +72,7 @@ sides = {'_r', '_l'};
 % All vectors & matrices below use this exact order.
 % 1: hip R   2: hip L   3: knee R   4: knee L   5: ankle R   6: ankle L
 coordNames = {'hip_flexion_r', 'hip_flexion_l', ...
-              'knee_flexion_r', 'knee_flexion_l', ...
+              'knee_extension_r', 'knee_extension_l', ...
               'ankle_dorsiflexion_r', 'ankle_dorsiflexion_l'};
 nCoords = numel(coordNames);
 
@@ -94,8 +94,8 @@ end
 
 % ---- 1d. Knee limit-force torques (from UN.sto) — SAME order ----
 tauLimit = zeros(nCoords, 1);
-kneeIdxR = find(strcmp(coordNames, 'knee_flexion_r'));
-kneeIdxL = find(strcmp(coordNames, 'knee_flexion_l'));
+kneeIdxR = find(strcmp(coordNames, 'knee_extension_r'));
+kneeIdxL = find(strcmp(coordNames, 'knee_extension_l'));
 tauLimit(kneeIdxR) = readCol('knee_r.torque', colMap, dataLine);
 tauLimit(kneeIdxL) = readCol('knee_l.torque', colMap, dataLine);
 
