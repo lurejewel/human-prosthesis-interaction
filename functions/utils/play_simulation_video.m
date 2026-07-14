@@ -8,7 +8,7 @@ function play_simulation_video(model, modelInfo, playbackSpeed, frameStep, showG
 %
 % Input:
 %   model         - org.opensim.modeling.Model (will have visualiser enabled)
-%   modelInfo     - ModelInfo object with dy.stateHistory and st.simInfo.timeSeries
+%   modelInfo     - ModelInfo object with dy.labelHistory and st.simInfo.timeSeries
 %                   (and dy.grf fields if showGRF = true)
 %   playbackSpeed - (optional) speed multiplier (>1 = faster, <1 = slower);
 %                   default 1.0 (real-time)
@@ -37,10 +37,11 @@ if nargin < 5 || isempty(showGRF)
 end
 
 %% ---- extract simulation data ----
-stateHist = modelInfo.dy.stateHistory;
+labelHist = modelInfo.dy.labelHistory;          % label order
+permLabelToInternal = modelInfo.st.model.permLabelToInternal;  % label→internal permutation
 timeSeries = modelInfo.st.simInfo.timeSeries;
-nValid = find(all(~isnan(stateHist)), 1, 'last');  % last fully-recorded frame
-nStates = size(stateHist, 1);
+nValid = find(all(~isnan(labelHist)), 1, 'last');
+nStates = size(labelHist, 1);
 
 if nValid < 2
     warning('play_simulation_video: not enough valid frames (nValid = %d).', nValid);
@@ -61,8 +62,11 @@ stateVis = model.initSystem();
 % Set first-frame kinematics so initial body positions are correct
 stateVis.setTime(tVec(1));
 Y0 = stateVis.updY();
+% Permute from label order → SimTK internal order for the visualiser
+labelFrame = labelHist(:, 1);
+internalFrame = labelFrame(permLabelToInternal);
 for i = 0:nStates - 1
-    Y0.set(i, stateHist(i + 1, 1));
+    Y0.set(i, internalFrame(i + 1));
 end
 model.realizePosition(stateVis);
 
@@ -84,8 +88,11 @@ for k = 1:nFrames
 
     stateVis.setTime(tNow);
     Y = stateVis.updY();
+    % Permute from label order → SimTK internal order for the visualiser
+    labelFrame = labelHist(:, fi);
+    internalFrame = labelFrame(permLabelToInternal);
     for i = 0:nStates - 1
-        Y.set(i, stateHist(i + 1, fi));
+        Y.set(i, internalFrame(i + 1));
     end
 
     model.realizeDynamics(stateVis);

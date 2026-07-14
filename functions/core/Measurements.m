@@ -48,7 +48,7 @@ classdef Measurements < handle
             obj.gravity = 9.80665;
             obj.simConfig = modelInfo.st.simInfo;
             obj.lastTime  = modelInfo.dy.lastTime;
-            obj.npts = find(all(~isnan(modelInfo.dy.stateHistory)), 1, 'last');
+            obj.npts = find(all(~isnan(modelInfo.dy.labelHistory)), 1, 'last');
 
             % obj.muscleMass   = modelInfo.st.muscle.mass;
             % obj.muscleLambda = modelInfo.st.muscle.lambda;
@@ -70,7 +70,7 @@ classdef Measurements < handle
             obj.heelstrikeEventR = obj.heelstrikeEventR(1:nHS_R);
             obj.heelstrikeEventL = obj.heelstrikeEventL(1:nHS_L);
 
-            obj.distance = modelInfo.dy.stateHistory( ...
+            obj.distance = modelInfo.dy.labelHistory( ...
                 modelInfo.st.model.map('pelvis_tx/value'), obj.npts);
 
         end
@@ -89,7 +89,7 @@ classdef Measurements < handle
                 return;
             end
 
-            sh  = obj.modelInfo.dy.stateHistory;
+            sh  = obj.modelInfo.dy.labelHistory;
             sm  = obj.modelInfo.st.model.map;
             idx = sm('pelvis_tx/value');
             dt  = obj.simConfig.stepTime;
@@ -110,7 +110,7 @@ classdef Measurements < handle
         function fit = knee_limit_measure(obj, weight)
             th = 5; angUpTh = -5; angLowTh = -120;
 
-            sh  = obj.modelInfo.dy.stateHistory;
+            sh  = obj.modelInfo.dy.labelHistory;
             sm  = obj.modelInfo.st.model.map;
             n   = obj.npts;
 
@@ -129,7 +129,7 @@ classdef Measurements < handle
         function fit = ankle_limit_measure(obj, weight)
             th = 5; angUpTh = 20; angLowTh = -45;
 
-            sh  = obj.modelInfo.dy.stateHistory;
+            sh  = obj.modelInfo.dy.labelHistory;
             sm  = obj.modelInfo.st.model.map;
             n   = obj.npts;
 
@@ -158,7 +158,7 @@ classdef Measurements < handle
 
         function fit = effort_measure(obj, weight)
 
-            sh      = obj.modelInfo.dy.stateHistory;
+            sh      = obj.modelInfo.dy.labelHistory;
             sm      = obj.modelInfo.st.model.map;
             pelvisX = sh(sm('pelvis_tx/value'), obj.npts);
             m       = obj.mass;

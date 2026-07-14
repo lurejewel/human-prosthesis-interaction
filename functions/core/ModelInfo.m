@@ -64,7 +64,7 @@ classdef ModelInfo < handle
         % ├── phase                     GAIT PHASES
         % │   ├── r
         % │   └── l
-        % ├── stateHistory
+        % ├── labelHistory               state in label order (matches st.model.map)
         % └── lastTime                      the instant when model falls down; =endTime if the model can walk stably
 
         % LASSO controller properties (set once per optimisation run)
@@ -91,7 +91,7 @@ classdef ModelInfo < handle
             obj.dy.muscle.fATN = nan(nMuscles, npts);
             obj.dy.muscle.lCEN = nan(nMuscles, npts);
             % obj.dy.muscle.vCE = nan(nMuscles, npts);    % DEPRECATED
-            obj.dy.stateHistory = nan(nStates, npts);
+            obj.dy.labelHistory = nan(nStates, npts);  % label order (matches .st.model.map indices)
             obj.dy.grf.fyr = nan(1, npts);
             obj.dy.grf.fxr = nan(1, npts);
             obj.dy.grf.fyl = nan(1, npts);
@@ -142,7 +142,7 @@ classdef ModelInfo < handle
             obj.dy.muscle.fATN(:,2:end) = nan;
             obj.dy.muscle.lCEN(:,2:end) = nan;
             % obj.dy.muscle.vCE(:) = nan;    % DEPRECATED
-            obj.dy.stateHistory(:) = nan;
+            obj.dy.labelHistory(:) = nan;
             obj.dy.grf.fyr(:) = nan;
             obj.dy.grf.fxr(:) = nan;
             obj.dy.grf.fyl(:) = nan;
@@ -163,27 +163,31 @@ classdef ModelInfo < handle
             %   includes:
             %   - obj.dy.muscle.fATN: normalized fiber force along tendon
             %   - obj.dy.muscle.lCEN: normalized fiber length
-            %   - obj.dy.stateHistory: state of the model
+            %   - obj.dy.labelHistory: state in label order (for .st.model.map lookups)
             %   - obj.dy.limitForce.kneeR / kneeL: knee joint coordinate limit forces
 
             fopt = obj.st.muscle.fopt;
-            map = obj.st.model.map;
-            Y = state.getY.getAsMat();
+            map  = obj.st.model.map;
+            permLabelToInternal = obj.st.model.permLabelToInternal;
 
-            for i = 1 : numel(fopt)
+            % 1. Raw state vector in SimTK internal order → reorder to label order
+            Y_label = state.getY.getAsMat();
+            Y_label = Y_label(permLabelToInternal);
+
+            % 2. Record muscle fATN / lCEN and overwrite activation with
+            %    clamped value from muscle.getActivation() (state.getY has unclamped)
+            for i = 1:numel(fopt)
                 muscle = allMuscles{i};
                 obj.dy.muscle.fATN(i, idx+1) = muscle.getFiberForceAlongTendon(state) / fopt(i);
                 obj.dy.muscle.lCEN(i, idx+1) = muscle.getNormalizedFiberLength(state);
-                % obj.dy.muscle.vCE(i, idx+1) = muscle.getFiberVelocity(state);
-                % obj.dy.muscle.act(i, idx+1) = muscle.getActivation(state);
-                % obj.dy.muscle.fMTU(i, idx+1) = muscle.getFiberForce(state);
-                % obj.dy.muscle.fCE(i, idx+1) = muscle.getActiveFiberForce(state);
 
-                key = ['/forceset/' char(allMuscles{i}.getName) '/activation'];
-                Y(map(key)) = muscle.getActivation(state);
+                key = ['/forceset/' char(muscle.getName) '/activation'];
+                Y_label(map(key)) = muscle.getActivation(state);
             end
 
-            obj.dy.stateHistory(:, idx) = Y;
+            % 3. Store label-ordered history (single array)
+            obj.dy.labelHistory(:, idx) = Y_label;
+
             obj.dy.limitForce.kneeR(idx) = kneeLimitForceR.getRecordValues(state).get(0);
             obj.dy.limitForce.kneeL(idx) = kneeLimitForceL.getRecordValues(state).get(0);
         end

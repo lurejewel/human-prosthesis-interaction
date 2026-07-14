@@ -80,7 +80,7 @@ for t = modelInfo.st.simInfo.timeSeries % for every frame
     end
 
     % fall detection
-    if modelInfo.dy.stateHistory(modelInfo.st.model.map('pelvis_ty/value'), frameIndex) < 0.8
+    if modelInfo.dy.labelHistory(modelInfo.st.model.map('pelvis_ty/value'), frameIndex) < 0.8
         break;
     end
     frameIndex = frameIndex + 1;

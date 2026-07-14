@@ -41,24 +41,28 @@ mtuForce = modelInfo.dy.muscle.fATN(muscleIdx, frameIndex);
 map = modelInfo.st.model.map;
 
 if frameIndex == 1
+    % Use initPoseMap (dofNames-based) — NOT st.model.map (.osim-based) —
+    % because initPose is indexed by dofNames order.
+    initPoseMap = modelInfo.st.model.initPoseMap;
     initPose = modelInfo.st.model.initPose;
-    pelvisTilt  = initPose(map('pelvis_tilt/value'));
-    pelvisTiltV = initPose(map('pelvis_tilt/speed'));
+    pelvisTilt  = initPose(initPoseMap('pelvis_tilt/value'));
+    pelvisTiltV = initPose(initPoseMap('pelvis_tilt/speed'));
 else
-    sh = modelInfo.dy.stateHistory;
+    sh = modelInfo.dy.labelHistory;
     pelvisTilt  = sh(map('pelvis_tilt/value'), frameIndex - 1);
     pelvisTiltV = sh(map('pelvis_tilt/speed'), frameIndex - 1);
 end
 
 if frameIndex == 1
-    hipAng  = initPose(map(['hip_flexion_' legSuffix '/value']));
-    hipVel  = initPose(map(['hip_flexion_' legSuffix '/speed']));
-    kneeAng = initPose(map(['knee_extension_' legSuffix '/value']));
-    kneeVel = initPose(map(['knee_extension_' legSuffix '/speed']));
-    ankleAng = initPose(map(['ankle_dorsiflexion_' legSuffix '/value']));
-    ankleVel = initPose(map(['ankle_dorsiflexion_' legSuffix '/speed']));
+    initPoseMap = modelInfo.st.model.initPoseMap;
+    hipAng  = initPose(initPoseMap(['hip_flexion_' legSuffix '/value']));
+    hipVel  = initPose(initPoseMap(['hip_flexion_' legSuffix '/speed']));
+    kneeAng = initPose(initPoseMap(['knee_extension_' legSuffix '/value']));
+    kneeVel = initPose(initPoseMap(['knee_extension_' legSuffix '/speed']));
+    ankleAng = initPose(initPoseMap(['ankle_dorsiflexion_' legSuffix '/value']));
+    ankleVel = initPose(initPoseMap(['ankle_dorsiflexion_' legSuffix '/speed']));
 else
-    sh = modelInfo.dy.stateHistory;
+    sh = modelInfo.dy.labelHistory;
     hipAng  = sh(map(['hip_flexion_' legSuffix '/value']), frameIndex - 1);
     hipVel  = sh(map(['hip_flexion_' legSuffix '/speed']), frameIndex - 1);
     kneeAng = sh(map(['knee_extension_' legSuffix '/value']), frameIndex - 1);

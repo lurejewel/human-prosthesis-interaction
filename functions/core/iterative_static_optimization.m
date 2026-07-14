@@ -45,8 +45,8 @@ soState = soModel.initSystem();
 soCoordSet = soModel.getCoordinateSet();
 for j = 1:nDof
     c = soCoordSet.get(dofNames{j});
-    c.setValue(soState, initPose(j));
-    c.setSpeedValue(soState, initPose(nDof + j));
+    c.setValue(soState, initPose(2*j - 1));
+    c.setSpeedValue(soState, initPose(2*j));
 end
 
 % ---- static data: muscle handles, Fopt, coord handles ----

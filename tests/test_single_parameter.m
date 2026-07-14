@@ -20,7 +20,7 @@ addpath(genpath('assets'), genpath('model'), genpath('functions'))
 
 %% ---------- user configuration ----------
 projName       = 'human0918';  % <-- change to your model name (without .osim)
-paraSourceFile = 'results\opt_result_2026-06-16_23-19-29.mat';  % <-- change to your result file
+paraSourceFile = 'results\opt_result_2026-07-06_20-35-01.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
 simConfig.stepTime = 0.005;
@@ -70,8 +70,8 @@ dofNames = {'pelvis_tilt','pelvis_tx','pelvis_ty', ...
 nDof = numel(dofNames);
 initPose = zeros(2 * nDof, 1);
 for j = 1:nDof
-    initPose(j)        = dataLine(colMap(dofNames{j}));
-    initPose(nDof + j) = dataLine(colMap([dofNames{j} '_u']));
+    initPose(2*j - 1) = dataLine(colMap(dofNames{j}));
+    initPose(2*j)     = dataLine(colMap([dofNames{j} '_u']));
 end
 
 %% initialise model infrastructure (same pipeline as the main demo)
@@ -114,27 +114,27 @@ fprintf('Total fitness              : %.6g\n', fit);
 fprintf('Last simulation time       : %.3f s (of %.0f s)\n', ...
     modelInfo.dy.lastTime, simConfig.endTime);
 fprintf('Distance travelled         : %.3f m\n', ...
-    modelInfo.dy.stateHistory(modelInfo.st.model.map('pelvis_tx/value'), ...
-    find(all(~isnan(modelInfo.dy.stateHistory)), 1, 'last')));
+    modelInfo.dy.labelHistory(modelInfo.st.model.map('pelvis_tx/value'), ...
+    find(all(~isnan(modelInfo.dy.labelHistory)), 1, 'last')));
 fprintf('======================================\n\n');
 
 %% prepare data for visualisation
 stateMap   = modelInfo.st.model.map;
-stateHist  = modelInfo.dy.stateHistory;
-nValid     = find(all(~isnan(stateHist)), 1, 'last');  % last fully-recorded frame
+labelHist  = modelInfo.dy.labelHistory;   % label order (matches stateMap indices)
+nValid     = find(all(~isnan(labelHist)), 1, 'last');
 tVec       = modelInfo.st.simInfo.timeSeries(1:nValid);
 
 % ---- joint angles (deg) ----
-hipR_ang   = rad2deg(stateHist(stateMap('hip_flexion_r/value'),      1:nValid));
-hipL_ang   = rad2deg(stateHist(stateMap('hip_flexion_l/value'),      1:nValid));
-kneeR_ang  = rad2deg(stateHist(stateMap('knee_extension_r/value'),     1:nValid));
-kneeL_ang  = rad2deg(stateHist(stateMap('knee_extension_l/value'),     1:nValid));
-ankleR_ang = rad2deg(stateHist(stateMap('ankle_dorsiflexion_r/value'),1:nValid));
-ankleL_ang = rad2deg(stateHist(stateMap('ankle_dorsiflexion_l/value'),1:nValid));
+hipR_ang   = rad2deg(labelHist(stateMap('hip_flexion_r/value'),      1:nValid));
+hipL_ang   = rad2deg(labelHist(stateMap('hip_flexion_l/value'),      1:nValid));
+kneeR_ang  = rad2deg(labelHist(stateMap('knee_extension_r/value'),     1:nValid));
+kneeL_ang  = rad2deg(labelHist(stateMap('knee_extension_l/value'),     1:nValid));
+ankleR_ang = rad2deg(labelHist(stateMap('ankle_dorsiflexion_r/value'),1:nValid));
+ankleL_ang = rad2deg(labelHist(stateMap('ankle_dorsiflexion_l/value'),1:nValid));
 
 % ---- pelvis trajectory ----
-pelvis_tx  = stateHist(stateMap('pelvis_tx/value'), 1:nValid);
-pelvis_ty  = stateHist(stateMap('pelvis_ty/value'), 1:nValid);
+pelvis_tx  = labelHist(stateMap('pelvis_tx/value'), 1:nValid);
+pelvis_ty  = labelHist(stateMap('pelvis_ty/value'), 1:nValid);
 
 % ---- gait phases ----
 phaseR = modelInfo.dy.phase.r(1:nValid);
@@ -176,6 +176,8 @@ for i = 1 : nMus
 end
 
 % ---- state for moment-arm queries (fresh copy, kinematics set per frame) ----
+% labelHistory is in label order; permute to internal order for state.updY().set()
+permLabelToInternal = modelInfo.st.model.permLabelToInternal;
 stateMA = model.initSystem();
 nStates = stateMA.getNQ() + stateMA.getNU();
 
@@ -188,10 +190,12 @@ torque_kneeL  = nan(1, nValid);
 torque_ankleL = nan(1, nValid);
 
 for fi = 1 : nValid
-    % ---- set kinematics from simulation stateHistory ----
+    % Permute from label order to internal order for state.updY()
+    labelFrame = labelHist(:, fi);
+    internalFrame = labelFrame(permLabelToInternal);
     Y = stateMA.updY();
     for i = 0 : nStates - 1
-        Y.set(i, stateHist(i + 1, fi));
+        Y.set(i, internalFrame(i + 1));
     end
     stateMA.setTime(tVec(fi));
 
@@ -222,7 +226,7 @@ for fi = 1 : nValid
     torque_kneeL(fi)  = tau(5);
     torque_ankleL(fi) = tau(6);
 end
-fprintf('Muscle moment summation done.\n');
+fprintf('Muscle moment summation done.\n'); % 这里需要验证
 
 %% =====================  VISUALISATION  =====================
 
@@ -317,14 +321,18 @@ if showVideo
 
     model.setUseVisualizer(true);
     stateVis = model.initSystem();
-    nStates  = size(stateHist, 1);
+    % labelHistory is in label order; permute to internal order for state.updY()
+    permInternalToLabel = modelInfo.st.model.permInternalToLabel; %permLabelToInternal;
+    nStates  = size(labelHist, 1);
 
     fprintf('Starting 3D playback (%d frames, %.1fx speed)...\n', nValid, playbackSpeed);
     for fi = 1 : frameStep : nValid
         stateVis.setTime(tVec(fi));
         Y = stateVis.updY();
+        internalFrame = labelHist(:, fi);
+        internalFrame = internalFrame(permInternalToLabel);
         for i = 0 : nStates - 1
-            Y.set(i, stateHist(i + 1, fi));
+            Y.set(i, internalFrame(i + 1));
         end
         model.realizeDynamics(stateVis);
         model.updVisualizer().show(stateVis);

@@ -61,14 +61,13 @@ dofNames = {'pelvis_tilt','pelvis_tx','pelvis_ty', ...
 nDof = numel(dofNames);
 initPose = zeros(2 * nDof, 1);
 for j = 1:nDof
-    initPose(j)        = dataLine(colMap(dofNames{j}));
-    initPose(nDof + j) = dataLine(colMap([dofNames{j} '_u']));
+    initPose(2*j - 1) = dataLine(colMap(dofNames{j}));
+    initPose(2*j)     = dataLine(colMap([dofNames{j} '_u']));
 end
 
 % Joint moments + knee limit torques for static optimisation
-soCoordNames = {'hip_flexion_r','hip_flexion_l', ...
-                'knee_extension_r','knee_extension_l', ...
-                'ankle_dorsiflexion_r','ankle_dorsiflexion_l'};
+soCoordNames = {'hip_flexion_r', 'knee_extension_r', 'ankle_dorsiflexion_r', ...
+                'hip_flexion_l', 'knee_extension_l', 'ankle_dorsiflexion_l'};
 nSoCoords = numel(soCoordNames);
 tauTarget = zeros(nSoCoords, 1);
 for j = 1:nSoCoords

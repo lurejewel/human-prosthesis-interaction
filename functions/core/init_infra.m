@@ -26,8 +26,8 @@ nDof = numel(dofNames);
 coordSet = model.getCoordinateSet();
 for j = 1:nDof
     coord = coordSet.get(dofNames{j});
-    coord.setValue(state, initPose(j));
-    coord.setSpeedValue(state, initPose(nDof + j));
+    coord.setValue(state, initPose(2*j - 1));
+    coord.setSpeedValue(state, initPose(2*j));
 end
 
 % ---- optionally inject static-optimisation activations ----

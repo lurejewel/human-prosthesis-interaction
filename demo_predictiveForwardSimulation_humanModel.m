@@ -20,8 +20,9 @@
 % considered?
 % -------------------------------------------------------------------------
 % 目前的问题：
-% 1. 肌骨模型由human0714扩充到human0918
-% 如何改变地形（上下坡、上下台阶等）？
+% 1. human0918无法优化的问题，怀疑是参数赋值有问题
+% 2. human0918平地行走的关节角度、关节力矩和肌肉力验证
+% 3. 如何改变地形（上下坡、上下台阶等）？该方法拓展到基于实验数据的其他运动？
 clear all; close all; clc
 addpath(genpath('assets\'), genpath('model\'), genpath('functions\'), genpath('results\'))
 projName = 'human0918'; % name of the musculoskeletal model (.osim)
@@ -150,7 +151,7 @@ while g < optConfig.gMax && ~stop
 
     fits_cell = cell(nWorkers,1); % initialize fit in cell
     % MIDDLE LOOP: for each PARALLEL worker (batch of particles)
-    parfor w = 1 : nWorkers
+    for w = 1 : nWorkers
 
         fits_local = nan(optConfig.nParticles(w),1);
         [model, modelInfo] = init_infra(projName, modelStaticProp, a_opt);

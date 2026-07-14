@@ -102,7 +102,7 @@ end
 %     kneeAngL = initPose(map('knee_extension_l/value'));
 %     kneeVelL = initPose(map('knee_extension_l/speed'));
 % else
-%     sh = modelInfo.dy.stateHistory;
+%     sh = modelInfo.dy.labelHistory;
 %     pelvisTilt  = sh(map('pelvis_tilt/value'), frameIndex - 1);
 %     pelvisTiltV = sh(map('pelvis_tilt/speed'), frameIndex - 1);
 %     kneeAngR = sh(map('knee_extension_r/value'), frameIndex - 1);
