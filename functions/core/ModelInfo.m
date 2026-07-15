@@ -29,6 +29,7 @@ classdef ModelInfo < handle
         % │   └── delay                     time delay of electrical signals from the central nervous system to the muscle fibers
         % ├── model
         % │   ├── totalMass
+        % │   ├── gravity
         % │   ├── initPose
         % │   └── map
         % └── simInfo

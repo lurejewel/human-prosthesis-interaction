@@ -7,7 +7,7 @@ phaseR = -1;
 phaseL = -1;
 
 % body weight, stance threshold (precomputed in simCache)
-BW = -simCache.totalMass * simCache.gravity;
+BW = simCache.bw;
 stanceTh = simCache.stanceTh;
 
 % Normal GRF

@@ -2677,7 +2677,7 @@
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
 					<transition_velocity>0.14999999999999999</transition_velocity>
 				</HuntCrossleyForce>
-				<CoordinateLimitForce name="KneeLimit_r">
+				<CoordinateLimitForce name="knee_lim_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
 					<!--Coordinate (name) to be limited.-->
@@ -2695,7 +2695,7 @@
 					<!--Transition region width in the units of the coordinate (rotations in degrees). Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.-->
 					<transition>0.01</transition>
 				</CoordinateLimitForce>
-				<CoordinateLimitForce name="KneeLimit_l">
+				<CoordinateLimitForce name="knee_lim_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
 					<!--Coordinate (name) to be limited.-->

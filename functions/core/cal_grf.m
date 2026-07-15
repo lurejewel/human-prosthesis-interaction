@@ -14,10 +14,10 @@ function modelInfo = cal_grf(simCache, modelInfo, state, frameIndex)
 % modelInfo.dy.grf.fyr(frameIndex) = heelRY + toeRY;
 % modelInfo.dy.grf.fyl(frameIndex) = heelLY + toeLY;
 
-modelInfo.dy.grf.fxr(frameIndex) = simCache.grfR.getRecordValues(state).get(0);
-modelInfo.dy.grf.fxl(frameIndex) = simCache.grfL.getRecordValues(state).get(0);
-modelInfo.dy.grf.fyr(frameIndex) = simCache.grfR.getRecordValues(state).get(1);
-modelInfo.dy.grf.fyl(frameIndex) = simCache.grfL.getRecordValues(state).get(1);
+modelInfo.dy.grf.fxr(frameIndex) = -simCache.grfR.getRecordValues(state).get(0);
+modelInfo.dy.grf.fxl(frameIndex) = -simCache.grfL.getRecordValues(state).get(0);
+modelInfo.dy.grf.fyr(frameIndex) = -simCache.grfR.getRecordValues(state).get(1);
+modelInfo.dy.grf.fyl(frameIndex) = -simCache.grfL.getRecordValues(state).get(1);
 
 
 end

@@ -45,7 +45,7 @@ classdef Measurements < handle
         function obj = Measurements(modelInfo)
             obj.modelInfo = modelInfo;  % store handle, no copy
             obj.mass    = modelInfo.st.model.totalMass;
-            obj.gravity = 9.80665;
+            obj.gravity = modelInfo.st.model.gravity;
             obj.simConfig = modelInfo.st.simInfo;
             obj.lastTime  = modelInfo.dy.lastTime;
             obj.npts = find(all(~isnan(modelInfo.dy.labelHistory)), 1, 'last');

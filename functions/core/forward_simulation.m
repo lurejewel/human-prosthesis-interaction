@@ -38,12 +38,11 @@ simCache.grfR = model.getForceSet().get('foot_r');
 simCache.grfL = model.getForceSet().get('foot_l');
 
 % force handles for knee limit force reading
-simCache.frcKneeLimitR = model.getForceSet().get(16);
-simCache.frcKneeLimitL = model.getForceSet().get(17);
+simCache.frcKneeLimitR = model.getForceSet().get('knee_lim_r');
+simCache.frcKneeLimitL = model.getForceSet().get('knee_lim_l');
 
 % precomputed constants
-simCache.totalMass = model.getTotalMass(state);
-simCache.gravity   = model.getGravity().get(1);
+simCache.bw = model.getTotalMass(state) * abs(model.getGravity().get(1)); % body weight (in newtons) = total mass (kg) * g (m/s^2)
 simCache.stanceTh  = 0.23137978;
 
 % initialize manager

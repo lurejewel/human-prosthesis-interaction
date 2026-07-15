@@ -12,6 +12,7 @@ function st = read_muscle_static_prop(projName, simConfig, initPose, dofNames)
 % │   └── delay                     time delay of electrical signals from the central nervous system to the muscle fibers
 % ├── model
 % │   ├── totalMass
+% │   ├── gravity
 % │   ├── initPose
 % │   ├── initPoseDofOrder          cell array, DOF names in initPose row order
 % │   └── map
@@ -68,6 +69,7 @@ st.muscle.legIdx = legIdx;
 %% model-level static property
 state = model.initSystem(); % this is a must before calling model.getTotalMass() and model.getNumStateVariables()
 totalMass = model.getTotalMass(state);
+gravity = abs(model.getGravity.get(1));
 keys = strings(1,state.getNQ +state.getNU+state.getNZ);
 for i = 0 : state.getNQ-1 % value & speed of generalized coordinates (interleaved)
     keys(2*i + 1) = string([char(model.getCoordinateSet.get(i)),'/value']);
@@ -80,6 +82,7 @@ keys(state.getNQ+state.getNU+state.getNZ) = "totalMetabolic"; % metabolic expend
 map = containers.Map(keys, 1:numel(keys));
 
 st.model.totalMass = totalMass;
+st.model.gravity = gravity;
 st.model.initPose = initPose;
 st.model.initPoseDofOrder = dofNames(:);
 st.model.map = map;
