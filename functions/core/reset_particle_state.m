@@ -27,25 +27,6 @@ for i = 0 : nQNU - 1
 end
 state.setTime(0);
 
-% ---- optionally inject static-optimisation activations ----
-% NOTE: activations are assigned by muscle NAME (via act0Order), not by
-% ForceSet index, because the iteration order may differ from act0 layout.
-if ~isempty(act0)
-    act0Order = modelInfo.st.muscle.act0Order;
-    nMus = numel(act0Order);
-    for i = 1:nMus
-        musc = org.opensim.modeling.Muscle.safeDownCast(model.getMuscles().get(act0Order{i}));
-        musc.setActivation(state, act0(i));
-    end
-end
-
-% re-establish dynamic consistency
-model.equilibrateMuscles(state);
-model.realizeDynamics(state);
-
-% reset initial muscle fATN and lCEN (needed for first-frame reflex control)
-for i = 1 : nMus
-    modelInfo.dy.muscle.fATN(i, 1) = model.getMuscles.get(i - 1).getActiveFiberForce(state) / modelInfo.st.muscle.fopt(i);
-    modelInfo.dy.muscle.lCEN(i, 1) = model.getMuscles.get(i - 1).getNormalizedFiberLength(state);
-end
+% ---- inject activations, equilibrate, and record initial fATN/lCEN ----
+modelInfo = equilibrate_and_record_state(model, modelInfo, state, act0);
 end

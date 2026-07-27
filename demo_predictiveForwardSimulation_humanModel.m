@@ -151,7 +151,7 @@ while g < optConfig.gMax && ~stop
 
     fits_cell = cell(nWorkers,1); % initialize fit in cell
     % MIDDLE LOOP: for each PARALLEL worker (batch of particles)
-    for w = 1 : nWorkers
+    parfor w = 1 : nWorkers
 
         fits_local = nan(optConfig.nParticles(w),1);
         [model, modelInfo] = init_infra(projName, modelStaticProp, a_opt);

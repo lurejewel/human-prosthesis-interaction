@@ -63,8 +63,34 @@ fprintf('Logging to %s\n', logFilePath);
 %% ===== STEP 1: DATA LOADING & PREPROCESSING =====
 % Load target muscle excitations and one shared biomechanical feature matrix.
 stoFilePath = 'UN.sto';
-muscleNames = {'hamstrings_r', 'bifemsh_r', 'glut_max_r', 'iliopsoas_r', ...
-    'rect_fem_r', 'vasti_r', 'gastroc_r', 'soleus_r', 'tib_ant_r'};
+
+% ---- auto-detect right-leg muscle names from UN.sto header ----
+fid = fopen(stoFilePath, 'r');
+if fid == -1
+    error('Cannot open STO file: %s', stoFilePath);
+end
+ln = '';
+while ischar(ln) && ~contains(ln, 'endheader')
+    ln = fgetl(fid);
+end
+if ~ischar(ln)
+    fclose(fid);
+    error('endheader not found in STO file: %s', stoFilePath);
+end
+headerLine = fgetl(fid);
+fclose(fid);
+colNames = strsplit(strtrim(headerLine), '\t');
+
+% find columns whose names end with '_r.activation' (right-leg muscles)
+isRightActivation = endsWith(colNames, '_r.activation');
+muscleIdx = find(isRightActivation);
+muscleNames = cell(1, numel(muscleIdx));
+for i = 1:numel(muscleIdx)
+    % e.g. 'hamstrings_r.activation' -> 'hamstrings_r'
+    muscleNames{i} = extractBefore(colNames{muscleIdx(i)}, '.activation');
+end
+fprintf('Auto-detected %d right-leg muscles from %s:\n', numel(muscleNames), stoFilePath);
+fprintf('  %s\n', muscleNames{:});
 numTargets = numel(muscleNames);
 
 % Tunable parameters (adaptive LASSO + censoring)

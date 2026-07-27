@@ -20,7 +20,7 @@ addpath(genpath('assets'), genpath('model'), genpath('functions'))
 
 %% ---------- user configuration ----------
 projName       = 'human0918';  % <-- change to your model name (without .osim)
-paraSourceFile = 'results\opt_result_2026-07-06_20-35-01.mat';  % <-- change to your result file
+paraSourceFile = 'results\opt_result_2026-07-15_14-34-18.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
 simConfig.stepTime = 0.005;
@@ -268,15 +268,13 @@ ylim([-0.2, 4.2]); ylabel('Left leg phase');
 xlabel('Time (s)'); grid on; title('Gait Phases (0-ES,1-LS,2-LO,3-SW,4-LD)');
 legend('Right', 'Left', 'Location', 'best');
 
-% -------- Panel D: Muscle Excitations (6 representative muscles) --------
+% -------- Panel D: Muscle Excitations (right-leg muscles) --------
 subplot(3, 3, 6)
-musclesToPlot = {'bifemsh_r', 'glut_max_r', 'rect_fem_r', 'vasti_r', 'gastroc_r', 'tib_ant_r'};
-colors = lines(numel(musclesToPlot));
-for j = 1:numel(musclesToPlot)
-    idx = find(strcmp(muscleNames, musclesToPlot{j}), 1);
-    if ~isempty(idx)
-        plot(tVec, exc(idx, :), 'Color', colors(j, :), 'LineWidth', 1.2); hold on
-    end
+nRightMuscles = numel(muscleNames) / 2;  % first half = right leg
+musclesToPlot = muscleNames(1:nRightMuscles);
+colors = lines(nRightMuscles);
+for j = 1:nRightMuscles
+    plot(tVec, exc(j, :), 'Color', colors(j, :), 'LineWidth', 1.2); hold on
 end
 ylabel('Excitation'); xlabel('Time (s)');
 legend(musclesToPlot, 'Location', 'best', 'Interpreter', 'none');
@@ -388,12 +386,13 @@ else
 
         for m = 1 : numel(muscleNames)
             fATN_cycle = modelInfo.dy.muscle.fATN(m, idxStart:idxEnd);
-            % normalise by body weight (dimensionless, F / BW)
-            gc_musForce(c, :, m) = interp1(framePct, fATN_cycle, gcPct, 'pchip') / bodyWeight;
+            % actual tendon force = fATN × fopt, then normalise by body weight (F / BW)
+            gc_musForce(c, :, m) = interp1(framePct, fATN_cycle, gcPct, 'pchip') ...
+                                   * modelInfo.st.muscle.fopt(m) / bodyWeight;
         end
     end
 
-    % ---- define muscle groups (individual muscles, NOT summed) ----
+    % ---- define muscle groups ----
     grpNames = {'Hip muscles', 'Knee muscles', 'Ankle muscles'};
     % each group: list of muscle names (right-leg only for the normalised plot)
     grpMuscles = { ...
@@ -429,10 +428,11 @@ else
         nCurves = numel(musList);
         colors  = lines(nCurves);
         legStr  = cell(1, nCurves);
+        hLines  = gobjects(1, nCurves);  % store line handles for legend
         for j = 1 : nCurves
             mIdx = find(strcmp(muscleNames, musList{j}), 1);
             if ~isempty(mIdx)
-                plot_gc_shaded(gcPct, gc_musForce(:, :, mIdx), colors(j, :));
+                hLines(j) = plot_gc_shaded(gcPct, gc_musForce(:, :, mIdx), colors(j, :));
                 hold on;
                 % build legend: strip '_r' suffix
                 nm = musList{j};
@@ -445,7 +445,7 @@ else
         hold off;
         if col == 1, ylabel(rowLabels{3}); end
         xlabel('Gait cycle (%)');
-        legend(legStr, 'Location', 'best', 'Interpreter', 'none');
+        legend(hLines, legStr, 'Location', 'best', 'Interpreter', 'none');
         title(sprintf('%s (%s)', colLabels{col}, grpNames{col}));
     end
 
@@ -454,9 +454,10 @@ else
 end
 
 %% ====================  LOCAL HELPERS  ====================
-function plot_gc_shaded(x, data, color)
+function hLine = plot_gc_shaded(x, data, color)
 % plot mean ± shaded std for gait-cycle data (nCycles × nPts)
 %   color (optional) – line and fill colour; default grey
+%   hLine – handle to the mean-curve line (for legend)
 if nargin < 3 || isempty(color)
     color = [0.5 0.5 0.5];
 end
@@ -466,7 +467,7 @@ x2 = [x, fliplr(x)];
 fill(x2, [mu - sd, fliplr(mu + sd)], color, ...
     'FaceAlpha', 0.15, 'EdgeColor', 'none');
 hold on;
-plot(x, mu, 'Color', color, 'LineWidth', 1.8);
+hLine = plot(x, mu, 'Color', color, 'LineWidth', 1.8);
 hold off;
 grid on;
 end

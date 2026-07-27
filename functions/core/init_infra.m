@@ -30,27 +30,8 @@ for j = 1:nDof
     coord.setSpeedValue(state, initPose(2*j));
 end
 
-% ---- optionally inject static-optimisation activations ----
-% NOTE: activations are assigned by muscle NAME (via act0Order), not by
-% ForceSet index, because the iteration order may differ from act0 layout.
-if ~isempty(act0)
-    act0Order = modelInfo.st.muscle.act0Order;
-    nMus = numel(act0Order);
-    for i = 1:nMus
-        musc = org.opensim.modeling.Muscle.safeDownCast(model.getMuscles().get(act0Order{i}));
-        musc.setActivation(state, act0(i));
-    end
-end
-
-% execute dynamics
-model.equilibrateMuscles(state);
-model.realizeDynamics(state);
-
-% store fATN and lCEN [needed for the upcoming muscle-reflex control]
- for i = 1 : numel(modelInfo.st.muscle.names)
-     modelInfo.dy.muscle.fATN(i,1) = model.getMuscles.get(i-1).getActiveFiberForce(state) / modelInfo.st.muscle.fopt(i);
-     modelInfo.dy.muscle.lCEN(i,1) = model.getMuscles.get(i-1).getNormalizedFiberLength(state);
- end
+% ---- inject activations, equilibrate, and record initial fATN/lCEN ----
+modelInfo = equilibrate_and_record_state(model, modelInfo, state, act0);
 
 % capture initial state snapshot for per-particle reset
 modelInfo.dy.initStateY = state.getY.getAsMat(); % vec_2_mat(state.getY());
