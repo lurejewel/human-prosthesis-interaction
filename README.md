@@ -9,20 +9,16 @@ driven by a muscle-reflex controller whose parameters are tuned by the Covarianc
 Matrix Adaptation Evolution Strategy (CMA-ES).  No motion capture data or
 predefined joint trajectories are required.
 
-**New in v2.0** — the reflex controller can now be either:
+**Active controller (v2.1)** — the reflex controller is a **LASSO-informed
+sparse linear phase controller** where each gait phase (or phase group) uses a
+learned 26 × 9 coefficient matrix.  The LASSO controller is initialised from
+experimental data and then refined by CMA-ES inside the forward-dynamics loop.
 
-- a **hand-crafted** physiological controller with 28 optimisable parameters
-  (legacy, v1.x), or
-- a **LASSO-informed sparse linear phase controller** where each gait phase
-  uses a learned 22 × 7 coefficient matrix (v2.0).  The LASSO controller is
-  initialised from experimental data and then refined by CMA-ES inside the
-  forward-dynamics loop.
-
-> *The hand-crafted controller is documented in:*
-> Jin W, Liu J, Zhang Q, et al. *Forward dynamics simulation of a simplified
-> neuromuscular-skeletal-exoskeletal model based on the CMA-ES optimization
-> algorithm: framework and case studies.* Multibody System Dynamics, 2024,
-> 62(4): 525–558.
+> **Legacy (v1.0):** a hand-crafted physiological controller with 28 optimisable
+> parameters was used in earlier versions.  It has been **fully deprecated** —
+> the parameter definitions file (`DEPRECATED_muscle_reflex_param_defs.m`) and
+> the legacy excitation code in `cal_muscle_excitation.m` are retained for
+> reference only and are no longer functional.
 
 ---
 
@@ -30,12 +26,13 @@ predefined joint trajectories are required.
 
 | Module | Description |
 |--------|-------------|
-| **Musculoskeletal Model** | 9 DOF (lower limbs + pelvis), 14 Hill-type muscles (7 per leg). Forward-dynamic simulation via OpenSim. |
+| **Musculoskeletal Model** | 9 DOF (lower limbs + pelvis), 18 Hill-type muscles (9 per leg). Forward-dynamic simulation via OpenSim. Supported models: `human0918` (18 muscles, active). |
 | **Static Optimisation** | Iterative QP solver determines physiologically accurate initial muscle activations from first-frame kinematics and joint moments, replacing the uniform 0.05 default. |
 | **Gait Phase Detection** | Real-time per-leg phase identification (5 phases: Early Stance, Late Stance, Liftoff, Swing, Landing). |
-| **Muscle Reflex Controller** | Two interchangeable backends: (a) hand-crafted CNS-inspired reflex laws (legacy), (b) LASSO sparse linear per-phase model (active). |
-| **Optimisation (IPOP-CMA-ES)** | Restart strategy with sigma boosts; population size doubles on restart. Parallelised over all available cores. |
-| **Fitness Evaluation** | Multi-objective: gait completeness, velocity tracking, joint hyperextension, GRF ceiling, metabolic effort. |
+| **Muscle Reflex Controller** | LASSO sparse linear per-phase model with optional **grouped format** (v2): phases sharing the same controller reference a single `beta`/`bias`/`mask`, eliminating parameter duplication. Legacy hand-crafted controller is deprecated. |
+| **Optimisation (IPOP-CMA-ES)** | Restart strategy with soft sigma-boost before restart; population size doubles on restart. Parallelised over all available cores. Reproducible via `rngSeed` + `threefry`. |
+| **Fitness Evaluation** | Multi-objective: gait completeness, velocity tracking, joint hyperextension (knee + ankle), GRF ceiling, metabolic effort. |
+| **Checkpoint / Resume** | Full-state checkpoint saved every 10 generations. Resume from crash or intentional stop by setting `resumeFromCheckpoint = true`. |
 
 ---
 
@@ -44,16 +41,17 @@ predefined joint trajectories are required.
 ```
 .
 ├── demo_predictiveForwardSimulation_humanModel.m   % Main entry script
-├── test_single_parameter.m                         % Single-parameter test + visuals
 ├── assets/                                         % Marker sets, IK/ID/RRA data, muscle CSV
 ├── model/                                          % OpenSim .osim model + geometry
-├── results/                                        % Optimisation output (.mat) and simulation logs
+│   ├── human0714.osim                              %   14-muscle model (legacy)
+│   ├── human0918.osim                              %   18-muscle model (active)
+│   └── coupled_human-prosthesis_model.osim         %   prosthesis-coupled variant
+├── results/                                        % Optimisation output (.mat), simulation logs, checkpoint
 ├── functions/
 │   ├── core/          % Simulation pipeline, CMA-ES, controllers, SO, fitness
 │   └── utils/         % I/O helpers (sto/trc/mat), checkpoint, vector conversion
-├── tests/              % Unit + validation tests (static optimisation, LASSO, muscle moments)
+├── tests/              % Unit + validation tests (SO, LASSO, muscle moments, inverse dynamics)
 ├── docs/               % Format specifications
-├── tools/              % OpenSim pipeline scripts (scale, IK, ID, RRA, SO)
 ├── Sparse Group LASSO Validation/  % LASSO fitting experiments + UN.sto reference data
 └── README.md
 ```
@@ -95,7 +93,9 @@ On a fresh start, the script:
 
 Results are automatically checkpointed every 10 generations and saved to
 `results/opt_result_*.mat` on completion.  Set `resumeFromCheckpoint = true`
-to restart from the last saved snapshot.
+to restart from the last saved snapshot (`results/checkpoint.mat`).
+The checkpoint stores the full CMA-ES internal state, loop bookkeeping,
+and all immutable configuration — resume is fully transparent.
 
 ### 2. Quick single-parameter test
 
@@ -120,6 +120,25 @@ scatter plot, grouped bar chart, joint moment reconstruction, and convergence
 history.  Useful for verifying the static optimisation setup independently of
 the full simulation pipeline.
 
+### 4. Inverse dynamics & muscle moment validation
+
+```matlab
+test_inverse_dynamics_validation
+test_muscle_moment_summation
+```
+
+Validates the OpenSim inverse dynamics pipeline and confirms that summed
+individual muscle moments match net joint moments from the reference simulation.
+
+### 5. LASSO controller round-trip test
+
+```matlab
+test_lasso_reflex_controller
+```
+
+Pure-MATLAB (no OpenSim) test of the LASSO controller loader/unpacker round-trip
+for both legacy per-phase and grouped controller formats.
+
 ---
 
 ## Controller Modes
@@ -128,18 +147,24 @@ The controller type is detected automatically by `ModelInfo.read_muscleReflex_ar
 
 | Mode | How to activate | Optimised parameter count |
 |------|----------------|---------------------------|
-| **Legacy hand-crafted** | Omit `reflexParamMap` / `reflexTemplate` on `modelInfo` | 28 (fixed) |
-| **LASSO sparse linear** | Set `reflexParamMap` and `reflexTemplate` (loaded from `results/lasso_controller_result.mat`) | Variable — sum over phases of `nnz(mask{p}) + 7` |
+| **LASSO sparse linear** (active) | Set `reflexParamMap` and `reflexTemplate` (loaded from `results/lasso_controller_result.mat`) | Variable — sum over groups of `nnz(mask{g}) + 9` |
+| **Legacy hand-crafted** (deprecated) | No longer functional; code retained for reference only | 28 (fixed) |
 
 The LASSO path is active in the current `demo_predictiveForwardSimulation_humanModel.m`.
-To revert to the legacy controller, comment out the LASSO block and uncomment the
-old `initPara = load(...)` line.
 
-### LASSO controller format
+### LASSO controller: grouped vs. legacy format
 
+The loader supports two LASSO struct formats:
+
+| Format | Field | Description |
+|--------|-------|-------------|
+| **Grouped (v2)** ✅ recommended | `lasso.groups(g).beta/bias/mask/phases/label` | Controllers defined per **group**; phases sharing the same controller reference one parameter set — no duplication |
+| **Legacy (v1)** | `lasso.beta{p}`, `lasso.bias{p}`, `lasso.mask{p}` | Per-phase cell arrays (`nPhases × 1`) |
+
+In grouped mode, `initPara` contains only `nGroups` sets of parameters.
+The unpacker expands them to per-phase `beta`/`bias` cells at runtime.
 See [`docs/LASSO_CONTROLLER_FORMAT.md`](docs/LASSO_CONTROLLER_FORMAT.md) for the
-`.mat` file specification.  A LASSO `.mat` can be generated from experimental
-data using the scripts in `Sparse Group LASSO Validation/`.
+complete `.mat` file specification.
 
 ---
 
@@ -154,16 +179,21 @@ data using the scripts in `Sparse Group LASSO Validation/`.
 | SO convergence tolerance | 1e-4 | infinity-norm of activation change |
 | SO activation bounds | [0.01, 1.0] | |
 | `sigma` (CMA-ES initial step) | 0.02 | |
-| `softPatience` | 30 gens | stall before sigma boost (×2.0) |
+| `rngSeed` | 2026 | `threefry` generator for reproducibility |
+| `softPatience` | 30 gens | stall before soft sigma boost (×2.0) |
 | `patience` | 100 gens | stall before IPOP restart |
 | `maxRestarts` | 3 | IPOP restarts before hard stop |
-| `gMax` | 1000 | absolute generation cap |
+| `minImprovement` | 1e-12 | minimum fitness delta to count as improvement |
+| `gMax` | 2000 | absolute generation cap |
 | Parallel workers | `feature('numcores')` | auto-detected |
 
 The optimisation terminates when:
-- No fitness improvement occurs for `patience` generations **and** all
-  `maxRestarts` IPOP restarts have been exhausted, or
-- `gMax` generations are reached.
+- No fitness improvement occurs for `softPatience` generations → a **soft
+  sigma boost** (×`sigmaBoostFactor`) is applied once.
+- If stalling continues for `patience` generations → an **IPOP restart** is
+  triggered (population doubled, mean reset to best-so-far).
+- After `maxRestarts` IPOP restarts with no further improvement, or when
+  `gMax` generations are reached, optimisation stops.
 
 ---
 
@@ -172,6 +202,7 @@ The optimisation terminates when:
 | Directory | File pattern | Contents |
 |-----------|-------------|----------|
 | `results/` | `opt_result_yyyy-mm-dd_HH-MM-SS.mat` | `result` struct: `bestFit`, `bestPara`, `fitHistory`, `timeHistory`, controller metadata, `bestReflexParams` |
+| `results/` | `checkpoint.mat` | Full CMA-ES state + loop bookkeeping for crash recovery (overwritten every 10 gens) |
 | `results/` | `lasso_controller_result.mat` | LASSO controller definition (input to the demo) |
 | `results/` | `sim_result_*.sto` | State histories (optional, when `simConfig.saveSTO = 1`) |
 | `results/` | `opensim*.log` | OpenSim runtime logs |
@@ -184,25 +215,47 @@ The optimisation terminates when:
 - Initial kinematics and joint moments are read from `UN.sto` (a pre-computed
   SCONE reference simulation); the static optimisation depends on this file
 - Reflex parameters are **bilaterally symmetric** (left and right legs share
-  the same parameters)
+  the same controller parameters)
 - Upper-body dynamics are not included
 - The LASSO controller requires a pre-fitted `.mat` file; it does **not**
   perform LASSO regression inside the optimisation loop
+- The legacy hand-crafted reflex controller (v1.x) is **fully deprecated**
+  and no longer functional
+- The active model is `human0918` (18 muscles, 9 per leg); `human0714`
+  (14 muscles, 7 per leg) is retained for legacy compatibility
 
 ---
 
-## Recent Changes (v2.1)
+## Recent Changes (v2.2)
 
-- **Iterative static optimisation**: first-frame muscle activations are now
-  computed via convex QP instead of using a uniform 0.05 default.  The solver
-  accounts for muscle force-length-velocity relationships, passive forces, and
-  knee coordinate-limit torques.
-- **UN.sto-driven initialisation**: `initPose` is read from the SCONE reference
-  simulation (`UN.sto`) rather than hardcoded.
-- **Refactored entry point**: fresh-start setup is encapsulated in
-  `prepare_fresh_start.m`; the iterative SO solver lives in
-  `iterative_static_optimization.m`.
-- **Checkpoint now stores `a_opt`**: resume is fully transparent.
+- **Model upgrade**: switched from `human0714` (14 muscles, 7/leg) to
+  `human0918` (18 muscles, 9/leg).  Muscle names were updated accordingly
+  (hamstrings, bifemsh, glut_max, iliopsoas, rect_fem, vasti, gastroc,
+  soleus, tib_ant).
+- **Feature dimension update**: feature vector expanded from 22 to 26
+  elements (9 fibre lengths + 9 MTU forces + 8 joint kinematics) to match
+  the 9-muscle model.  Coefficient matrix is now 26 × 9.
+- **Grouped LASSO format (v2)**: controllers can now be shared across phase
+  groups (e.g., one stance controller for phases 0–1, one swing controller
+  for phases 2–4).  Eliminates parameter duplication and reduces the CMA-ES
+  search dimension.
+- **Checkpoint / resume**: full CMA-ES state saved every 10 generations to
+  `results/checkpoint.mat`.  Set `resumeFromCheckpoint = true` to resume
+  from the last snapshot.  The checkpoint stores `a_opt` and `dofNames` for
+  fully transparent recovery.
+- **RNG reproducibility**: deterministic `threefry` generator with fixed
+  `rngSeed = 2026`.
+- **Staged stall handling**: soft sigma-boost (×2.0) is attempted before
+  triggering an IPOP restart, giving the optimiser a gentler nudge.
+- **Legacy controller deprecated**: the hand-crafted 28-parameter reflex
+  controller is no longer functional.  The code is retained (commented out)
+  in `cal_muscle_excitation.m` and `DEPRECATED_muscle_reflex_param_defs.m`.
+- **New validation tests**: `test_inverse_dynamics_validation.m` and
+  `test_muscle_moment_summation.m` for verifying the OpenSim pipeline.
+- **Ankle limit measure**: added to the multi-objective fitness to penalise
+  ankle hyperextension/hyperflexion.
+- **Simulation cache**: `forward_simulation.m` pre-builds a cache of Java
+  handles to avoid per-frame JNI overhead.
 
 ## Planned Extensions
 

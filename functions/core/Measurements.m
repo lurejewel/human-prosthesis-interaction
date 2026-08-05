@@ -104,7 +104,7 @@ classdef Measurements < handle
                                       / ((obj.heelstrikeEventL(i+1) - obj.heelstrikeEventL(i)) * dt);
             end
             velErrAvgN = mean(abs(velBuffer - obj.simConfig.speed)) / obj.simConfig.speed;
-            fit = weight * velErrAvgN * (velErrAvgN > th);
+            fit = weight * max(0, velErrAvgN - th);
         end
 
         function fit = knee_limit_measure(obj, weight)
@@ -120,9 +120,9 @@ classdef Measurements < handle
             kneeVelRight = rad2deg(sh(sm('knee_extension_r/speed'), 1:n));
 
             fAvg = mean(abs(Measurements.limit_force_calculation(kneeAngLeft, kneeVelLeft, angUpTh, angLowTh)));
-            fitL = weight * fAvg * (fAvg > th);
+            fitL = weight * max(0, fAvg - th);
             fAvg = mean(abs(Measurements.limit_force_calculation(kneeAngRight, kneeVelRight, angUpTh, angLowTh)));
-            fitR = weight * fAvg * (fAvg > th);
+            fitR = weight * max(0, fAvg - th);
             fit = fitL + fitR;
         end
 
@@ -139,9 +139,9 @@ classdef Measurements < handle
             ankleVelRight = rad2deg(sh(sm('ankle_dorsiflexion_r/speed'), 1:n));
 
             fAvg = mean(abs(Measurements.limit_force_calculation(ankleAngLeft, ankleVelLeft, angUpTh, angLowTh)));
-            fitL = weight * fAvg * (fAvg > th);
+            fitL = weight * max(0, fAvg - th);
             fAvg = mean(abs(Measurements.limit_force_calculation(ankleAngRight, ankleVelRight, angUpTh, angLowTh)));
-            fitR = weight * fAvg * (fAvg > th);
+            fitR = weight * max(0, fAvg - th);
             fit = fitL + fitR;
         end
 

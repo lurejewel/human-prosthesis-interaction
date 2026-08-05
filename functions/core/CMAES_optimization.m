@@ -67,7 +67,7 @@ classdef CMAES_optimization < Base_optimization
             obj.popsizeFactor = 1;
             obj.restartCount  = 0;
             obj.nWorkers      = Nworkers;
-            obj.gMax          = 1000;
+            obj.gMax          = 2000;
 
             obj.initStrategy();
             obj.initRecords();

@@ -20,9 +20,8 @@
 % considered?
 % -------------------------------------------------------------------------
 % 目前的问题：
-% 1. human0918无法优化的问题，怀疑是参数赋值有问题
-% 2. human0918平地行走的关节角度、关节力矩和肌肉力验证
-% 3. 如何改变地形（上下坡、上下台阶等）？该方法拓展到基于实验数据的其他运动？
+% * human0918平地行走的关节角度、关节力矩和肌肉力验证
+% * 如何改变地形（上下坡、上下台阶等）？该方法拓展到基于实验数据的其他运动？
 clear all; close all; clc
 addpath(genpath('assets\'), genpath('model\'), genpath('functions\'), genpath('results\'))
 projName = 'human0918'; % name of the musculoskeletal model (.osim)
@@ -32,7 +31,7 @@ projName = 'human0918'; % name of the musculoskeletal model (.osim)
 %  Set resumeFromCheckpoint = true to restart from the last saved snapshot.
 %  The checkpoint file is overwritten every 10 generations.
 % =======================================================================
-resumeFromCheckpoint = false;
+resumeFromCheckpoint = true;
 checkpointFile = 'results\checkpoint.mat';
 
 if resumeFromCheckpoint && isfile(checkpointFile)
