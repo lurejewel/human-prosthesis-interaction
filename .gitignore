@@ -10,7 +10,8 @@
 *.json
 *.pdf
 *.scone
+*.mhtml
 TOOL_*.m
 DEPRECATED_*
 Deprecated_*
-experimental data/
+experiments/data/

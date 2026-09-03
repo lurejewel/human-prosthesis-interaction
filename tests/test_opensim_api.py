@@ -11,7 +11,7 @@ print("Module path     :", osim.__file__)
 
 base_dir = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
-    "..", "experimental data", "Qingrun SHI, walking",
+    "..", "experiments", "data", "SQR_walking",
 )
 
 for name in ["base_model.osim", "SQR_simbody.osim"]:

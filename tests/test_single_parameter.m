@@ -20,13 +20,13 @@ addpath(genpath('assets'), genpath('model'), genpath('functions'))
 
 %% ---------- user configuration ----------
 projName       = 'human0918';  % <-- change to your model name (without .osim)
-paraSourceFile = 'results\opt_result_2026-07-15_14-34-18.mat';  % <-- change to your result file
+paraSourceFile = 'results\opt_result_2026-08-03_07-16-07.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
 simConfig.stepTime = 0.005;
 simConfig.speed   = 1.0;
 simConfig.slope   = 0;
-showVideo         = 1;  % set to false to skip 3D visual playback
+showVideo         = 0;  % set to false to skip 3D visual playback
 % -----------------------------------------
 
 %% load the parameter set to test
@@ -367,7 +367,7 @@ else
     gc_hipTauR   = nan(nCycles, nPts);
     gc_kneeTauR  = nan(nCycles, nPts);
     gc_ankleTauR = nan(nCycles, nPts);
-    % muscle forces (all 14) per cycle, raw (N)
+    % muscle forces (all 14) per cycle, normalised by body mass (N/kg)
     gc_musForce  = nan(nCycles, nPts, numel(muscleNames));
 
     for c = 1 : nCycles
@@ -376,25 +376,31 @@ else
         nFrames  = idxEnd - idxStart + 1;
         framePct = linspace(0, 100, nFrames);
 
+        % NOTE (sign convention for this figure only): OpenSim reports the
+        % knee angle about the knee_extension coordinate (extension-positive)
+        % and joint moments about the hip_flexion / knee_extension /
+        % ankle_dorsiflexion coordinates. To match the common academic sign
+        % convention we flip the plotted knee angle and the hip/knee/ankle
+        % joint moments below (hip & ankle angles stay as-is). Figure 1
+        % (time histories) is intentionally left unchanged.
         gc_hipAngR(c, :)   = interp1(framePct, hipR_ang(idxStart:idxEnd),   gcPct, 'pchip');
-        gc_kneeAngR(c, :)  = interp1(framePct, kneeR_ang(idxStart:idxEnd),  gcPct, 'pchip');
+        gc_kneeAngR(c, :)  = -interp1(framePct, kneeR_ang(idxStart:idxEnd), gcPct, 'pchip');
         gc_ankleAngR(c, :) = interp1(framePct, ankleR_ang(idxStart:idxEnd), gcPct, 'pchip');
         % normalise torques by body mass (Nm/kg)
-        gc_hipTauR(c, :)   = interp1(framePct, torque_hipR(idxStart:idxEnd),   gcPct, 'pchip') / bodyMass;
-        gc_kneeTauR(c, :)  = interp1(framePct, torque_kneeR(idxStart:idxEnd),  gcPct, 'pchip') / bodyMass;
-        gc_ankleTauR(c, :) = interp1(framePct, torque_ankleR(idxStart:idxEnd), gcPct, 'pchip') / bodyMass;
+        gc_hipTauR(c, :)   = -interp1(framePct, torque_hipR(idxStart:idxEnd),   gcPct, 'pchip') / bodyMass;
+        gc_kneeTauR(c, :)  = -interp1(framePct, torque_kneeR(idxStart:idxEnd),  gcPct, 'pchip') / bodyMass;
+        gc_ankleTauR(c, :) = -interp1(framePct, torque_ankleR(idxStart:idxEnd), gcPct, 'pchip') / bodyMass;
 
         for m = 1 : numel(muscleNames)
             fATN_cycle = modelInfo.dy.muscle.fATN(m, idxStart:idxEnd);
-            % actual tendon force = fATN × fopt, then normalise by body weight (F / BW)
+            % actual tendon force = fATN × fopt, then normalise by body mass
+            % (kg) -> N/kg  (equivalent to the old F/BW values × g)
             gc_musForce(c, :, m) = interp1(framePct, fATN_cycle, gcPct, 'pchip') ...
-                                   * modelInfo.st.muscle.fopt(m) / bodyWeight;
+                                   * modelInfo.st.muscle.fopt(m) / bodyMass;
         end
     end
 
-    % ---- define muscle groups ----
-    grpNames = {'Hip muscles', 'Knee muscles', 'Ankle muscles'};
-    % each group: list of muscle names (right-leg only for the normalised plot)
+    % ---- define muscle groups (right-leg only for the normalised plot) ----
     grpMuscles = { ...
         {'hamstrings_r','bifemsh_r','glut_max_r','iliopsoas_r'}, ...
         {'rect_fem_r','vasti_r'}, ...
@@ -404,8 +410,13 @@ else
     figure('Name', 'Gait-Cycle-Normalised Kinetics & Kinematics', ...
            'Position', [100, 100, 1400, 900]);
 
-    rowLabels = {'Joint Angles (deg)', 'Joint Torques (Nm/kg)', 'Muscle Forces (F / BW)'};
-    colLabels = {'Hip', 'Knee', 'Ankle'};
+    % ---- per-panel titles & y labels (row-major: top-left -> bottom-right) ----
+    panelTitles = {'Hip Angle',    'Knee Angle',    'Ankle Angle', ...
+                   'Hip Torque',   'Knee Torque',   'Ankle Torque', ...
+                   'Hip Muscles',  'Knee Muscles',  'Ankle Muscles'};
+    panelYLabels = {'Flexion angle (deg)',      'Flexion angle (deg)',      'Dorsiflexion angle (deg)', ...
+                    'Extension torque (Nm/kg)', 'Extension torque (Nm/kg)', 'Plantarflexion torque (Nm/kg)', ...
+                    'Muscle forces (N/kg)',     'Muscle forces (N/kg)',     'Muscle forces (N/kg)'};
 
     angData = {gc_hipAngR, gc_kneeAngR, gc_ankleAngR};
     tauData = {gc_hipTauR, gc_kneeTauR, gc_ankleTauR};
@@ -414,13 +425,14 @@ else
         % Row 1: angles
         subplot(3, 3, col);
         plot_gc_shaded(gcPct, angData{col});
-        if col == 1, ylabel(rowLabels{1}); end
-        title(colLabels{col});
+        ylabel(panelYLabels{col});
+        title(panelTitles{col});
 
         % Row 2: torques
         subplot(3, 3, 3 + col);
         plot_gc_shaded(gcPct, tauData{col});
-        if col == 1, ylabel(rowLabels{2}); end
+        ylabel(panelYLabels{3 + col});
+        title(panelTitles{3 + col});
 
         % Row 3: individual muscle forces (one curve per muscle)
         subplot(3, 3, 6 + col);
@@ -443,10 +455,10 @@ else
             end
         end
         hold off;
-        if col == 1, ylabel(rowLabels{3}); end
+        ylabel(panelYLabels{6 + col});
         xlabel('Gait cycle (%)');
         legend(hLines, legStr, 'Location', 'best', 'Interpreter', 'none');
-        title(sprintf('%s (%s)', colLabels{col}, grpNames{col}));
+        title(panelTitles{6 + col});
     end
 
     sgtitle(sprintf('Gait-Cycle-Normalised  |  %d cycles  |  Right leg  |  BW = %.0f N', ...
