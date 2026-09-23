@@ -1,0 +1,25 @@
+OpenSim 4.6-2026-03-31-d6972f9e6 / Moco 4.6-2026-03-31-d6972f9e6
+model=C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\experiments\data\SQR_walking\SQR_simbody.osim
+kinematics=C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\experiments\data\SQR_walking\level_walking_ik.mot
+grf=C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\experiments\moco\outputs\grf_window_180_200p5.xml
+window=180.0..200.0 mesh=0.002
+segments=10 segment_len=2.0 overlap=0.5
+  seg00 solve=180.000..182.500 keep=180.000..182.000 wall_s=224.4
+  seg01 solve=181.500..184.500 keep=182.000..184.000 wall_s=283.7
+  seg02 solve=183.500..186.500 keep=184.000..186.000 wall_s=551.9
+  seg03 solve=185.500..188.500 keep=186.000..188.000 wall_s=394.6
+  seg04 solve=187.500..190.500 keep=188.000..190.000 wall_s=356.1
+  seg05 solve=189.500..192.500 keep=190.000..192.000 wall_s=215.5
+  seg06 solve=191.500..194.500 keep=192.000..194.000 wall_s=274.7
+  seg07 solve=193.500..196.500 keep=194.000..196.000 wall_s=488.0
+  seg08 solve=195.500..198.500 keep=196.000..198.000 wall_s=549.1
+  seg09 solve=197.500..200.500 keep=198.000..200.000 wall_s=358.0
+wall_time_s=3722.7
+solved=True
+objective=54101.863
+num_states=56
+num_controls=37
+solver_duration_s=3540.5
+solver_iterations=793
+seam_max_activation_mismatch=0.226132
+activation_saturated_muscles=12

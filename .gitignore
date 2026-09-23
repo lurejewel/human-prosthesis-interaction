@@ -12,6 +12,12 @@
 *.scone
 *.mhtml
 TOOL_*.m
+tmp_*.py
+__pycache__/
 DEPRECATED_*
 Deprecated_*
 experiments/data/
+foot-ground contact model optimization/
+# Created by MocoCasADiSolver in the working directory on every solve.
+# Deleting one while a solve is running is the documented way to stop it.
+delete_this_to_stop_optimization__*
