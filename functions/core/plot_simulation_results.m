@@ -44,14 +44,23 @@ switch dataCategory
         ylabel('0-ES; 1-LS; 2-LO; 3-SW; 4-LD')
 
     case 'grf'
-        figure, plot(time, modelInfo.grf.fyr, 'LineWidth',2);
+        % NOTE: the GRF fields live under modelInfo.dy.grf (the old
+        % modelInfo.grf path was a leftover and never matched the class).
+        % fyr/fyl/fxr/fxl are the RESULTANTS of the three contact components
+        % (heel / toe / tip) of each foot — see cal_grf.m.
+        figure, plot(time, modelInfo.dy.grf.fyr, 'LineWidth',2);
         xlabel('time/s'), grid on, title('normal component of grf exerted on the right leg');
-        figure, plot(time, modelInfo.grf.fyl, 'LineWidth',2);
+        figure, plot(time, modelInfo.dy.grf.fyl, 'LineWidth',2);
         xlabel('time/s'), grid on, title('normal component of grf exerted on the left leg');
-        figure, plot(time, modelInfo.grf.fxr, 'LineWidth',2);
+        figure, plot(time, modelInfo.dy.grf.fxr, 'LineWidth',2);
         xlabel('time/s'), grid on, title('frictional component of grf exerted on the right leg');
-        figure, plot(time, modelInfo.grf.fxl, 'LineWidth',2);
+        figure, plot(time, modelInfo.dy.grf.fxl, 'LineWidth',2);
         xlabel('time/s'), grid on, title('frictional component of grf exerted on the left leg');
+        figure, plot(time, modelInfo.dy.grf.copxr, 'LineWidth',2), hold on
+        plot(time, modelInfo.dy.grf.copxl, '--', 'LineWidth',2);
+        xlabel('time/s'), ylabel('x / m'), grid on
+        title('centre of pressure along x (ground frame; NaN during swing)')
+        legend('right', 'left')
 
 end
 

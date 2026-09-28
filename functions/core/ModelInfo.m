@@ -54,11 +54,13 @@ classdef ModelInfo < handle
         % │   ├── fATN                      muscle fiber forces along tendon, normalized, needed for calculation muscle excitation
         % │   ├── lCEN                      muscle fiber lengths, normalized
         % │   └── [DEPRECATED] vCE          velocity of lCEN
-        % ├── grf                       GROUND REACTION FORCES
-        % │   ├── fyr                       normal reaction force for the right leg
-        % │   ├── fxr                       friction force for the right leg
-        % │   ├── fyl                       normal reaction force for the left leg
-        % │   ├── fxl                       friction force for the left leg
+        % ├── grf                       GROUND REACTION FORCES / CENTRE OF PRESSURE
+        % │   ├── fyr                       normal reaction force for the right leg (sum of heel/toe/tip)
+        % │   ├── fxr                       friction force for the right leg (sum of heel/toe/tip)
+        % │   ├── copxr                     x coordinate of the centre of pressure, right leg (ground frame; y = 0)
+        % │   ├── fyl                       normal reaction force for the left leg (sum of heel/toe/tip)
+        % │   ├── fxl                       friction force for the left leg (sum of heel/toe/tip)
+        % │   └── copxl                     x coordinate of the centre of pressure, left leg (ground frame; y = 0)
         % ├── limitForce                COORDINATE LIMIT FORCES
         % │   ├── kneeR                     knee joint limit force, right
         % │   └── kneeL                     knee joint limit force, left
@@ -95,8 +97,10 @@ classdef ModelInfo < handle
             obj.dy.labelHistory = nan(nStates, npts);  % label order (matches .st.model.map indices)
             obj.dy.grf.fyr = nan(1, npts);
             obj.dy.grf.fxr = nan(1, npts);
+            obj.dy.grf.copxr = nan(1, npts);
             obj.dy.grf.fyl = nan(1, npts);
             obj.dy.grf.fxl = nan(1, npts);
+            obj.dy.grf.copxl = nan(1, npts);
             obj.dy.limitForce.kneeR = nan(1, npts);
             obj.dy.limitForce.kneeL = nan(1, npts);
             obj.dy.phase.r = nan(1, npts);
@@ -146,8 +150,10 @@ classdef ModelInfo < handle
             obj.dy.labelHistory(:) = nan;
             obj.dy.grf.fyr(:) = nan;
             obj.dy.grf.fxr(:) = nan;
+            obj.dy.grf.copxr(:) = nan;
             obj.dy.grf.fyl(:) = nan;
             obj.dy.grf.fxl(:) = nan;
+            obj.dy.grf.copxl(:) = nan;
             obj.dy.limitForce.kneeR(:) = nan;
             obj.dy.limitForce.kneeL(:) = nan;
             obj.dy.phase.r(:) = nan;

@@ -9,12 +9,12 @@ function play_simulation_video(model, modelInfo, playbackSpeed, frameStep, showG
 % Input:
 %   model         - org.opensim.modeling.Model (will have visualiser enabled)
 %   modelInfo     - ModelInfo object with dy.labelHistory and st.simInfo.timeSeries
-%                   (and dy.grf fields if showGRF = true)
+%                   (and the dy.grf force / copx fields if showGRF = true)
 %   playbackSpeed - (optional) speed multiplier (>1 = faster, <1 = slower);
 %                   default 1.0 (real-time)
 %   frameStep     - (optional) render every N-th frame; default 1 (every frame)
-%   showGRF       - (optional) logical; if true, add GRF arrows at feet.
-%                   Default false.
+%   showGRF       - (optional) logical; if true, add GRF arrows starting at
+%                   the centre of pressure (CoP) of each foot.  Default false.
 %
 % Usage:
 %   play_simulation_video(model, modelInfo)
@@ -102,8 +102,16 @@ for k = 1:nFrames
         alpha = tNow / tVec(end);  % 0→1 over the simulation
 
         % Right foot — warm gradient: red → orange → yellow
+        % The arrow starts at the centre of pressure (CoP) on the ground plane
+        % while the foot is loaded; during swing the CoP is NaN, so fall back
+        % to the calcaneus position.
         colR = org.opensim.modeling.Vec3(1, alpha, 0);
-        posR = bodyCalcnR.getPositionInGround(stateVis);
+        copR = modelInfo.dy.grf.copxr(fi);
+        if isfinite(copR)
+            posR = org.opensim.modeling.Vec3(copR, 0, 0);
+        else
+            posR = bodyCalcnR.getPositionInGround(stateVis);
+        end
         lineR = org.opensim.modeling.DecorativeLine();
         lineR.setColor(colR);
         lineR.setLineThickness(2);
@@ -113,7 +121,12 @@ for k = 1:nFrames
 
         % Left foot — cool gradient: dark blue → teal → green
         colL = org.opensim.modeling.Vec3(alpha * 0.3, alpha, 0.6 - alpha * 0.2);
-        posL = bodyCalcnL.getPositionInGround(stateVis);
+        copL = modelInfo.dy.grf.copxl(fi);
+        if isfinite(copL)
+            posL = org.opensim.modeling.Vec3(copL, 0, 0);
+        else
+            posL = bodyCalcnL.getPositionInGround(stateVis);
+        end
         lineL = org.opensim.modeling.DecorativeLine();
         lineL.setColor(colL);
         lineL.setLineThickness(2);

@@ -29,13 +29,28 @@ simCache.pelvisCOMLocal = simCache.bodyPelvis.getMassCenter();
 simCache.calcnRCOMLocal = simCache.bodyCalcnR.getMassCenter();
 simCache.calcnLCOMLocal = simCache.bodyCalcnL.getMassCenter();
 
-% force handles for GRF reading
-% simCache.frcHeelR = model.getForceSet().get('heelR_ground_contact_force');
-% simCache.frcHeelL = model.getForceSet().get('heelL_ground_contact_force');
-% simCache.frcToeR  = model.getForceSet().get('toeR_ground_contact_force');
-% simCache.frcToeL  = model.getForceSet().get('toeL_ground_contact_force');
-simCache.grfR = model.getForceSet().get('foot_r');
-simCache.grfL = model.getForceSet().get('foot_l');
+% ---- handles for GRF / CoP reading ----
+% human0918.osim splits each foot's ground contact into three independent
+% HuntCrossleyForce components (heel / toe / tip); foot_contact_defs() is the
+% single place where those names live.  For every contact point we cache the
+% force handle plus the parent PhysicalFrame and the local offset of its
+% ContactSphere, so that cal_grf can sum the forces and weight their
+% application points into a CoP without any further Java lookups per frame.
+contactDef = foot_contact_defs();
+simCache.contactDef  = contactDef;
+simCache.footContact = cell(1, numel(contactDef.sides));   % {side}(point)
+for i = 1 : numel(contactDef.sides)
+    pts = struct('force', cell(1, contactDef.nPoints), ...
+                 'frame', cell(1, contactDef.nPoints), ...
+                 'loc',   cell(1, contactDef.nPoints));
+    for j = 1 : contactDef.nPoints
+        pts(j).force = model.getForceSet().get(contactDef.forceNames{i, j});
+        cg           = model.getContactGeometrySet().get(contactDef.geomNames{i, j});
+        pts(j).frame = cg.getFrame();
+        pts(j).loc   = cg.get_location();
+    end
+    simCache.footContact{i} = pts;
+end
 
 % force handles for knee limit force reading
 simCache.frcKneeLimitR = model.getForceSet().get('knee_lim_r');

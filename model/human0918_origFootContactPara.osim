@@ -2635,7 +2635,7 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<HuntCrossleyForce name="ground_heel_r">
+				<HuntCrossleyForce name="foot_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
 					<!--Material properties.-->
@@ -2643,20 +2643,20 @@
 						<objects>
 							<HuntCrossleyForce::ContactParameters>
 								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>platform heel_r</geometry>
-								<stiffness>1285852.0970526354</stiffness>
-								<dissipation>0.9983513610470701</dissipation>
-								<static_friction>0.9813052509024452</static_friction>
-								<dynamic_friction>0.6860065429098162</dynamic_friction>
-								<viscous_friction>0.37036205212720025</viscous_friction>
+								<geometry>platform heel_r toe_r</geometry>
+								<stiffness>5000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.90000000000000002</static_friction>
+								<dynamic_friction>0.59999999999999998</dynamic_friction>
+								<viscous_friction>0.59999999999999998</viscous_friction>
 							</HuntCrossleyForce::ContactParameters>
 						</objects>
 						<groups />
 					</HuntCrossleyForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.14852888826711383</transition_velocity>
+					<transition_velocity>0.14999999999999999</transition_velocity>
 				</HuntCrossleyForce>
-				<HuntCrossleyForce name="ground_toe_r">
+				<HuntCrossleyForce name="foot_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
 					<!--Material properties.-->
@@ -2664,102 +2664,18 @@
 						<objects>
 							<HuntCrossleyForce::ContactParameters>
 								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>platform toe_r</geometry>
-								<stiffness>1555935.767988433</stiffness>
-								<dissipation>0.9983633809644847</dissipation>
-								<static_friction>0.9813052509024452</static_friction>
-								<dynamic_friction>0.6860065429098162</dynamic_friction>
-								<viscous_friction>0.37036205212720025</viscous_friction>
+								<geometry>platform heel_l toe_l</geometry>
+								<stiffness>5000000</stiffness>
+								<dissipation>1</dissipation>
+								<static_friction>0.90000000000000002</static_friction>
+								<dynamic_friction>0.59999999999999998</dynamic_friction>
+								<viscous_friction>0.59999999999999998</viscous_friction>
 							</HuntCrossleyForce::ContactParameters>
 						</objects>
 						<groups />
 					</HuntCrossleyForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.14852888826711383</transition_velocity>
-				</HuntCrossleyForce>
-				<HuntCrossleyForce name="ground_tip_r">
-					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
-					<appliesForce>true</appliesForce>
-					<!--Material properties.-->
-					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
-						<objects>
-							<HuntCrossleyForce::ContactParameters>
-								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>platform tip_r</geometry>
-								<stiffness>2418049.8714659363</stiffness>
-								<dissipation>1.020203844249642</dissipation>
-								<static_friction>0.9813052509024452</static_friction>
-								<dynamic_friction>0.6860065429098162</dynamic_friction>
-								<viscous_friction>0.37036205212720025</viscous_friction>
-							</HuntCrossleyForce::ContactParameters>
-						</objects>
-						<groups />
-					</HuntCrossleyForce::ContactParametersSet>
-					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.14852888826711383</transition_velocity>
-				</HuntCrossleyForce>
-				<HuntCrossleyForce name="ground_heel_l">
-					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
-					<appliesForce>true</appliesForce>
-					<!--Material properties.-->
-					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
-						<objects>
-							<HuntCrossleyForce::ContactParameters>
-								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>platform heel_l</geometry>
-								<stiffness>1285852.0970526354</stiffness>
-								<dissipation>0.9983513610470701</dissipation>
-								<static_friction>0.9813052509024452</static_friction>
-								<dynamic_friction>0.6860065429098162</dynamic_friction>
-								<viscous_friction>0.37036205212720025</viscous_friction>
-							</HuntCrossleyForce::ContactParameters>
-						</objects>
-						<groups />
-					</HuntCrossleyForce::ContactParametersSet>
-					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.14852888826711383</transition_velocity>
-				</HuntCrossleyForce>
-				<HuntCrossleyForce name="ground_toe_l">
-					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
-					<appliesForce>true</appliesForce>
-					<!--Material properties.-->
-					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
-						<objects>
-							<HuntCrossleyForce::ContactParameters>
-								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>platform toe_l</geometry>
-								<stiffness>1555935.767988433</stiffness>
-								<dissipation>0.9983633809644847</dissipation>
-								<static_friction>0.9813052509024452</static_friction>
-								<dynamic_friction>0.6860065429098162</dynamic_friction>
-								<viscous_friction>0.37036205212720025</viscous_friction>
-							</HuntCrossleyForce::ContactParameters>
-						</objects>
-						<groups />
-					</HuntCrossleyForce::ContactParametersSet>
-					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.14852888826711383</transition_velocity>
-				</HuntCrossleyForce>
-				<HuntCrossleyForce name="ground_tip_l">
-					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
-					<appliesForce>true</appliesForce>
-					<!--Material properties.-->
-					<HuntCrossleyForce::ContactParametersSet name="contact_parameters">
-						<objects>
-							<HuntCrossleyForce::ContactParameters>
-								<!--Names of geometry objects affected by these parameters.-->
-								<geometry>platform tip_l</geometry>
-								<stiffness>2418049.8714659363</stiffness>
-								<dissipation>1.020203844249642</dissipation>
-								<static_friction>0.9813052509024452</static_friction>
-								<dynamic_friction>0.6860065429098162</dynamic_friction>
-								<viscous_friction>0.37036205212720025</viscous_friction>
-							</HuntCrossleyForce::ContactParameters>
-						</objects>
-						<groups />
-					</HuntCrossleyForce::ContactParametersSet>
-					<!--Slip velocity (creep) at which peak static friction occurs.-->
-					<transition_velocity>0.14852888826711383</transition_velocity>
+					<transition_velocity>0.14999999999999999</transition_velocity>
 				</HuntCrossleyForce>
 				<CoordinateLimitForce name="knee_lim_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
@@ -3221,7 +3137,7 @@
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
 					<socket_frame>/bodyset/calcn_r</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
-					<location>0.02988359497208643 -0.00650194564837029 -0.0050000000000000001</location>
+					<location>0.014999999999999999 0.014999999999999999 -0.0050000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
 					<!--Default appearance for this Geometry-->
@@ -3241,7 +3157,7 @@
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
 					<socket_frame>/bodyset/calcn_r</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
-					<location>0.18165060056549143 0.006658054351629715 0</location>
+					<location>0.185 0.014999999999999999 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
 					<!--Default appearance for this Geometry-->
@@ -3257,33 +3173,11 @@
 					<!--Radius of the sphere (default: 0).-->
 					<radius>0.029999999999999999</radius>
 				</ContactSphere>
-				<ContactSphere name="tip_r">
-					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this contact geometry is attached.).-->
-					<socket_frame>/bodyset/calcn_r</socket_frame>
-					<!--The location of the contact geometry center in the PhysicalFrame.-->
-					<location>0.21051884685871655 0.000188054351629708 -0.0</location>
-					<!--The orientation of the contact geometry in the PhysicalFrame in body-fixed XYZ Euler angles.-->
-					<orientation>0 0 0</orientation>
-					<!--The default appearance for this Geometry-->
-					<Appearance>
-						<!--Flag indicating whether the associated Geometry is visible or hidden.-->
-						<visible>true</visible>
-						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-						<color>0 1 1</color>
-						<!--Visuals applied to surfaces associated with this Appearance.-->
-						<SurfaceProperties>
-							<!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
-							<representation>1</representation>
-						</SurfaceProperties>
-					</Appearance>
-					<!--The radius of the sphere (default: 0).-->
-					<radius>0.022</radius>
-				</ContactSphere>
 				<ContactSphere name="heel_l">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
 					<socket_frame>/bodyset/calcn_l</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
-					<location>0.02988359497208643 -0.00650194564837029 0.0050000000000000001</location>
+					<location>0.014999999999999999 0.014999999999999999 0.0050000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
 					<!--Default appearance for this Geometry-->
@@ -3303,7 +3197,7 @@
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
 					<socket_frame>/bodyset/calcn_l</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
-					<location>0.18165060056549143 0.006658054351629715 0</location>
+					<location>0.185 0.014999999999999999 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
 					<orientation>0 0 0</orientation>
 					<!--Default appearance for this Geometry-->
@@ -3318,26 +3212,6 @@
 					</Appearance>
 					<!--Radius of the sphere (default: 0).-->
 					<radius>0.029999999999999999</radius>
-				</ContactSphere>
-				<ContactSphere name="tip_l">
-					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this contact geometry is attached.).-->
-					<socket_frame>/bodyset/calcn_l</socket_frame>
-					<!--The location of the contact geometry center in the PhysicalFrame.-->
-					<location>0.21051884685871655 0.000188054351629708 0.0</location>
-					<!--The orientation of the contact geometry in the PhysicalFrame in body-fixed XYZ Euler angles.-->
-					<orientation>0 0 0</orientation>
-					<!--The default appearance for this Geometry-->
-					<Appearance>
-						<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
-						<color>0 1 1</color>
-						<!--Visuals applied to surfaces associated with this Appearance.-->
-						<SurfaceProperties>
-							<!--The representation (1:Points, 2:Wire, 3:Shaded) used to display the object.-->
-							<representation>1</representation>
-						</SurfaceProperties>
-					</Appearance>
-					<!--The radius of the sphere (default: 0).-->
-					<radius>0.022</radius>
 				</ContactSphere>
 			</objects>
 			<groups />
