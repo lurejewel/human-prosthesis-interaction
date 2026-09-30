@@ -20,13 +20,13 @@ addpath(genpath('assets'), genpath('model'), genpath('functions'))
 
 %% ---------- user configuration ----------
 projName       = 'human0918';  % <-- change to your model name (without .osim)
-paraSourceFile = 'results\opt_result_2026-08-03_07-16-07.mat';  % <-- change to your result file
+paraSourceFile = 'results\opt_result_2026-09-29_17-54-54.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
 simConfig.stepTime = 0.005;
 simConfig.speed   = 1.0;
 simConfig.slope   = 0;
-showVideo         = 0;  % set to false to skip 3D visual playback
+showVideo         = 1;  % set to 0 to skip 3D visual playback
 % -----------------------------------------
 
 %% load the parameter set to test

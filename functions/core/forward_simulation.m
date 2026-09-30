@@ -58,7 +58,7 @@ simCache.frcKneeLimitL = model.getForceSet().get('knee_lim_l');
 
 % precomputed constants
 simCache.bw = model.getTotalMass(state) * abs(model.getGravity().get(1)); % body weight (in newtons) = total mass (kg) * g (m/s^2)
-simCache.stanceTh  = 0.23137978;
+simCache.stanceTh  = 0.02; % 0.23137978; % stance threshold (normalized to body weight) for gait phase detection
 
 % initialize manager
 manager = org.opensim.modeling.Manager(model);

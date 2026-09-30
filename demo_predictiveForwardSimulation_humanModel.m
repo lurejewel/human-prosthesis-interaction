@@ -31,7 +31,7 @@ projName = 'human0918'; % name of the musculoskeletal model (.osim)
 %  Set resumeFromCheckpoint = true to restart from the last saved snapshot.
 %  The checkpoint file is overwritten every 10 generations.
 % =======================================================================
-resumeFromCheckpoint = true;
+resumeFromCheckpoint = false;
 checkpointFile = 'results\checkpoint.mat';
 
 if resumeFromCheckpoint && isfile(checkpointFile)
