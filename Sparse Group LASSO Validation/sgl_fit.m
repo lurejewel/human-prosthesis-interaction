@@ -9,6 +9,10 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2,
 %   where U = {i: y_i > c + tolCensor}, C = {i: y_i <= c + tolCensor},
 %   and (t)_+ = max(t,0) elementwise.
 %
+%   Direction of the censored term: it penalizes A_C*beta + b > c, i.e.
+%   predictions ABOVE the floor on censored samples. Larger rho pushes
+%   A_C*beta + b <= c (not >= c), so that (A_C*beta + b - c)_+ -> 0.
+%
 %   IMPORTANT NOTES:
 %   - y is NOT centered; threshold c is on ORIGINAL y scale and NEVER transformed.
 %   - A is used as provided. If you want centering/scaling, do it before calling.
@@ -29,7 +33,8 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2,
 %     lambda2 - l1 penalty weight
 %     opts    - optional struct:
 %               c             (default 0.01)
-%               rho           (default 100 if empty; larger = harder censor constraint)
+%               rho           (default 100 if empty; larger = harder enforcement
+%                              of A_C*beta+b <= c for censored samples)
 %               maxIter       (default 2000)
 %               tol           (default 1e-6)
 %               verbose       (default true)
@@ -38,6 +43,11 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2,
 %               beta0         (default []) warm start in ORIGINAL space
 %               b0            (default 0) warm start intercept in ORIGINAL space
 %               tolCensor     (default 1e-12)
+%               sampleWeight  (default [] = all ones).  Nonnegative n x 1
+%                             weights applied to BOTH the uncensored squared
+%                             loss and the censored hinge term.  Used by the
+%                             MocoInverse LASSO path for seam exclusion and
+%                             robust Huber IRLS.
 %
 %   Outputs:
 %     betaOrig  - p x 1 coefficients on original A scale
@@ -85,6 +95,32 @@ yU = y(Uidx);                          % |U| x 1, responses for uncensored (unch
 AC = AStd(Cidx, :);                    % |C| x p, rows of AStd for censored
 % Note: yC is not extracted; we use the fact that censored obs are modeled as y=c in the objective.
 
+% ---- optional sample weights (default: all ones) -------------------------
+% 用途：MocoInverse 数据集里有些样本不能参与拟合（分段接缝、首尾 transient、
+% 用户指定的坏窗口），但删除行会破坏 lambda path 的时间连续性，也会让
+% phaseIdx/sampleWeight 的行号错位。因此用 0 权重“逻辑排除”。
+%
+% 权重同时进入两部分：
+%   * uncensored 平方损失 0.5*sum(wU.*rU.^2)
+%   * censored hinge     0.5*rho*sum(wC.*pC.^2)
+% 默认 [] -> 全 1，旧调用完全不受影响。
+sw = opts.sampleWeight;
+if isempty(sw)
+    sw = ones(n, 1);
+else
+    sw = double(sw(:));
+    if numel(sw) ~= n
+        error('sgl_fit:BadSampleWeight', ...
+            'opts.sampleWeight must have %d entries, got %d.', n, numel(sw));
+    end
+    if any(~isfinite(sw)) || any(sw < 0)
+        error('sgl_fit:BadSampleWeight', ...
+            'opts.sampleWeight must be finite and nonnegative.');
+    end
+end
+wU = sw(Uidx);
+wC = sw(Cidx);
+
 %% ========== INITIALIZE OPTIMIZATION VARIABLES FROM WARM STARTS ==========
 % Warm starts are provided in the same feature scale as A.
 betaOrig0 = zeros(p, 1);              % default: zero initialization
@@ -112,7 +148,7 @@ tFista = 1;                                    % FISTA acceleration parameter (s
 step = 1 / max(opts.L0, eps);                  % initial step size (inverse of Lipschitz estimate)
 
 % Record objective at generation 0 (initial warm start point)
-smooth0 = compute_f_smooth(AU, yU, AC, c, rho, beta, b);
+smooth0 = compute_f_smooth(AU, yU, AC, c, rho, beta, b, wU, wC);
 obj0 = smooth0 + lambda1 * group_l2_sum(beta, groups) + lambda2 * norm(beta, 1);
 
 objHist = nan(opts.maxIter + 1, 1);
@@ -144,7 +180,7 @@ for k = 1:opts.maxIter
     bOld = b;
 
     % Gradient of smooth part at extrapolated point
-    [gBeta, gb, fY] = compute_grad_smooth(AU, yU, AC, c, rho, yBeta, yb);
+    [gBeta, gb, fY] = compute_grad_smooth(AU, yU, AC, c, rho, yBeta, yb, wU, wC);
 
     % ===== Backtracking line search =====
     t = step;
@@ -157,7 +193,7 @@ for k = 1:opts.maxIter
         dBeta = betaCand - yBeta;
         db = bCand - yb;
 
-        fCand = compute_f_smooth(AU, yU, AC, c, rho, betaCand, bCand);
+        fCand = compute_f_smooth(AU, yU, AC, c, rho, betaCand, bCand, wU, wC);
         % Quadratic upper bound condition from Nesterov proximal gradient
         quadUpper = fY + gBeta.' * dBeta + gb * db + ...
             (1 / (2 * t)) * (norm(dBeta, 2)^2 + db^2);
@@ -185,7 +221,7 @@ for k = 1:opts.maxIter
 
     smoothVal = fCand;
     % Compute full objective (smooth + nonsmooth penalties)
-    obj = compute_objective_total(AU, yU, AC, c, rho, beta, b, lambda1, lambda2, groups);
+    obj = compute_objective_total(AU, yU, AC, c, rho, beta, b, lambda1, lambda2, groups, wU, wC);
 
     iters = k;
     objHist(k + 1) = obj;
@@ -369,6 +405,8 @@ defaults.beta0 = []; % first guess of beta (in original space) for warm start
 defaults.b0 = 0; % first guess of intercept (in original space) for warm start
 % Numerical tolerance for censoring partition
 defaults.tolCensor = 1e-12;
+% Optional nonnegative sample weights ([] = all ones)
+defaults.sampleWeight = [];
 
 % Fill in missing options with defaults
 fn = fieldnames(defaults);
@@ -413,7 +451,7 @@ groups = {
     };
 end
 
-function [gradBeta, gradb, fVal] = compute_grad_smooth(AU, yU, AC, c, rho, beta, b)
+function [gradBeta, gradb, fVal] = compute_grad_smooth(AU, yU, AC, c, rho, beta, b, wU, wC)
 % Compute gradient of smooth (non-regularized) part of the objective.
 %
 % Smooth objective:
@@ -430,29 +468,34 @@ rU = AU * beta + b - yU;
 tC = AC * beta + b - c;
 pC = max(tC, 0);
 
-% Gradient contribution from uncensored and censored terms
-gradBeta = AU.' * rU + rho * (AC.' * pC);
-gradb = sum(rU) + rho * sum(pC);
-% Function value
-fVal = 0.5 * (rU.' * rU) + 0.5 * rho * (pC.' * pC);
+% Gradient contribution from uncensored and censored terms (weighted).
+% 注意：wU/wC 是列向量；wU.*rU 逐样本加权，等价于把每个残差乘以
+% sqrt(w) 后再做最小二乘，但这里保留在原目标里，避免改变 censoring
+% 阈值 c 的尺度。
+gradBeta = AU.' * (wU .* rU) + rho * (AC.' * (wC .* pC));
+gradb = sum(wU .* rU) + rho * sum(wC .* pC);
+% Function value（与上面的梯度严格对应）
+fVal = 0.5 * (rU.' * (wU .* rU)) + 0.5 * rho * (pC.' * (wC .* pC));
 end
 
-function f = compute_f_smooth(AU, yU, AC, c, rho, beta, b)
+function f = compute_f_smooth(AU, yU, AC, c, rho, beta, b, wU, wC)
 % Compute value of smooth objective (wrapper for single value query).
+% 与 compute_grad_smooth 使用完全相同的加权公式；wU/wC 默认全 1 时
+% 退化为旧版未加权目标，保证旧 UN.sto 流程数值不变。
 rU = AU * beta + b - yU;
 tC = AC * beta + b - c;
 pC = max(tC, 0);
-f = 0.5 * (rU.' * rU) + 0.5 * rho * (pC.' * pC);
+f = 0.5 * (rU.' * (wU .* rU)) + 0.5 * rho * (pC.' * (wC .* pC));
 end
 
-function obj = compute_objective_total(AU, yU, AC, c, rho, beta, b, lambda1, lambda2, groups)
+function obj = compute_objective_total(AU, yU, AC, c, rho, beta, b, lambda1, lambda2, groups, wU, wC)
 % Compute total objective: smooth part + SGL penalties (L1 + group-L2).
 %
 % Total objective:
 %   f(beta,b) + lambda1*sum_g ||beta_g||_2 + lambda2*||beta||_1
 % where f is the smooth part and penalties are the non-smooth regularization.
 
-f = compute_f_smooth(AU, yU, AC, c, rho, beta, b);
+f = compute_f_smooth(AU, yU, AC, c, rho, beta, b, wU, wC);
 obj = f + lambda1 * group_l2_sum(beta, groups) + lambda2 * norm(beta, 1);
 end
 

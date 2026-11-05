@@ -2,15 +2,21 @@
 % =========================================================================
 % sEMG 信号处理程序 (SQR level walking)
 %
-% 处理流程:
+% 处理流程 (先截窗口, 之后每一步都只在 semgWin = [170 240] s 内进行):
+%   窗口: 载入后立即把 t / emgRaw 截到 170~240 s; 窗口外数据不参与任何
+%         处理、统计和归一化(归一化分母也只取窗口内的最大值)
 %   0) 去伪迹(despike): 剔除异常尖峰并插值修复
-%      判据: |x| > kP * P99.9(该通道本身), kP = 2.5
+%      判据: |x| > kP * P99.9(该通道本身, 仅窗口内统计), kP = 2.0
 %      修复: 被标记区间(外扩 ±5 ms)用保形三次插值(PCHIP)重建
 %      (详见 diagnose_semg_artifacts.m 的诊断结论; 本步骤可置 enableDespike=false 关闭)
+%   0b) 手动修正: 对宽度远超尖峰(如 ~150 ms 机械瞬变)、自动判据只切到中间一段
+%      的伪迹, 直接在 manualFix 里给 [通道 起 止], 用区间外的干净样本重建
 %   1) 10 Hz 二阶 Butterworth 高通滤波  (去除直流/基线漂移)
 %   2) 全波整流 abs(x)
 %   3) 5 Hz 二阶 Butterworth 低通滤波   (得到平滑包络)
-%   4) 按各肌肉包络的最大值归一化 (0 ~ 1)
+%   4) 按各肌肉包络在窗口内的最大值归一化 (0 ~ 1)
+%
+% 注意: 窗口外数据不参与滤波, 窗口首尾各有约 0.1 s 的 filtfilt 起止瞬态。
 %
 % 数据来源: experiments\data\SQR_walking\level_walking_semg.csv
 %   (Delsys EMGworks 导出的多设备 CSV, 本程序只读取第一段 EMG 数据块,
@@ -31,10 +37,10 @@
 % 输出 (experiments\moco\outputs\semg\):
 %   level_walking_semg_raw_and_processed.png/.fig  各肌肉 raw(去伪迹后) 与处理后对比图
 %   level_walking_semg_despike_effect.png          去伪迹前后归一化包络对比图
-%   level_walking_semg_processed.csv               归一化包络 (Time_s, EMG7~EMG16, 全时程)
+%   level_walking_semg_processed.csv               归一化包络 (Time_s, EMG7~EMG16, 仅窗口段)
 %   level_walking_semg_processed.mat               数据 (t, emgRaw, emgClean, emgEnvNorm ...)
-%   semg_artifact_report.csv                       每个被替换区间的清单(可核查)
-%   注: 图只显示 plotWin 区间(默认 170~240 s); CSV/MAT 仍是全时程 0~249.6 s 数据。
+%   semg_artifact_report.csv                       每个被替换区间的清单(可核查, Method=auto/manual)
+%   注: 所有输出(图/CSV/MAT)都只覆盖 semgWin 窗口(默认 170~240 s)。
 %
 % 依赖: Signal Processing Toolbox (butter, filtfilt); 建议 MATLAB R2020b+
 % =========================================================================
@@ -53,13 +59,25 @@ kP               = 2.5;   % 判据: |x| > kP * P99.9(该通道)
 despikeMargin    = 10;    % 标记区间向两侧外扩的样本数 (10 = 5 ms @2000 Hz)
 despikeNeighbors = 50;    % 插值支撑点: 区间两侧各取多少个干净样本 (50 = 25 ms)
 
+% --- 手动修正区间 (在自动去伪迹之后执行) ---------------------------------
+%   每行 = [EMG 通道号, t_start_s, t_end_s] (闭区间)
+%   BF_R(EMG9) 184.733~184.880 s 是一个约 150 ms 的机械瞬变(尖峰 + 深负向 +
+%   正向回弹 + 衰减振荡), 自动判据只切掉中间最陡的约 57 ms, 回弹残留仍会把
+%   归一化分母拉在伪迹上, 故这里整段手动重建。
+manualFix = [ ...
+%   EMG   t_start   t_end
+     9    184.733   184.880 ...
+];
+
 % --- 滤波与归一化参数 ---
 hpFc       = 10;        % 高通截止频率 (Hz)
 lpFc       = 5;         % 低通截止频率 (Hz)
 filtOrder  = 2;         % Butterworth 阶数
 zeroPhase  = true;      % true : filtfilt 零相位滤波(正反各2阶, 等效4阶, 无相位延迟, EMG 处理常用)
                         % false: filter() 严格单次2阶前向滤波(有相位延迟)
-plotWin      = [170 240]; % 显示(绘图)区间 (s): 只呈现这一段时程, 便于看清细节
+
+% --- 分析窗口: 所有处理/统计/归一化都只在这段时间内进行 ---
+semgWin      = [170 240]; % 分析窗口 (s), 闭合区间 [semgWin(1), semgWin(2)]
 plotDecimate = 1;         % 绘图降采样因子(仅加快绘图, 不影响处理结果; 1 = 全部点)
 
 % 通道与肌肉对应关系 (与文件列 EMG7~EMG16 一一对应)
@@ -104,51 +122,77 @@ nSamples = size(emgRaw, 1);
 nCh      = numel(channels);
 nSub     = max(subFrame) + 1;                    % 每帧子样本数 (本数据为 20)
 t        = ((frame - 1) * nSub + subFrame) / fs; % 时间轴 (s)
-fprintf('采样率: %d Hz | 样本数: %d | 时长: %.2f s\n', fs, nSamples, t(end));
+fprintf('采样率: %d Hz | 原始样本数: %d | 原始时长: %.2f s\n', fs, nSamples, t(end));
+
+% ---- 截取分析窗口: 之后所有处理/统计/归一化都只用这段数据 ----
+winMask  = (t >= semgWin(1)) & (t <= semgWin(2));
+t        = t(winMask);
+emgRaw   = emgRaw(winMask, :);
+nSamples = size(emgRaw, 1);
+if nSamples == 0
+    error('分析窗口 %.1f~%.1f s 内没有样本, 请检查 semgWin 设置', semgWin(1), semgWin(2));
+end
+fprintf('分析窗口: %.1f~%.1f s | 样本数: %d | 窗口时长: %.3f s\n', ...
+        semgWin(1), semgWin(2), nSamples, t(end) - t(1));
 
 %% 3. 去伪迹 (剔除异常尖峰 + PCHIP 插值修复) -----------------------------
+autoRows = {};
 if enableDespike
     fprintf('\n去伪迹: 判据 |x| > %.2f * P99.9(该通道), 标记区间外扩 ±%d 样本 (%.1f ms)\n', ...
             kP, despikeMargin, despikeMargin/fs*1000);
-    [emgClean, replacedMask, dRows] = despikeEmg(emgRaw, t, fs, kP, despikeMargin, despikeNeighbors);
+    [emgClean, replacedMask, autoRows] = despikeEmg(emgRaw, t, fs, kP, despikeMargin, despikeNeighbors);
 
-    if isempty(dRows)
-        artTab = table();
-        fprintf('未检出异常尖峰, 数据未被修改。\n');
+    if isempty(autoRows)
+        fprintf('自动判据未检出异常尖峰, 数据未被修改。\n');
     else
-        artTab = cell2table(dRows, 'VariableNames', ...
-            {'ChIdx','sIdx','eIdx','t_start_s','t_end_s','SamplesFlagged','Interval_ms', ...
-             'PeakRemoved_V','PeakOverP999','PeakOverSigma','SupportPoints'});
-        nEv = height(artTab);
-        artTab.EMG    = reshape(channels(artTab.ChIdx),   nEv, 1);   % 显式列向量, 避免方向歧义
-        artTab.Muscle = reshape(shortNames(artTab.ChIdx), nEv, 1);
-        artTab.ChIdx  = [];
-        artTab = movevars(artTab, {'EMG','Muscle'}, 'Before', 't_start_s');
-        artTab = sortrows(artTab, 'PeakOverSigma', 'descend');
-
-        fprintf('共替换 %d 个区间, %d 个样本 (等效占单通道记录长度的 %.3f%%)\n', ...
-                height(artTab), nnz(replacedMask), ...
-                100 * nnz(replacedMask) / nSamples);
-        nShowTab = min(20, height(artTab));
-        disp(artTab(1:nShowTab, :));
-        if height(artTab) > nShowTab
-            fprintf('... 其余 %d 个区间见 semg_artifact_report.csv\n', height(artTab)-nShowTab);
+        showTab = artTabFromRows(autoRows, channels, shortNames);
+        fprintf('自动去伪迹: 共替换 %d 个区间, %d 个样本 (等效占单通道记录长度的 %.3f%%)\n', ...
+                height(showTab), nnz(replacedMask), 100 * nnz(replacedMask) / nSamples);
+        nShowTab = min(20, height(showTab));
+        disp(showTab(1:nShowTab, :));
+        if height(showTab) > nShowTab
+            fprintf('... 其余 %d 个区间见 semg_artifact_report.csv\n', height(showTab)-nShowTab);
         end
     end
 else
     emgClean     = emgRaw;
     replacedMask = false(nSamples, nCh);
-    artTab       = table();
     fprintf('\n已按参数设置跳过去伪迹 (enableDespike = false)。\n');
 end
 
-%% 4. sEMG 处理: 高通 -> 整流 -> 低通 -> 最大值归一化 ----------------------
+%% 3b. 手动修正 (自动判据处理不到的宽带伪迹) -----------------------------
+% 用区间两侧的干净样本做 PCHIP 重建, 替换整段, 并把区间记入 replacedMask
+% (图上仍以红点显示), 同时并入 semg_artifact_report.csv 的 Method 列。
+manRows = {};
+if ~isempty(manualFix)
+    fprintf('\n手动修正: %d 个区间\n', size(manualFix, 1));
+    [emgClean, replacedMask, manRows] = manualFixEmg(emgClean, replacedMask, t, fs, ...
+        manualFix, channels, despikeNeighbors);
+    if ~isempty(manRows)
+        disp(artTabFromRows(manRows, channels, shortNames));
+    end
+end
+
+% 合并自动 / 手动记录 (Method 列区分), 供 CSV 输出
+allRows = [autoRows; manRows];
+artTab  = table();
+if ~isempty(allRows)
+    method = [repmat({'auto'},   size(autoRows, 1), 1); ...
+              repmat({'manual'}, size(manRows, 1), 1)];
+    artTab = artTabFromRows(allRows, channels, shortNames, method);
+    fprintf('自动 + 手动共替换 %d 个区间, %d 个样本 (占单通道窗口长度的 %.3f%%)\n', ...
+            height(artTab), nnz(replacedMask), 100*nnz(replacedMask)/nSamples);
+end
+
+%% 4. sEMG 处理: 高通 -> 整流 -> 低通 -> 窗口内最大值归一化 ----------------
 assert(hpFc < fs/2, '高通截止频率必须小于 Nyquist 频率 %.1f Hz', fs/2);
 [hpB, hpA] = butter(filtOrder, hpFc/(fs/2), 'high');   % 10 Hz 二阶高通
 [lpB, lpA] = butter(filtOrder, lpFc/(fs/2), 'low');    % 5 Hz 二阶低通
 
 emgEnv     = computeEnvelope(emgClean, hpB, hpA, lpB, lpA, zeroPhase);  % 去伪迹后
-emgEnvNorm = emgEnv ./ max(emgEnv, [], 1);                             % 4) 最大值归一化
+envMax     = max(emgEnv, [], 1);              % 分母 = 窗口内该通道包络最大值
+envMax(envMax <= 0) = 1;                      % 防零除(全零通道不至于变 NaN)
+emgEnvNorm = emgEnv ./ envMax;                % 4) 窗口内最大值归一化 (0 ~ 1)
 
 % 对照: 未去伪迹的包络(仅用于验证去伪迹效果, 不参与输出数据)
 emgEnvBef     = computeEnvelope(emgRaw, hpB, hpA, lpB, lpA, zeroPhase);
@@ -173,34 +217,30 @@ for i = 1:nCh
 end
 fprintf('(env>0.1 = 归一化包络中大于 0.1 的时间占比; 修复前该值极小即"被压小")\n');
 
-% 各肌肉峰值出现时刻(修复后): 归一化按全时程最大值, 另列出显示区间内的峰值位置
-wIdxShow = find(t >= plotWin(1) & t <= plotWin(2));
-fprintf('\n%-6s %-8s %-16s %-16s %-18s %-16s\n', ...
-    'EMG', 'Muscle', '全时程峰值(s)', 'Peak (norm)', '显示区间内峰值(s)', 'Peak (norm)');
+% 各肌肉峰值出现时刻(修复后): 归一化按窗口内最大值, 故峰值恒为 1.0
+fprintf('\n%-6s %-8s %-16s %-16s %-14s\n', ...
+    'EMG', 'Muscle', '峰值时刻(s)', 'Peak (norm)', '峰值包络(V)');
 for i = 1:nCh
     [pv, ipk] = max(emgEnv(:,i));
-    [~, iw]   = max(emgEnv(wIdxShow, i));
-    fprintf('%-6d %-8s %-16.2f %-16.3f %-18.2f %-16.3f\n', ...
-        channels(i), shortNames{i}, t(ipk), emgEnvNorm(ipk,i), ...
-        t(wIdxShow(iw)), emgEnvNorm(wIdxShow(iw), i));
+    fprintf('%-6d %-8s %-16.2f %-16.3f %-14.3e\n', ...
+        channels(i), shortNames{i}, t(ipk), emgEnvNorm(ipk,i), pv);
 end
 
 %% 5. 图 1: 每块肌肉一行, 左列 raw(去伪迹后), 右列处理后 ------------------
-% 只显示 plotWin 区间 (s): 全时程 249.6 s 压缩到一张图里看不清细节
-winIdx = wIdxShow;                     % 只显示 plotWin 区间
-idx    = winIdx(1:plotDecimate:end);   % 仅绘图时降采样
+% 数据本身已是 semgWin 窗口(170~240 s), 图即为该窗口全段
+idx = 1:plotDecimate:nSamples;          % 仅绘图时降采样
 fig  = figure('Name', 'sEMG raw vs processed', 'Color', 'w', ...
               'Position', [60 30 1500 1650]);
 for i = 1:nCh
     % 左列: 原始 sEMG (去伪迹后, 红点 = 被替换的样本)
     subplot(nCh, 2, 2*i-1);
     plot(t(idx), emgClean(idx, i), 'Color', [0.15 0.35 0.65]); hold on;
-    idxRep = find(replacedMask(:, i) & t >= plotWin(1) & t <= plotWin(2));
+    idxRep = find(replacedMask(:, i));
     plot(t(idxRep), emgClean(idxRep, i), 'r.', 'MarkerSize', 9);
     grid on; box off;
     ylabel({shortNames{i}, 'Raw (V)'});
     title(muscleNames{i}, 'FontWeight', 'normal');
-    xlim(plotWin);
+    xlim(semgWin);
 
     % 右列: 处理后 sEMG (归一化包络)
     subplot(nCh, 2, 2*i);
@@ -208,27 +248,27 @@ for i = 1:nCh
     grid on; box off;
     ylabel({shortNames{i}, 'Processed (norm.)'});
     title('Processed', 'FontWeight', 'normal');
-    xlim(plotWin);
+    xlim(semgWin);
     ylim([0, 1.05]);
 end
 subplot(nCh, 2, 1);
-title({sprintf('RAW sEMG (去伪迹后, 红点=被替换样本)  显示 %.0f-%.0f s', plotWin(1), plotWin(2)); ...
+title({sprintf('RAW sEMG (去伪迹后, 红点=被替换样本)  %.0f-%.0f s', semgWin(1), semgWin(2)); ...
        muscleNames{1}}, 'FontWeight', 'bold');
 subplot(nCh, 2, 2);
-title({'PROCESSED sEMG (归一化仍按全时程最大值)'; ...
+title({sprintf('PROCESSED sEMG (归一化按窗口 %.0f-%.0f s 内最大值)', semgWin(1), semgWin(2)); ...
        '10 Hz HP | rectify | 5 Hz LP | max-norm'}, 'FontWeight', 'bold');
 subplot(nCh, 2, 2*nCh-1); xlabel('Time (s)');
 subplot(nCh, 2, 2*nCh);   xlabel('Time (s)');
-sgtitle(sprintf('sEMG Raw and Processed (Level Walking, fs = %d Hz, 显示区间 %.0f-%.0f s / 全长 %.1f s)', ...
-        fs, plotWin(1), plotWin(2), t(end)), 'FontSize', 13);
+sgtitle(sprintf('sEMG Raw and Processed (Level Walking, fs = %d Hz, 处理窗口 %.0f-%.0f s, 窗口时长 %.1f s)', ...
+        fs, semgWin(1), semgWin(2), t(end)-t(1)), 'FontSize', 13);
 
-%% 6. 图 2: 去伪迹前后归一化包络对比 (同样只显示 plotWin 区间) -----------
+%% 6. 图 2: 去伪迹前后归一化包络对比 (同一窗口) ---------------------------
 fig2 = figure('Name', 'despike effect', 'Color', 'w', 'Position', [80 30 1400 1650]);
 for i = 1:nCh
     subplot(nCh, 1, i);
     plot(t(idx), emgEnvNormBef(idx, i), 'Color', [0.65 0.65 0.65]); hold on;
     plot(t(idx), emgEnvNorm(idx, i), 'Color', [0.10 0.30 0.75], 'LineWidth', 0.8);
-    grid on; box off; xlim(plotWin); ylim([0, 1.05]);
+    grid on; box off; xlim(semgWin); ylim([0, 1.05]);
     ylabel(shortNames{i});
     if i == 1
         title('去伪迹前(灰) vs 去伪迹后(蓝) 的归一化包络');
@@ -236,8 +276,8 @@ for i = 1:nCh
     end
 end
 xlabel('Time (s)');
-sgtitle(sprintf('去伪迹对归一化包络的影响 (灰: 未去伪迹, 最大值被伪迹绑架 → 整体被压小; 显示 %.0f-%.0f s)', ...
-        plotWin(1), plotWin(2)), 'FontSize', 13);
+sgtitle(sprintf('去伪迹对归一化包络的影响 (灰: 未去伪迹, 最大值被伪迹绑架 → 整体被压小; 窗口 %.0f-%.0f s)', ...
+        semgWin(1), semgWin(2)), 'FontSize', 13);
 
 %% 7. 保存结果 -----------------------------------------------------------
 figName = fullfile(outDir, 'level_walking_semg_raw_and_processed');
@@ -255,11 +295,12 @@ end
 
 % 只保存必要数据(验证用的 emgEnvBef/emgEnvNormBef 属中间结果, 不入库;
 %  需要时把 enableDespike 置 false 重跑即可得到)
+% 注意: 这里存的 t / emgRaw / emgClean / emgEnv / emgEnvNorm 都只有 semgWin 窗口段
 save(fullfile(outDir, 'level_walking_semg_processed.mat'), ...
      't', 'fs', 'emgRaw', 'emgClean', 'replacedMask', ...
      'emgEnv', 'emgEnvNorm', 'artTab', ...
      'channels', 'muscleNames', 'shortNames', 'hpFc', 'lpFc', 'filtOrder', ...
-     'zeroPhase', 'kP', 'plotWin', '-v7.3');
+     'zeroPhase', 'kP', 'semgWin', 'manualFix', '-v7.3');
 
 fprintf('\n已保存输出到: %s\n', outDir);
 
@@ -326,6 +367,61 @@ for i = 1:nCh
 end
 end
 
+function [x, maskReplaced, rows] = manualFixEmg(x, maskReplaced, t, fs, spec, chList, nbrSamples)
+% 手动区间修正: spec 每行 = [通道号, t_start, t_end]
+% 用区间两侧各 nbrSamples 个干净样本做 PCHIP 重建, 覆盖整段
+[n, ~] = size(x);
+rows   = {};
+for k = 1:size(spec, 1)
+    emgCh = spec(k, 1);
+    col   = find(chList == emgCh, 1);
+    if isempty(col)
+        warning('手动修正: EMG%d 不在读取的通道列表里, 已跳过', emgCh);
+        continue;
+    end
+    s = find(t >= spec(k, 2), 1, 'first');
+    e = find(t <= spec(k, 3), 1, 'last');
+    if isempty(s) || isempty(e) || e < s
+        warning('手动修正: 区间 %.3f~%.3f s 不在分析窗口内, 已跳过', spec(k, 2), spec(k, 3));
+        continue;
+    end
+    seg     = (s:e)';
+    peakVal = max(abs(x(seg, col)));
+    ax      = abs(x(:, col));
+    p999    = pctlSorted(ax, 0.999);
+    sigma   = 1.4826 * pctlSorted(abs(x(:, col) - pctlSorted(x(:, col), 0.5)), 0.5);
+
+    sup = [max(1, s - nbrSamples) : s-1, (e + 1) : min(n, e + nbrSamples)]';
+    sup = sup(~maskReplaced(sup, col));
+    if numel(sup) < 4, sup = find(~maskReplaced(:, col)); end
+    if numel(sup) < 2
+        x(seg, col) = 0;
+    else
+        x(seg, col) = interp1(sup, x(sup, col), seg, 'pchip');
+    end
+    maskReplaced(seg, col) = true;
+
+    rows(end+1, :) = {col, s, e, t(s), t(e), numel(seg), numel(seg)/fs*1000, ...
+                      peakVal, peakVal/p999, peakVal/sigma, numel(sup)}; %#ok<SAGROW>
+end
+end
+
+function T = artTabFromRows(rows, channels, shortNames, method)
+% Unified artifact table from the 11-column rows of despikeEmg / manualFixEmg
+T = cell2table(rows, 'VariableNames', ...
+    {'ChIdx','sIdx','eIdx','t_start_s','t_end_s','SamplesFlagged','Interval_ms', ...
+     'PeakRemoved_V','PeakOverP999','PeakOverSigma','SupportPoints'});
+nEv = height(T);
+T.EMG    = reshape(channels(T.ChIdx),   nEv, 1);
+T.Muscle = reshape(shortNames(T.ChIdx), nEv, 1);
+T.ChIdx  = [];
+T = movevars(T, {'EMG','Muscle'}, 'Before', 't_start_s');
+if nargin >= 4
+    T.Method = method;
+    T = movevars(T, 'Method', 'After', 'Muscle');
+end
+T = sortrows(T, 'PeakOverSigma', 'descend');
+end
 function v = pctlSorted(x, p)
 % 排序法求分位数(不依赖 Statistics Toolbox)
 xs = sort(x(:));

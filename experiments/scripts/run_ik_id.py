@@ -6,8 +6,8 @@ Run with the `opensim_scripting` conda environment:
 Prerequisite, the filtered external loads:
     python "experiments\\scripts\\grf_filter.py"
 which writes level_walking_grf_filtered.mot / .xml.  This pipeline does NOT
-filter the GRF; it consumes that file so that it and run_ik_rra.py always see
-identical external loads.
+filter the GRF; it consumes that file, so every stage sees identical external
+loads.
 
 This file only names the inputs/outputs and calls the stages; all the work lives
 in the modules next to it:

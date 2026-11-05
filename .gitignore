@@ -21,3 +21,14 @@ foot-ground contact model optimization/
 # Created by MocoCasADiSolver in the working directory on every solve.
 # Deleting one while a solve is running is the documented way to stop it.
 delete_this_to_stop_optimization__*
+.conda_envs/
+.conda_pkgs/
+.conda_tos/
+.tools/
+.tmp_opensim45/
+grf_window_*.mot
+moco_inverse_activation_report_*.csv
+moco_inverse_gains_*.csv
+moco_inverse_summary_*.txt
+moco_inverse_s_used_*.csv
+moco_inverse_residuals_*.csv

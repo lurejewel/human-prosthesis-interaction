@@ -5,17 +5,17 @@ Run with the `opensim_scripting` conda environment:
     ... --start 170 --end 240                  # defaults
 
 Writes level_walking_ik.mot: the RAW InverseKinematicsTool result.  Nothing may
-differentiate it directly -- send it through ik_filter.py first (both pipelines
-do that automatically).  See ik_filter.py on the naming:
+differentiate it directly -- send it through ik_filter.py first (run_ik_id.py
+does that automatically).  See ik_filter.py on the naming:
 
     <trial>_ik.mot            raw IK       <- this module
-    <trial>_ik_filtered.mot   15 Hz filtered, what ID / RRA / Moco read
+    <trial>_ik_filtered.mot   15 Hz filtered, what ID / Moco read
 
-Both pipelines call run_ik() with the same model, markers and setup, so the tool
-configuration lives here exactly once and both write the same file:
+run_ik_id.py calls run_ik() with the model, markers and setup configured here,
+so the tool configuration lives in exactly one place:
+
     run_ik_id.py    -> level_walking_ik.mot
-    run_ik_rra.py   -> level_walking_ik.mot      (same file, no _rra copy)
-Only the time window may differ (run_ik_rra.py --start/--end).
+Only the time window may differ (run_ik_id.py --start/--end).
 
 Inputs (all in experiments/data/SQR_walking/):
     SQR_simbody.osim    model

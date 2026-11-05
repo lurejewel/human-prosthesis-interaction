@@ -6,8 +6,8 @@ Run with the `opensim_scripting` conda environment:
     level_walking_grf.mot  ->  level_walking_grf_filtered.mot
     level_walking_grf.xml  ->  level_walking_grf_filtered.xml
 
-This step is deliberately separate from IK/ID and from RRA so that both pipelines
-consume exactly the same external loads and cannot drift apart.
+This step is deliberately separate from IK/ID so that every consumer uses
+exactly the same external loads and cannot drift apart.
 
 Per belt, independently:
 
@@ -102,7 +102,7 @@ BELTS = ((1, 2), (10, 11))  # (first column of the belt, vertical-force column)
 
 # ---------------------------------------------------------------------------
 # OpenSim text-table I/O -- the shared home for the whole script family
-# (ik_filter.py, ik.py, id.py, rra.py and both run_ik_*.py import from here)
+# (ik_filter.py, ik.py, id.py and run_ik_id.py import from here)
 # ---------------------------------------------------------------------------
 def read_table(path):
     """Read an OpenSim .mot/.sto file -> (header_lines, column_labels, ndarray).

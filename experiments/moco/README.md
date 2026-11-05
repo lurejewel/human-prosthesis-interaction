@@ -89,10 +89,16 @@ CasADi 插件目录并设置 `CASADIPATH` / `PATH`。所以用
 | `--residual-rot` | 400 | 骨盆转动残差作动器容量 [N·m] |
 | `--residual-trans` | 500 | 骨盆平动残差作动器容量 [N] |
 | `--keep-contacts` | — | 保留模型自带的 HuntCrossley 接触力（一般不要） |
+| `--sagittal-cost` | — | 把非矢状面 reserve（hip adduction/rotation、腰椎 3 个）的 cost 权重设为 **0**；矢状面 reserve（hip flexion、knee、ankle）仍为 1。用于下游是 2D 矢状面模型的场景：非矢状面 reserve 仍保留为作动器，只是不计入目标函数 |
 | `--no-dgf` | — | 保留原始 Millard2012 肌肉。**MocoInverse 用不了**，见第五节第 8 条 |
 | `--tol` / `--max-iter` | 1e-3 / 3000 | 求解器收敛容差与最大迭代 |
 | `--allow-large` | — | 覆盖内存护栏（不建议，见下文「内存与窗口长度」） |
 | `--tag` | — | 输出文件名后缀 |
+
+> `--sagittal-cost` 走 `MocoInverse.initialize()` + `MocoStudy.solve()` 这条路径（为了在求解前拿到
+> `excitation_effort` 这个 `MocoControlGoal` 并逐控制修改权重）。因此
+> `moco_inverse_solution_*.sto` 只含 18 个肌肉激活 state（不含坐标/速度）；坐标/速度仍在
+> `outputs/ik_radians.mot`。`moco_inverse_activations/excitations/residuals` 都是完整的。
 
 求解耗时会在求解结束时**直接打印在终端**（`>>> solve wall time: ...`，并区分
 IPOPT 纯求解时间 `solver duration`），同时写入 `moco_inverse_summary*.txt` 的
@@ -467,7 +473,7 @@ experiments/moco/moco_inverse.py    MocoInverse（肌肉激活/兴奋）
 
 注意两个 IK 文件的区别：`level_walking_ik.mot` 是 `InverseKinematicsTool` 的**原始**
 输出，`level_walking_ik_filtered.mot` 是它经过 `experiments/scripts/ik_filter.py`
-（15 Hz、4 阶 Butterworth、零相位）滤波后的结果。逆动力学、RRA、MocoInverse 一律读
+（15 Hz、4 阶 Butterworth、零相位）滤波后的结果。逆动力学、MocoInverse 一律读
 **filtered** 那个。
 
 ## 八、其他可用的模型

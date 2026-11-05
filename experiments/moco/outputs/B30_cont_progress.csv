@@ -1,0 +1,1 @@
+update_id,timestamp,J,effort,tracking,mean_cos,mean_r,mean_nRMSE,s0,s1,s2,s3,s4,s_hat0,s_hat1,s_hat2,s_hat3,s_hat4,R_s,rJ,u_rel,act_rel,stable_count,bound,solver_ok,elapsed_s

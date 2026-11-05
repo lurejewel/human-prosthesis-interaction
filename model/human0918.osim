@@ -1184,7 +1184,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>2594</max_isometric_force>
+					<max_isometric_force>5188</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.097600000000000006</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1267,7 +1267,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>804</max_isometric_force>
+					<max_isometric_force>1608</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.1103</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1356,7 +1356,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>1944</max_isometric_force>
+					<max_isometric_force>3888</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.15690000000000001</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1445,7 +1445,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>2186</max_isometric_force>
+					<max_isometric_force>4372</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.1066</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1528,7 +1528,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>1169</max_isometric_force>
+					<max_isometric_force>2338</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.075899999999999995</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1611,7 +1611,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>4530</max_isometric_force>
+					<max_isometric_force>9060</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.099299999999999999</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1688,7 +1688,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>2241</max_isometric_force>
+					<max_isometric_force>4482</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.050999999999999997</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1765,7 +1765,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>3549</max_isometric_force>
+					<max_isometric_force>7098</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.043999999999999997</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1848,7 +1848,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>1579</max_isometric_force>
+					<max_isometric_force>3158</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.0683</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -1931,7 +1931,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>2594</max_isometric_force>
+					<max_isometric_force>5188</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.097600000000000006</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -2014,7 +2014,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>804</max_isometric_force>
+					<max_isometric_force>1608</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.1103</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -2103,7 +2103,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>1944</max_isometric_force>
+					<max_isometric_force>3888</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.15690000000000001</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -2192,7 +2192,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>2186</max_isometric_force>
+					<max_isometric_force>4372</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.1066</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -2275,7 +2275,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>1169</max_isometric_force>
+					<max_isometric_force>2338</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.075899999999999995</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -2358,7 +2358,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>4530</max_isometric_force>
+					<max_isometric_force>9060</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.099299999999999999</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -2435,7 +2435,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>2241</max_isometric_force>
+					<max_isometric_force>4482</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.050999999999999997</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -2512,7 +2512,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>3549</max_isometric_force>
+					<max_isometric_force>7098</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.043999999999999997</optimal_fiber_length>
 					<!--Resting length of the tendon-->
@@ -2595,7 +2595,7 @@
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
-					<max_isometric_force>1579</max_isometric_force>
+					<max_isometric_force>3158</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>0.0683</optimal_fiber_length>
 					<!--Resting length of the tendon-->

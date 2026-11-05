@@ -745,5 +745,7 @@ end
 % [ ] Post-selection OLS RMSE should be <= adaptive LASSO RMSE per phase
 %     (debiasing reduces shrinkage bias)
 % [ ] max(abs(A_refit(:,nonS) * Beta_refit(nonS,m))) should be 0
-% [ ] YPred >= c for all predictions (censoring floor)
+% [ ] reported YPred = max(A*beta+b, c) >= c by construction;
+%     for censored samples the latent A*beta+b should be <= c
+%     (rho pushes it down, not up)
 % [ ] stats_ada.(phase){m}.objHist should be non-increasing

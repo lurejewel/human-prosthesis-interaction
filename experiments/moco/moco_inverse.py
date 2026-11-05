@@ -56,6 +56,7 @@ Notes
 """
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -91,7 +92,12 @@ MODEL_FILE = os.path.join(DATA_DIR, "SQR_simbody.osim")
 # The 15 Hz filtered kinematics (ik_filter.py), NOT level_walking_ik.mot: that
 # one is the raw InverseKinematicsTool output.
 IK_FILE = os.path.join(DATA_DIR, "level_walking_ik_filtered.mot")
-GRF_XML = os.path.join(DATA_DIR, "level_walking_grf_filtered.xml")
+# Prefer the heel-strike-corrected GRF (fix_grf_heel_strike.py).  That step
+# removes the force-plate ringing that makes vx/vz briefly point the wrong way
+# at initial contact; fall back to the 15 Hz filtered GRF if it is absent.
+GRF_XML = os.path.join(DATA_DIR, "level_walking_grf_fixed.xml")
+if not os.path.exists(GRF_XML):
+    GRF_XML = os.path.join(DATA_DIR, "level_walking_grf_filtered.xml")
 
 # Motion that needs an actuator but has no muscle: the 6 pelvis DOF and the
 # 3 lumbar DOF (the torso is connected to the pelvis by a CustomJoint).
@@ -135,6 +141,42 @@ GRF_MARGIN = 1.0          # s of extra GRF data kept around the solve span
 # ~0.1-0.2 s, i.e. a few tau).  0.4 s = 10 tau_deact.
 SEAM_SAFE_MARGIN = 0.4
 
+# Reserves that act on DOFs the downstream 2D (sagittal-plane) IPOP-CMA-ES
+# model does not have: hip adduction/rotation and the three lumbar DOFs.  With
+# --sagittal-cost their cost weight is set to 0 (the actuators stay in the
+# model, because the 3D equations of motion still need them to satisfy the
+# measured kinematics; they just do not pollute the objective).  The sagittal
+# reserves (hip flexion, knee extension, ankle dorsiflexion) keep their own
+# weight, controlled by --sagittal-reserve-weight (default 0.04 = optimal_force 5), so the optimizer
+# still has to fit the sagittal joint moments with muscle.
+NON_SAGITTAL_RESERVE_CONTROLS = [
+    "/forceset/reserve_jointset_hip_r_hip_adduction_r",
+    "/forceset/reserve_jointset_hip_l_hip_adduction_l",
+    "/forceset/reserve_jointset_hip_r_hip_rotation_r",
+    "/forceset/reserve_jointset_hip_l_hip_rotation_l",
+    "/forceset/reserve_jointset_back_lumbar_extension",
+    "/forceset/reserve_jointset_back_lumbar_bending",
+    "/forceset/reserve_jointset_back_lumbar_rotation",
+]
+
+SAGITTAL_RESERVE_CONTROLS = [
+    "/forceset/reserve_jointset_hip_r_hip_flexion_r",
+    "/forceset/reserve_jointset_hip_l_hip_flexion_l",
+    "/forceset/reserve_jointset_knee_r_knee_extension_r",
+    "/forceset/reserve_jointset_knee_l_knee_extension_l",
+    "/forceset/reserve_jointset_ankle_r_ankle_dorsiflexion_r",
+    "/forceset/reserve_jointset_ankle_l_ankle_dorsiflexion_l",
+]
+
+# The 10 muscles with processed sEMG.  The sEMG channel labeled "hamstrings"
+# is recorded over the biceps femoris; it is mapped to the model's "hamstrings"
+# actuator (the model's "bifemsh" short head has no separate sEMG channel).
+EMG_MUSCLES = [
+    "rect_fem_r", "vasti_r", "hamstrings_r", "tib_ant_r", "gastroc_r",
+    "rect_fem_l", "vasti_l", "hamstrings_l", "tib_ant_l", "gastroc_l",
+]
+EMG_MUSCLES_R = EMG_MUSCLES[:5]
+
 
 # ---------------------------------------------------------------------------
 # Model construction
@@ -165,13 +207,16 @@ def build_model_processor(grf_xml, use_dgf_muscles=True,
         mp.append(osim.ModOpScaleActiveFiberForceCurveWidthDGF(1.5))
 
     # Residuals: CoordinateActuators on coordinates of joints whose *parent*
-    # body is Ground, i.e. the 6 pelvis DOF.
-    if add_residuals:
+    # body is Ground, i.e. the 6 pelvis DOF.  ModOpAddResiduals is only exposed
+    # in OpenSim 4.6; on 4.5 the (weaker) reserve actuators cover the pelvis.
+    if add_residuals and hasattr(osim, "ModOpAddResiduals"):
         mp.append(osim.ModOpAddResiduals(residual_rot, residual_trans, 1.0))
 
     # Reserves: weak CoordinateActuators on every coordinate that does not
     # already have one (includes the 3 lumbar DOF, which no muscle crosses).
-    if add_reserves:
+    # On 4.5 ModOpAddReserves would also cover the pelvis (no residual operator
+    # there), so it is added manually after mp.process() instead.
+    if add_reserves and hasattr(osim, "ModOpAddResiduals"):
         mp.append(osim.ModOpAddReserves(1.0))
 
     return mp
@@ -226,6 +271,8 @@ def data_time_range(xml_or_mot):
         if not m:
             return None
         path = m.group(1).strip().replace("/", os.sep)
+        if not os.path.isabs(path):
+            path = os.path.join(os.path.dirname(os.path.abspath(xml_or_mot)), path)
     if not os.path.exists(path):
         return None
 
@@ -259,6 +306,8 @@ def prepare_grf_window(src_xml, start, end, out_dir, margin=GRF_MARGIN):
         print("  (no <datafile> in external loads XML; using it as-is)")
         return src_xml
     src_mot = m.group(1).strip().replace("/", os.sep)
+    if not os.path.isabs(src_mot):
+        src_mot = os.path.join(os.path.dirname(os.path.abspath(src_xml)), src_mot)
     if not os.path.exists(src_mot):
         print(f"  (GRF data file not found: {src_mot}; using XML as-is)")
         return src_xml
@@ -651,6 +700,73 @@ def parse_args(argv=None):
                    help="keep the original Millard2012 muscles")
     p.add_argument("--keep-contacts", action="store_true",
                    help="do NOT disable the HuntCrossleyForce foot contacts")
+    p.add_argument("--sagittal-cost", action="store_true",
+                   help="re-weight the non-sagittal reserves (hip "
+                        "adduction/rotation and the three lumbar DOFs); the "
+                        "sagittal reserves (hip flexion, knee extension, ankle "
+                        "dorsiflexion) keep weight 1.  Use this when the "
+                        "downstream model is sagittal-plane only.")
+    p.add_argument("--nonsagittal-weight", type=float, default=0.0,
+                   help="cost weight for the non-sagittal reserves when "
+                        "--sagittal-cost is used.  0 (default) ignores them; "
+                        "a small value (e.g. 1e-3) regularizes the solution "
+                        "without letting them dominate the cost.")
+    p.add_argument("--sagittal-reserve-weight", type=float, default=0.04,
+                   help="cost weight for the sagittal reserves (hip flexion, "
+                        "knee extension, ankle dorsiflexion) when "
+                        "--sagittal-cost is used.  To mimic optimal_force=5 "
+                        "with optimal_force=1, use 1/25 = 0.04 (not 0.2). "
+                        "Default: 0.04.")
+    p.add_argument("--emg-tracking", default=None,
+                   help="path to a TimeSeriesTable (.sto) whose columns are "
+                        "/forceset/<muscle> control names for the 10 muscles "
+                        "with processed sEMG.  Adds a MocoControlTrackingGoal "
+                        "on the excitation controls.")
+    p.add_argument("--emg-weight", type=float, default=0.1,
+                   help="weight of the sEMG control-tracking goal "
+                        "(default 0.1; soft prior relative to excitation_effort)")
+    p.add_argument("--emg-gain-min", type=float, default=0.5,
+                   help="lower bound for the per-muscle EMG scale factor")
+    p.add_argument("--emg-gain-max", type=float, default=2.0,
+                   help="upper bound for the per-muscle EMG scale factor")
+    p.add_argument("--emg-no-gain", action="store_true",
+                   help=argparse.SUPPRESS)
+    p.add_argument("--emg-reinit", action="store_true",
+                   help=argparse.SUPPRESS)
+    p.add_argument("--emg-custom-study", action="store_true",
+                   help="dump the MocoInverse study to XML, reload it as a "
+                        "fresh MocoStudy, then add the EMG tracking goal and "
+                        "scale factors before the solver is initialized")
+    p.add_argument("--emg-one-gain", action="store_true",
+                   help=argparse.SUPPRESS)
+    p.add_argument("--emg-rev-goal", action="store_true",
+                   help="use the reverse-scaled plugin goal "
+                        "(error = reference - s * model)")
+    p.add_argument("--emg-rev-plugin", default=None,
+                   help="path to osimRevGoal.dll (default: revgoal/build_vs/"
+                        "Release/osimRevGoal.dll)")
+    p.add_argument("--emg-initial-guess", default=None,
+                   help="MocoTrajectory (.sto) used as the initial guess; "
+                        "with --emg-rev-goal this also switches sparsity "
+                        "detection to 'initial-guess'")
+    p.add_argument("--emg-leg", choices=["both", "right"], default="both",
+                   help="which leg gets sEMG tracking; 'right' uses only "
+                        "rect_fem_r, vasti_r, hamstrings_r, tib_ant_r, gastroc_r")
+    p.add_argument("--emg-s-values", default=None,
+                   help="comma-separated fixed s values in active-muscle order "
+                        "(10 for both, 5 for --emg-leg right); equal bounds make "
+                        "s fixed")
+    p.add_argument("--emg-serial", action="store_true",
+                   help="set MocoCasADiSolver parallel=0 for diagnostics")
+    p.add_argument("--emg-sparsity-none", action="store_true",
+                   help="set optim_sparsity_detection='none' for diagnostics")
+    p.add_argument("--emg-sparsity-random", action="store_true",
+                   help="force optim_sparsity_detection='random' for diagnostics")
+    p.add_argument("--emg-params-initsystem", action="store_true",
+                   help="set parameters_require_initsystem=True for diagnostics")
+    p.add_argument("--emg-native-b-fixed", action="store_true",
+                   help="use native MocoControlTrackingGoal with reference e/s "
+                        "and per-control weight w*s^2 (requires fixed s)")
 
     p.add_argument("--no-trim-grf", action="store_true",
                    help="do not trim the GRF file (much slower)")
@@ -669,9 +785,187 @@ def parse_args(argv=None):
                    help="override the mesh-interval memory guard and try anyway")
     p.add_argument("--no-segment-files", action="store_true",
                    help="do not write the raw per-segment solution files")
+    p.add_argument("--seg-dir", default=None,
+                   help="directory for raw per-segment solutions; use a unique "
+                        "directory per chunk when running chunks in parallel")
     p.add_argument("--tag", default=None,
                    help="suffix for output file names")
     return p.parse_args(argv)
+
+
+def add_emg_tracking_goal(problem, model, args):
+    """Add a soft MocoControlTrackingGoal on the 10 measured muscle controls.
+
+    The reference table has columns named ``/forceset/<muscle>``; only those
+    10 controls get weight 1.  Every other actuator (the 8 unmeasured muscles,
+    residuals and reserves) gets weight 0.  Each measured muscle also gets a
+    scale factor (``addScaleFactor``), so the optimizer can absorb the unknown
+    sEMG normalization anchor; the tracking error is
+    ``modelValue - gain * referenceValue``.
+    """
+    ref = os.path.abspath(args.emg_tracking)
+    if not os.path.exists(ref):
+        sys.exit(f"EMG reference table not found: {ref}")
+    active = (EMG_MUSCLES_R if getattr(args, "emg_leg", "both") == "right"
+              else EMG_MUSCLES)
+
+    if getattr(args, "emg_native_b_fixed", False):
+        if not getattr(args, "emg_s_values", None):
+            sys.exit("--emg-native-b-fixed requires --emg-s-values")
+        s_vals = [float(x) for x in
+                  args.emg_s_values.replace(",", " ").split()]
+        if len(s_vals) != len(active):
+            sys.exit(f"--emg-s-values needs exactly {len(active)} values "
+                     f"(got {len(s_vals)})")
+        # (e - s u)^2 = s^2 (u - e/s)^2.  Scale the reference, then apply
+        # s^2 as a per-control weight; no MocoScaleFactor/parameters.
+        table = osim.TimeSeriesTable(ref)
+        for m, sv in zip(active, s_vals):
+            col = table.updDependentColumn(f"/forceset/{m}")
+            for i in range(col.size()):
+                col[i] = col[i] / sv
+        scaled = os.path.join(
+            OUT_DIR, f"emg_native_b_scaled_{args.tag}.sto")
+        osim.STOFileAdapter.write(table, scaled)
+        goal = osim.MocoControlTrackingGoal("emg_tracking")
+        goal.setReference(osim.TableProcessor(scaled))
+        goal.setWeight(args.emg_weight)
+        goal.setAllowUnusedReferences(True)
+        for m, sv in zip(active, s_vals):
+            goal.setReferenceLabel(f"/forceset/{m}", f"/forceset/{m}")
+            goal.setWeightForControl(f"/forceset/{m}", sv * sv)
+        problem.addGoal(goal)
+        print(f"    EMG tracking (native B fixed): {ref}")
+        print(f"      active muscles={len(active)}; scaled reference={scaled}")
+        print("      fixed s: " + ", ".join(
+            f"{m}={v:g}" for m, v in zip(active, s_vals)))
+        print(f"      weight={args.emg_weight:g}; per-control weight=s^2; "
+              "no MocoScaleFactor")
+        return goal
+
+    goal = osim.MocoControlTrackingGoal("emg_tracking")
+    goal.setReference(osim.TableProcessor(ref))
+    goal.setWeight(args.emg_weight)
+    goal.setAllowUnusedReferences(True)
+
+    tracked = 0
+    scale_muscles = (active[:1] if getattr(args, "emg_one_gain", False)
+                     else active)
+    for m in active:
+        goal.setReferenceLabel(f"/forceset/{m}", f"/forceset/{m}")
+        goal.setWeightForControl(f"/forceset/{m}", 1.0)
+        tracked += 1
+    if not getattr(args, "emg_no_gain", False):
+        # Official order: add scale factors before adding the goal to the
+        # problem, then resetProblem()/parameters_require_initsystem(False).
+        s_vals = None
+        if getattr(args, "emg_s_values", None):
+            s_vals = [float(x) for x in
+                      args.emg_s_values.replace(",", " ").split()]
+            if len(s_vals) != len(active):
+                sys.exit(f"--emg-s-values needs exactly {len(active)} values "
+                         f"(got {len(s_vals)})")
+        for m in scale_muscles:
+            if s_vals is not None:
+                sv = s_vals[active.index(m)]
+                bounds = osim.MocoBounds(sv, sv)
+            else:
+                bounds = osim.MocoBounds(args.emg_gain_min,
+                                         args.emg_gain_max)
+            goal.addScaleFactor(f"gain_{m}", f"/forceset/{m}", bounds)
+        if s_vals is not None:
+            print("    fixed s: " + ", ".join(
+                f"{m}={v:g}" for m, v in zip(active, s_vals)))
+
+    if getattr(args, "emg_rev_goal", False):
+        # The XML round-trip is required because the plugin class has no SWIG
+        # binding.  Rename both the goal and its reference-label helper tags.
+        orig_xml = os.path.join(OUT_DIR, "emg_goal_orig.xml")
+        rev_xml = os.path.join(OUT_DIR, "emg_goal_rev.xml")
+        goal.printToXML(orig_xml)
+        with open(orig_xml, "r", encoding="utf-8") as f:
+            txt = f.read()
+        txt = txt.replace("MocoControlTrackingGoalReference",
+                          "MocoReverseScaledControlTrackingGoalReference")
+        txt = txt.replace("MocoControlTrackingGoal",
+                          "MocoReverseScaledControlTrackingGoal")
+        with open(rev_xml, "w", encoding="utf-8") as f:
+            f.write(txt)
+
+        plugin = args.emg_rev_plugin
+        if not plugin:
+            plugin = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  "revgoal", "build_vs", "Release",
+                                  "osimRevGoal.dll")
+        plugin = os.path.abspath(plugin)
+        if not os.path.exists(plugin):
+            sys.exit(f"reverse-scaled goal plugin not found: {plugin}")
+        env_root = os.path.dirname(os.path.abspath(sys.executable))
+        for d in (os.path.join(env_root, "Lib", "opensim"),
+                  os.path.join(env_root, "Library", "bin")):
+            if os.path.isdir(d):
+                try:
+                    os.add_dll_directory(d)
+                except (AttributeError, OSError):
+                    pass
+        osim.LoadOpenSimLibrary(plugin)
+        obj = osim.MocoGoal.makeObjectFromFile(rev_xml)
+        rev_goal = osim.MocoGoal.safeDownCast(obj)
+        if rev_goal is None:
+            sys.exit("could not load MocoReverseScaledControlTrackingGoal "
+                     "from XML; is the plugin registered?")
+        problem.addGoal(rev_goal)
+        try:
+            problem.printToXML(os.path.join(OUT_DIR, "rev_problem.xml"))
+        except Exception:
+            pass
+        print(f"    EMG tracking (REV): {ref}")
+        print(f"      plugin={plugin}")
+        print(f"      weight={args.emg_weight:g}; tracked {tracked} muscles; "
+              f"s bounds [{args.emg_gain_min:g}, {args.emg_gain_max:g}]")
+        return rev_goal
+
+    problem.addGoal(goal)
+    print(f"    EMG tracking: {ref}")
+    print(f"      weight={args.emg_weight:g}; tracked {tracked} muscles; "
+          f"gains [{args.emg_gain_min:g}, {args.emg_gain_max:g}]")
+    return goal
+
+
+def add_residuals_and_reserves_45(model, residual_rot, residual_trans):
+    """OpenSim 4.5 has no ModOpAddResiduals; add the 4.6-equivalent actuators."""
+    for coord, force in [
+            ("pelvis_tilt", residual_rot),
+            ("pelvis_list", residual_rot),
+            ("pelvis_rotation", residual_rot),
+            ("pelvis_tx", residual_trans),
+            ("pelvis_ty", residual_trans),
+            ("pelvis_tz", residual_trans)]:
+        act = osim.CoordinateActuator(coord)
+        act.setName(f"residual_jointset_ground_pelvis_{coord}")
+        act.setOptimalForce(force)
+        act.setMinControl(-1.0)
+        act.setMaxControl(1.0)
+        model.addForce(act)
+
+    for coord in [
+            "hip_flexion_r", "hip_adduction_r", "hip_rotation_r",
+            "knee_extension_r", "ankle_dorsiflexion_r",
+            "hip_flexion_l", "hip_adduction_l", "hip_rotation_l",
+            "knee_extension_l", "ankle_dorsiflexion_l",
+            "lumbar_extension", "lumbar_bending", "lumbar_rotation"]:
+        if coord.startswith("hip_"):
+            joint = "hip_" + coord[-1]
+        elif coord.startswith("knee_"):
+            joint = "knee_" + coord[-1]
+        elif coord.startswith("ankle_"):
+            joint = "ankle_" + coord[-1]
+        else:
+            joint = "back"
+        act = osim.CoordinateActuator(coord)
+        act.setName(f"reserve_jointset_{joint}_{coord}")
+        act.setOptimalForce(1.0)
+        model.addForce(act)
 
 
 def solve_segment(args, mp, ik_file, seg, n_total):
@@ -687,6 +981,9 @@ def solve_segment(args, mp, ik_file, seg, n_total):
     t0, t1 = seg["solve"]
 
     model = mp.process()
+    if not hasattr(osim, "ModOpAddResiduals"):
+        add_residuals_and_reserves_45(model, args.residual_rot,
+                                      args.residual_trans)
     if not args.keep_contacts:
         disable_contact_forces(model)
     model.initSystem()
@@ -708,21 +1005,127 @@ def solve_segment(args, mp, ik_file, seg, n_total):
           f"keep [{seg['retain'][0]:.3f}, {seg['retain'][1]:.3f}] s")
     t_start = time.time()
     try:
-        result = inverse.solve()
+        if args.sagittal_cost or args.emg_tracking:
+            # MocoInverse builds its own MocoStudy and an "excitation_effort"
+            # MocoControlGoal.  initialize() hands that study back, so we can
+            # change goal weights and add an EMG tracking goal before solving.
+            # The actuators stay in the model: the 3D equations of motion still
+            # need them, they just may no longer contribute to the objective.
+            study = inverse.initialize()
+            if args.emg_tracking and args.emg_custom_study:
+                # addScaleFactor() crashes/hangs when a MocoParameter is added
+                # after MocoInverse.initialize() has already prepared the
+                # solver.  Dump the fully built study, reload it as a fresh
+                # (not-yet-initialized) MocoStudy, and add the parameters
+                # before the first solve().
+                study_xml = os.path.join(
+                    OUT_DIR, f"moco_study_seg{seg['k']:02d}.xml")
+                study.printToXML(study_xml)
+                print(f"    reloaded MocoStudy from {study_xml} "
+                      f"(custom free-gain path)")
+                study = osim.MocoStudy(study_xml)
+            problem = study.updProblem()
+            if args.sagittal_cost:
+                goal = osim.MocoControlGoal.safeDownCast(
+                    problem.updGoal("excitation_effort"))
+                if goal is None:
+                    raise RuntimeError(
+                        "could not find the 'excitation_effort' MocoControlGoal")
+                nsw = args.nonsagittal_weight
+                for path in NON_SAGITTAL_RESERVE_CONTROLS:
+                    goal.setWeightForControl(path, nsw)
+                print(f"    sagittal-only cost: weight {nsw:g} for non-sagittal reserves")
+                for path in NON_SAGITTAL_RESERVE_CONTROLS:
+                    print(f"      {path}")
+                ssw = args.sagittal_reserve_weight
+                for path in SAGITTAL_RESERVE_CONTROLS:
+                    goal.setWeightForControl(path, ssw)
+                print(f"    sagittal reserves: weight {ssw:g}")
+            if args.emg_tracking:
+                add_emg_tracking_goal(problem, model, args)
+                solver = osim.MocoCasADiSolver.safeDownCast(study.updSolver())
+                solver.resetProblem(problem)
+                print(f"    solver sparsity="
+                      f"{solver.get_optim_sparsity_detection()} "
+                      f"fd={solver.get_optim_finite_difference_scheme()}")
+                if hasattr(solver, "set_parameters_require_initsystem"):
+                    if getattr(args, "emg_params_initsystem", False):
+                        solver.set_parameters_require_initsystem(True)
+                        print("    parameters_require_initsystem=True")
+                    else:
+                        solver.set_parameters_require_initsystem(False)
+                        print("    solver.resetProblem + "
+                              "parameters_require_initsystem=False")
+                if getattr(args, "emg_serial", False):
+                    solver.set_parallel(0)
+                    print("    solver.set_parallel(0)")
+                if getattr(args, "emg_initial_guess", None):
+                    guess_path = os.path.abspath(args.emg_initial_guess)
+                    if not os.path.exists(guess_path):
+                        sys.exit(f"initial guess not found: {guess_path}")
+                    solver.setGuess(osim.MocoTrajectory(guess_path))
+                    print(f"    initial guess set on solver: {guess_path}")
+                if getattr(args, "emg_rev_goal", False):
+                    fixed_s = getattr(args, "emg_s_values", None) is not None
+                    if getattr(args, "emg_sparsity_random", False):
+                        solver.set_optim_sparsity_detection("random")
+                        print("    REV goal: forced sparsity='random'")
+                    elif getattr(args, "emg_initial_guess", None):
+                        if not fixed_s:
+                            solver.set_optim_sparsity_detection("initial-guess")
+                            print("    REV goal: guess; "
+                                  "optim_sparsity_detection='initial-guess'")
+                        else:
+                            print("    REV goal: fixed s + guess; sparsity=random")
+                    else:
+                        if not fixed_s:
+                            solver.set_optim_sparsity_detection("none")
+                            print("    REV goal: optim_sparsity_detection='none' "
+                                  "(H2 fix)")
+                        else:
+                            print("    REV goal: fixed s; sparsity=random")
+                if getattr(args, "emg_sparsity_none", False):
+                    solver.set_optim_sparsity_detection("none")
+                    print("    solver.set_optim_sparsity_detection('none')")
+                if getattr(args, "emg_reinit", False) and not args.emg_custom_study:
+                    print("    re-initializing the CasADi solver after adding EMG parameters")
+                    study.initCasADiSolver()
+                    solver = osim.MocoCasADiSolver.safeDownCast(study.updSolver())
+                    solver.set_multibody_dynamics_mode("implicit")
+                    solver.set_num_mesh_intervals(
+                        int(round((t1 - t0) / args.mesh)))
+                    solver.set_optim_convergence_tolerance(args.tol)
+                    solver.set_optim_constraint_tolerance(args.tol)
+                    solver.set_optim_max_iterations(args.max_iter)
+                    solver.set_minimize_implicit_auxiliary_derivatives(True)
+                    solver.set_implicit_auxiliary_derivatives_weight(0.01)
+                    solver.set_interpolate_control_mesh_interior_points(False)
+            sol = study.solve()
+            keepalive = (study, model, inverse)
+        else:
+            result = inverse.solve()
+            sol = result.getMocoSolution()
+            keepalive = (result, model, inverse)
     except RuntimeError as exc:
         if "allocation" in str(exc).lower():
             sys.exit(f"\n!! CasADi ran out of memory on segment {seg['k']}.\n"
                      f"   Reduce --segment or --overlap.")
         raise
     elapsed = time.time() - t_start
-    sol = result.getMocoSolution()
+    if sol.isSealed():
+        print("    solution sealed (solver did not succeed); unsealing "
+              "so the best iterate can be written")
+        sol.unseal()
     print(f"    solved={sol.success()}  iterations={sol.getNumIterations()}  "
           f"objective={sol.getObjective():.6g}  wall={elapsed:.1f} s")
-    return sol, (result, model, inverse), elapsed
+    return sol, keepalive, elapsed
 
 
 def main(argv=None):
+    global SEG_DIR
     args = parse_args(argv)
+    if args.seg_dir:
+        SEG_DIR = os.path.abspath(args.seg_dir)
 
     if args.full:
         args.start, args.end = 180.0, 240.0
@@ -742,10 +1145,17 @@ def main(argv=None):
 
     grf_span = data_time_range(grf_xml)
     ik_span = data_time_range(IK_FILE)
-    data_start = max(grf_span[0] if grf_span else args.start,
-                     ik_span[0] if ik_span else args.start)
-    data_end = min(grf_span[1] if grf_span else args.end,
-                   ik_span[1] if ik_span else args.end)
+    # Use the ACTUAL data span, not the requested window: build_segment_plan
+    # needs the extra 0.5 s before args.start as the left-edge burn-in.  If the
+    # span is unknown, fall back to the requested window.
+    data_start = max(grf_span[0] if grf_span else -np.inf,
+                     ik_span[0] if ik_span else -np.inf)
+    data_end = min(grf_span[1] if grf_span else np.inf,
+                   ik_span[1] if ik_span else np.inf)
+    if not np.isfinite(data_start):
+        data_start = args.start
+    if not np.isfinite(data_end):
+        data_end = args.end
 
     plan = build_segment_plan(args.start, args.end, args.segment, args.overlap,
                               data_start, data_end)
@@ -868,19 +1278,57 @@ def main(argv=None):
         "solver_duration": f"{float(sum(s.getSolverDuration() for s in sols)):.6f}",
         "status": "Solve_Succeeded" if ok else "Failed",
         "success": "true" if ok else "false",
+        # The stitched files contain states + controls only; the per-segment
+        # files keep the scale-factor parameter columns.
+        "num_parameters": "0",
     }
     write_stitched_sto(sol_file, template, grid, st_labels + ct_labels,
                        np.column_stack([states, ctrls]), header_override,
                        n_states=len(st_labels), n_controls=len(ct_labels))
     write_stitched_sto(act_file, template, grid,
                        [st_labels[i] for i in act_idx], states[:, act_idx],
+                       header_override={"num_parameters": 0},
                        n_states=len(act_idx), n_controls=0)
     write_stitched_sto(exc_file, template, grid,
                        [ct_labels[i] for i in exc_idx], ctrls[:, exc_idx],
+                       header_override={"num_parameters": 0},
                        n_states=0, n_controls=len(exc_idx))
     print(f"wrote stitched solution  -> {sol_file}")
     print(f"wrote activations        -> {act_file}")
     print(f"wrote excitations        -> {exc_file}")
+
+    if args.emg_tracking and not getattr(args, "emg_no_gain", False):
+        active = (EMG_MUSCLES_R if getattr(args, "emg_leg", "both") == "right"
+                  else EMG_MUSCLES)
+        gains_file = os.path.join(OUT_DIR, f"moco_inverse_gains{tag}.csv")
+        with open(gains_file, "w", encoding="utf-8") as f:
+            f.write("segment,muscle,gain\n")
+            for k, s in enumerate(sols):
+                for m in active:
+                    try:
+                        g = float(s.getParameter(f"gain_{m}"))
+                    except Exception:
+                        g = float("nan")
+                    f.write(f"{k},{m},{g:.8f}\n")
+        print(f"wrote optimized gains    -> {gains_file}")
+        if getattr(args, "emg_native_b_fixed", False) and getattr(
+                args, "emg_s_values", None):
+            s_used = [float(x) for x in
+                      args.emg_s_values.replace(",", " ").split()]
+            s_file = os.path.join(OUT_DIR, f"moco_inverse_s_used{tag}.csv")
+            with open(s_file, "w", encoding="utf-8") as f:
+                f.write("segment,muscle,s\n")
+                for m, sv in zip(active, s_used):
+                    f.write(f"0,{m},{sv:.8f}\n")
+            print(f"wrote s_used             -> {s_file}")
+        for k, s in enumerate(sols):
+            vals = []
+            for m in active:
+                try:
+                    vals.append(f"{m}={float(s.getParameter(f'gain_{m}')):.2f}")
+                except Exception:
+                    pass
+            print(f"  seg{k} gains: " + ", ".join(vals))
 
     try:
         chk = osim.MocoTrajectory(sol_file)
@@ -961,6 +1409,25 @@ def main(argv=None):
                     f"{max(s['act_max'] for s in seams):.6f}\n")
         f.write(f"activation_saturated_muscles={n_sat}\n")
     print(f"wrote summary            -> {sum_file}")
+    json_file = os.path.splitext(sum_file)[0] + ".json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump({
+            "tag": args.tag or "",
+            "window": [args.start, args.end],
+            "mesh": args.mesh,
+            "segments": len(plan),
+            "solved": bool(ok),
+            "objective": float(objective),
+            "solver_iterations": int(sum(int(s.getNumIterations()) for s in sols)),
+            "solver_duration_s": float(sum(s.getSolverDuration() for s in sols)),
+            "num_states": len(st_labels),
+            "num_controls": len(ct_labels),
+            "activation_saturated_muscles": int(n_sat),
+            "emg_leg": getattr(args, "emg_leg", "both"),
+            "s_values": (args.emg_s_values if getattr(args, "emg_s_values", None)
+                         else None),
+        }, f, indent=2)
+    print(f"wrote summary json       -> {json_file}")
 
     print("\nNEXT: run  python experiments/moco/check_solution_quality.py "
           f"\"{sol_file}\"")

@@ -1,0 +1,8 @@
+round,J_solve_window_sum,excitation_effort,emg_tracking,note
+0,204.830870,169.617870,35.213000,"3 s solve windows, overlap/burn-in included; not a 30 s retained-window objective"
+1,204.490920,169.575320,34.915600,"3 s solve windows, overlap/burn-in included; not a 30 s retained-window objective"
+2,204.111710,169.466640,34.645070,"3 s solve windows, overlap/burn-in included; not a 30 s retained-window objective"
+4,203.791920,169.425500,34.366420,"3 s solve windows, overlap/burn-in included; not a 30 s retained-window objective"
+5,203.515640,169.438890,34.076750,"3 s solve windows, overlap/burn-in included; not a 30 s retained-window objective"
+6,203.244300,169.443000,33.801300,"3 s solve windows, overlap/burn-in included; not a 30 s retained-window objective"
+7,203.028810,169.516990,33.511820,"3 s solve windows, overlap/burn-in included; not a 30 s retained-window objective"

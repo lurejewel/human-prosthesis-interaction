@@ -41,7 +41,7 @@ experimental data and then refined by CMA-ES inside the forward-dynamics loop.
 ```
 .
 ├── demo_predictiveForwardSimulation_humanModel.m   % Main entry script
-├── assets/                                         % Marker sets, IK/ID/RRA data, muscle CSV
+├── assets/                                         % Marker sets, IK/ID data, muscle CSV
 ├── model/                                          % OpenSim .osim model + geometry
 │   ├── human0714.osim                              %   14-muscle model (legacy)
 │   ├── human0918.osim                              %   18-muscle model (active)
@@ -138,6 +138,28 @@ test_lasso_reflex_controller
 
 Pure-MATLAB (no OpenSim) test of the LASSO controller loader/unpacker round-trip
 for both legacy per-phase and grouped controller formats.
+
+### 6. MocoInverse → LASSO (measured Vicon/GRF/sEMG data)
+
+The old `UN.sto → LASSO` path is unchanged.  For measured-data MocoInverse
+results, run the new two-stage interface:
+
+```matlab
+cd('Sparse Group LASSO Validation')
+moco_inverse_to_lasso_dataset   % Moco solution + IK + GRF -> LASSO-ready dataset
+Adaptive_LASSO_MocoInverse      % fit and export lasso_controller_result_moco.mat
+```
+
+`moco_inverse_to_lasso_dataset.m` reconstructs `fiber_length_norm` /
+`mtu_force_norm` with `human0918.osim`, rebuilds stance/swing from GRF, and
+cleans the raw excitation (Hampel despike + zero-phase low-pass).  The formal
+MocoInverse result must contain excitation; if it is missing the interface
+errors instead of reconstructing it.  See
+[`docs/MOCOINVERSE_LASSO_INTERFACE.md`](docs/MOCOINVERSE_LASSO_INTERFACE.md) for
+the short contract and the list of new `.m` files, and
+[`docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md`](docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md)
+for the detailed end-to-end workflow, equations, parameter tables and
+troubleshooting.
 
 ---
 
@@ -256,6 +278,16 @@ The optimisation terminates when:
   ankle hyperextension/hyperflexion.
 - **Simulation cache**: `forward_simulation.m` pre-builds a cache of Java
   handles to avoid per-frame JNI overhead.
+- **Model Fmax update (2026-11)**: all `human0918.osim` muscle
+  `max_isometric_force` values were doubled (now matching `SQR_simbody.osim`).
+  Code reads Fmax dynamically, and normalized `lCEN`/`fATN` features are
+  invariant under a uniform Fmax scaling, so existing LASSO controllers and
+  `UN.sto` normalized forces remain valid as feature mappings.  However, the
+  absolute force capacity changes forward dynamics and static optimisation;
+  old checkpoints/optimisation results should not be resumed and CMA-ES must
+  be retuned.  See
+  [`docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md`](docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md)
+  §14.
 
 ## Planned Extensions
 

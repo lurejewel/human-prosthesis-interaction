@@ -33,9 +33,16 @@ model.equilibrateMuscles(state);
 model.realizeDynamics(state);
 
 % ---- record first-frame fATN and lCEN (needed for reflex control) ----
+% 必须与 ModelInfo.update 使用完全相同的定义：
+%   fATN = getFiberForceAlongTendon / fopt
+% 不能写成 getActiveFiberForce / fopt：
+%   * getActiveFiberForce 只包含主动力，不含被动纤维力；
+%   * 它也没有乘 cos(pennation)，不是“沿肌腱方向”的力；
+%   * 这样第一帧的 fATN 会和后续帧（以及 Moco->LASSO 接口）不一致，
+%     导致控制器第一帧看到的力反馈尺度不同。
 for i = 1:nMus
     modelInfo.dy.muscle.fATN(i, 1) = ...
-        model.getMuscles().get(i - 1).getActiveFiberForce(state) / modelInfo.st.muscle.fopt(i);
+        model.getMuscles().get(i - 1).getFiberForceAlongTendon(state) / modelInfo.st.muscle.fopt(i);
     modelInfo.dy.muscle.lCEN(i, 1) = ...
         model.getMuscles().get(i - 1).getNormalizedFiberLength(state);
 end

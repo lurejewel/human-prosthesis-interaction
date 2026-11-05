@@ -2,6 +2,9 @@
 % =========================================================================
 % sEMG 异常尖峰(伪迹)诊断程序 —— 只做统计与画图, 不滤波 / 不归一化 / 不修改任何数据
 %
+% 分析窗口: 所有统计/判据/候选事件都只在 anaWin = [170 240] s 内计算
+%           (与 process_semg.m 的 semgWin 保持一致)
+%
 % 诊断内容:
 %   1) 每通道稳健统计: max|x|、P99.9、MAD 稳健标准差 sigma_robust、max/P99.9、max/sigma
 %      max/P99.9 是"伪迹主导程度"指标: 接近 1~2 = 正常; > 5 = 最大值被伪迹绑架
@@ -17,14 +20,14 @@
 %      避免漏掉"较宽但相对倍数不高"的瞬变
 %   7) 图: ratio 直方图 / 原始信号标红 / 可疑事件的 ±0.5 s 放大窗
 %
-% 判据说明(本数据集实测结论):
+% 判据说明(以下数值来自全时程诊断; 窗口化到 anaWin 后以脚本输出为准):
 %   判据B(绝对, 推荐主判据) |x| > kP * P99.9(该通道本身), 推荐 kP ≈ 2.5
 %       P99.9 已包含该通道真实爆发的幅度水平, 因此对强相位性肌肉天然适应;
-%       实测: 伪迹峰值 = 该通道 P99.9 的 4~30 倍, 而干净通道(RF_R)的最大值仅 1.4 倍,
-%       且 RF_R 在整个记录中没有任何样本超过 2.5*P99.9 —— 说明该判据不会误伤真实爆发。
+%       全时程实测: 伪迹峰值 = 该通道 P99.9 的 4~30 倍, 而干净通道(RF_R)的最大值仅 1.4 倍,
+%       且 RF_R 没有任何样本超过 2.5*P99.9 —— 说明该判据不会误伤真实爆发。
 %   判据A(相对) ratio = |x| / P75(|x|, ±100 ms) > k1
 %       单用不够: 伪迹若发生在真实爆发期内, 局部 P75 也高, 相对倍数会降到 15 以下,
-%       于是漏检 (如 RF_L 52.44 s、BF_R 184.80 s 的伪迹);
+%       于是漏检 (如 BF_R 184.80 s 的伪迹, 已落在本分析窗口内);
 %       在强相位性通道(如 GAS_R)上又会把真实爆发峰误标。故它只作为辅助说明量。
 %       (注意: 也不要用全局 sigma_robust 作基准 —— 强相位性肌肉的真实爆发峰可达 45~48 sigma,
 %        用 10*sigma 会把真实爆发峰误判为伪迹, 程序里保留了该对比表以便查看。)
@@ -72,6 +75,9 @@ zoomHalfWin     = 0.5;          % 放大窗半宽 (s)
 plotDecimate    = 5;            % 绘图降采样(仅影响显示速度)
 dominatedRatio  = 5;            % max/P99.9 超过该值视为"最大值被伪迹主导"
 
+% --- 分析窗口: 所有统计/判据/候选事件都只在这段时间内计算 ---
+anaWin = [170 240];             % (s), 与 process_semg.m 的 semgWin 保持一致
+
 % 通道与肌肉对应关系
 channels = 7:16;
 muscleNames = { ...
@@ -106,7 +112,18 @@ nSamples = size(emgRaw, 1);
 nCh      = numel(channels);
 nSub     = max(subFrame) + 1;
 t        = ((frame - 1) * nSub + subFrame) / fs;
-fprintf('采样率: %d Hz | 样本数: %d | 时长: %.2f s\n', fs, nSamples, t(end));
+fprintf('采样率: %d Hz | 原始样本数: %d | 原始时长: %.2f s\n', fs, nSamples, t(end));
+
+% ---- 截取分析窗口: 之后所有统计/判据/候选事件都只用这段数据 ----
+winMask  = (t >= anaWin(1)) & (t <= anaWin(2));
+t        = t(winMask);
+emgRaw   = emgRaw(winMask, :);
+nSamples = size(emgRaw, 1);
+if nSamples == 0
+    error('分析窗口 %.1f~%.1f s 内没有样本, 请检查 anaWin 设置', anaWin(1), anaWin(2));
+end
+fprintf('分析窗口: %.1f~%.1f s | 样本数: %d | 窗口时长: %.3f s\n', ...
+        anaWin(1), anaWin(2), nSamples, t(end) - t(1));
 
 %% 3. 稳健统计 + 局部基线 + 相对幅度比 -----------------------------------
 axAll    = abs(emgRaw);
@@ -401,7 +418,7 @@ for i = 1:nCh
     plot(t(di), emgRaw(di, i), 'Color', [0.20 0.35 0.60]); hold on;
     idxMark = find(maskDil(:, i));
     plot(t(idxMark), emgRaw(idxMark, i), 'r.', 'MarkerSize', 9);
-    grid on; box off; xlim([0, t(end)]);
+    grid on; box off; xlim(anaWin);
     ylabel(shortNames{i});
     if i == 1
         title(sprintf('原始 sEMG (蓝) 与候选伪迹样本 (红点), 判据: ratio>%g 且 |x|>%g*P99.9', k1Use, kPUse));
@@ -449,7 +466,8 @@ save(fullfile(outDir, 'diag_semg_data.mat'), 't', 'fs', 'channels', 'shortNames'
 
 fprintf('\n诊断结果已保存到: %s\n', outDir);
 fprintf('判读要点:\n');
-fprintf('  * max/P99.9 >> 1 的通道, 最大値由孤立伪迹决定, 归一化必然被压小 (本数据: 7/10 个通道);\n');
+fprintf('  * max/P99.9 >> 1 的通道, 最大值由孤立伪迹决定, 归一化必然被压小 (本窗口: %d/%d 个通道);\n', ...
+        nnz(maxVal./p999 > dominatedRatio), nCh);
 fprintf('  * 推荐主判据 |x| > %.1f*P99.9 (表 2), 它不会误伤真实爆发; 相对判据单独用会漏检;\n', kPUse);
 fprintf('  * 图 3 的放大窗用于人工确认: 单点/短尖峰 = 伪迹; 有明确爆发形态 = 真实 EMG, 不应剔除。\n');
 

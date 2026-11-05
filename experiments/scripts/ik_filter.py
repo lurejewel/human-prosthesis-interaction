@@ -5,11 +5,11 @@ Run with the `opensim_scripting` conda environment:
 
     level_walking_ik.mot  ->  level_walking_ik_filtered.mot      (defaults)
 
-This step is deliberately separate from IK and from IK/ID/RRA, exactly as
+This step is deliberately separate from IK and from IK/ID, exactly as
 grf_filter.py is separate from the external loads, so that the filter lives in
-one place and every consumer sees the same kinematics.  run_ik_id.py and
-run_ik_rra.py write the *raw* IK result and then call filter_ik() from here; both
-use the same file names, so there is just one pair of files:
+one place and every consumer sees the same kinematics.  run_ik_id.py writes the
+*raw* IK result and then calls filter_ik() from here; the same file names are
+used throughout, so there is just one pair of files:
 
     level_walking_ik.mot  ->  level_walking_ik_filtered.mot
 
@@ -18,11 +18,11 @@ Naming -- the two files differ by exactly this one filter pass
     <trial>_ik.mot            InverseKinematicsTool output, NOT filtered
     <trial>_ik_filtered.mot   that file after this filter
 
-Inverse dynamics, RRA and MocoInverse all consume the _filtered file.  Never
+Inverse dynamics and MocoInverse both consume the _filtered file.  Never
 point them at the raw one: they differentiate the coordinates twice, so raw IK
 noise turns into enormous joint accelerations.
 
-The filter (formerly inlined in run_ik_id.py / run_ik_rra.py as
+The filter (formerly inlined in run_ik_id.py as
 `filter_kinematics()`, unchanged since):
 
     fs   = 1 / median(diff(t))                  sampling rate, from the time column
@@ -97,7 +97,7 @@ def filter_ik(src=IK_RAW_MOT, dst=None, cutoff=KIN_FILTER_FC, order=FILTER_ORDER
     """Low-pass every non-time column of `src` and write the result to `dst`.
 
     `dst` defaults to filtered_path(src).  Called both by this file's main() and
-    by run_ik_id.py / run_ik_rra.py right after they write a raw IK result.
+    by run_ik_id.py right after it writes a raw IK result.
     `backup=True` copies an existing `dst` to `dst.bak` first (the pipelines do
     that; the standalone CLI does not).
 
