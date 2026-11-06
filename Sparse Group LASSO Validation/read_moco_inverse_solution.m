@@ -14,9 +14,10 @@ function S = read_moco_inverse_solution(filePath, muscleNames)
 %   (b) 只有 activation 的解（本仓库初步 --sagittal-cost 的常见形态）：
 %         只有 18 个 /forceset/<muscle>/activation，没有坐标、没有 excitation；
 %         坐标需要另读 ik_radians.mot。
-%         注意：本 parser 仍能读出这种文件，但
-%         moco_inverse_to_lasso_dataset.m 会因为没有 excitation 而报
-%         NoExcitation；正式流程要求 excitation。
+%         注意：本 parser 仍能读出这种文件（缺失列保持 NaN 作为内部
+%         sentinel），但 moco_inverse_to_lasso_dataset.m 会因为没有
+%         excitation 而报 MissingExcitation；正式流程同时要求完整的
+%         excitation 和 activation。
 %
 %   (c) 只有 excitation 的辅助文件（moco_inverse_excitations_*.sto）：
 %         只有 /forceset/<muscle>。
@@ -37,7 +38,9 @@ function S = read_moco_inverse_solution(filePath, muscleNames)
 %   filePath    : .sto/.mot 路径；
 %   muscleNames : 1×nMus cellstr，按 OpenSim 全名给出，例如
 %                 {'hamstrings_r', ..., 'tib_ant_l'}。
-%                 返回矩阵的列严格按这个顺序；文件里缺失的肌肉保持 NaN。
+%                 返回矩阵的列严格按这个顺序；文件里缺失的肌肉保持 NaN
+%                 作为内部 sentinel。接口会立即检查并报错，不会把 NaN
+%                 带入 LASSO 数据集。
 %
 % 输出结构 S
 % ----------
@@ -59,8 +62,9 @@ function S = read_moco_inverse_solution(filePath, muscleNames)
 % --------
 % * 本函数不根据 inDegrees 做 deg2rad：Moco 解里的 /jointset/.../value
 %   是 SimTK 内部单位（rad / m），不是度；IK 的 deg->rad 在接口里处理。
-% * 如果文件里只有 activation 或只有 excitation，另一个矩阵保持 NaN；
-%   S.hasActivation / S.hasExcitation 让调用者决定后续策略。
+% * 如果文件里只有 activation 或只有 excitation，另一个矩阵保持 NaN
+%   作为 sentinel；S.hasActivation / S.hasExcitation 让调用者判断。
+%   注意：moco_inverse_to_lasso_dataset.m 要求两者完整，缺失会直接报错。
 % * 坐标 /value 和 /speed 可能在不同位置出现，甚至只出现一部分；
 %   最后统一按 coordNames 重排 qdot，保证与 q 的列一一对应。
 

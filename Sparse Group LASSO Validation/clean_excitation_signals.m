@@ -31,19 +31,19 @@ function [xClean, aClean, qc] = clean_excitation_signals(time, xRaw, aRaw, opts)
 %
 % 重要：target 只来自 excitation，不再从 activation 反演
 % ------------------------------------------------------
-% 正式 MocoInverse 结果一定包含 /forceset/<muscle> 的 excitation control。
-% 因此本函数**不再**提供 activation-consistent 之类的回退方案：
-%   * 如果 xRaw 为空，直接报错；
-%   * 如果某个肌肉的 excitation 整列缺失，直接报错；
-%   * aRaw 只用于计算 fATN/lCEN 等特征，不参与构造 target。
-% 如果 aRaw 缺失，可以用 xRaw 积分出 activation 供特征使用，但这只是
-% “补特征所需的 state”，不是“自己求解 excitation”。
+% 正式 MocoInverse 结果同时包含 /forceset/<muscle> 的 excitation control 和
+% /forceset/<muscle>/activation state。因此本函数要求两者都完整：
+%   * xRaw 为空或缺列 → 直接报错；
+%   * aRaw 为空或缺列 → 直接报错；
+%   * 任一信号含 NaN/Inf → 直接报错；
+%   * 不用 NaN 填充，也不从另一个信号反演/积分补全。
 %
 % 输入
 % ----
 %   time  : nT×1 [s]，严格递增；内部用 median(diff(time)) 估计采样率；
 %   xRaw  : nT×nMus raw excitation，**必须提供**（空矩阵会报错）；
-%   aRaw  : nT×nMus raw activation；只用于特征计算，缺失时可由 xRaw 积分；
+%   aRaw  : nT×nMus raw activation，**也必须提供**（用于 fATN/lCEN 特征）；
+%           不再从 xRaw 积分补 activation；缺失/非有限会直接报错；
 %   opts  : struct，所有字段可选：
 %       .lowpassHz         默认 6；0 表示关闭
 %       .filterOrder       默认 4
@@ -71,8 +71,8 @@ function [xClean, aClean, qc] = clean_excitation_signals(time, xRaw, aRaw, opts)
 % * time 是均匀网格；Moco/IK 插值到 targetDt 后满足；
 % * x 和 a 的列顺序必须与 muscleNames 一致（本仓库为 canonical right 9 +
 %   left 9）；本函数只按列处理，不解释肌肉名字；
-% * xRaw 必须包含所有肌肉的 excitation；缺失任何一个通道都会报错，
-%   不再尝试从 activation 反演。
+% * xRaw 和 aRaw 都必须包含所有 18 块肌肉；缺失任何一个通道都会报错。
+%   不会用 NaN 填充，也不会从另一个信号反演/积分补全。
 
 % -------------------------------------------------------------------------
 % 0. 默认参数、时间轴与采样率
@@ -103,62 +103,58 @@ if ~(isfinite(dt) && dt > 0)
 end
 fs = 1 / dt;
 
-% xRaw 是必需的：正式 MocoInverse 一定有 excitation control。
-% 这里直接报错，不再尝试从 activation 反演。
+% xRaw / aRaw 都是必需的：正式 MocoInverse 同时有 excitation control 和
+% activation state。缺任何一个都直接报错，不用 NaN 填充，也不从另一个信号
+% 反演/积分补全。
 if isempty(xRaw)
     error('clean_excitation_signals:noExcitation', ...
         ['MocoInverse excitation is required, but xRaw is empty. ' ...
          'The formal MocoInverse solution must contain ' ...
-         '"/forceset/<muscle>" excitation columns; this function no longer ' ...
-         'reconstructs excitation from activation.']);
+         '"/forceset/<muscle>" excitation columns.']);
+end
+if isempty(aRaw)
+    error('clean_excitation_signals:noActivation', ...
+        ['MocoInverse activation is required, but aRaw is empty. ' ...
+         'The formal MocoInverse solution must contain ' ...
+         '"/forceset/<muscle>/activation" states; this function no longer ' ...
+         'integrates activation from excitation.']);
 end
 
 hasX = true;
-hasA = ~isempty(aRaw);
+hasA = true;
 
 % -------------------------------------------------------------------------
-% 1. 输入类型/尺寸检查 + 非有限值处理
+% 1. 输入类型/尺寸检查 + 非有限值检查
 % -------------------------------------------------------------------------
-% 对 xRaw：要求每一列至少有一个有限值；整列缺失说明该肌肉没有 excitation，
-% 直接报错（而不是让后续低通/裁剪产生 NaN）。
+% 不做任何 NaN 插值：Moco 正式结果应当全为有限值；整列缺失或部分 NaN
+% 都直接报错，避免把缺失通道悄悄变成 NaN 后进入 LASSO。
 if size(xRaw, 1) ~= nT
     error('clean_excitation_signals:sizeMismatch', ...
         'xRaw must have %d rows.', nT);
 end
 xRaw = double(xRaw);
-missingX = all(~isfinite(xRaw), 1);
-if any(missingX)
-    error('clean_excitation_signals:missingExcitationChannel', ...
-        ['Excitation is missing for %d muscle column(s) (all-NaN). ' ...
-         'Formal MocoInverse results must provide excitation for every muscle; ' ...
-         'refusing to reconstruct it from activation.'], nnz(missingX));
+if any(~isfinite(xRaw(:)))
+    error('clean_excitation_signals:nonFiniteExcitation', ...
+        ['Excitation contains NaN/Inf. Formal MocoInverse results must ' ...
+         'provide finite excitation for every muscle.']);
 end
-xRaw = fill_nans(xRaw);
 
-if hasA
-    aRaw = double(aRaw);
-    if size(aRaw, 1) ~= nT
-        error('clean_excitation_signals:sizeMismatch', ...
-            'aRaw must have %d rows.', nT);
-    end
-    aRaw = fill_nans(aRaw);
+aRaw = double(aRaw);
+if size(aRaw, 1) ~= nT
+    error('clean_excitation_signals:sizeMismatch', ...
+        'aRaw must have %d rows.', nT);
+end
+if any(~isfinite(aRaw(:)))
+    error('clean_excitation_signals:nonFiniteActivation', ...
+        ['Activation contains NaN/Inf. Formal MocoInverse results must ' ...
+         'provide finite activation for every muscle.']);
 end
 
 % 列数必须一致；nMus 由 excitation 决定（target 是 excitation）。
 nMus = size(xRaw, 2);
-if hasA && size(aRaw, 2) ~= nMus
+if size(aRaw, 2) ~= nMus
     error('clean_excitation_signals:muscleMismatch', ...
         'xRaw and aRaw must have the same number of columns.');
-end
-
-% -------------------------------------------------------------------------
-% 2. 如果只有 excitation，先用激活动力学积分出 activation
-% -------------------------------------------------------------------------
-% 这一步只是为了让后续特征计算（lCEN/fATN，需要 activation）有输入；
-% 它不改变 xRaw，也不代表我们“相信”这个积分结果优于 Moco 的 activation。
-% 一阶动力学：da/dt = (x-a)/tau，上升/下降用不同时间常数。
-if ~hasA
-    aRaw = integrate_activation(xRaw, time, opts.tauAct, opts.tauDeact);
 end
 
 % -------------------------------------------------------------------------
@@ -287,35 +283,7 @@ end
 end
 
 % ========================================================================
-% 局部函数 2：按列线性插值非有限值
-% ========================================================================
-% 只处理部分缺失的列；整列全 NaN 原样保留，这是刻意的：
-%   * 对 activation，整列缺失后面会由接口报 MissingActivation；
-%   * 对可选 excitation，整列缺失是合法的（例如只导出了 5 块肌肉）；
-% 如果在这里无条件报错，接口就无法处理部分列文件。
-function v = fill_nans(v)
-bad = ~isfinite(v);
-if ~any(bad(:))
-    return;
-end
-nT = size(v, 1);
-for c = 1:size(v, 2)
-    col = v(:, c);
-    b = bad(:, c);
-    if all(b)
-        % 整列全缺失：保持 NaN。
-        % 对 xRaw，调用前已经显式检查并报错，不会走到这里；
-        % 对 aRaw，整列缺失会让后续特征计算报 MissingActivation。
-        continue;
-    end
-    good = find(~b);
-    col(b) = interp1(good, col(good), find(b), 'linear', 'extrap');
-    v(:, c) = col;
-end
-end
-
-% ========================================================================
-% 局部函数 3：Hampel/中值 despike（只替换短 run）
+% 局部函数 2：Hampel/中值 despike（只替换短 run）
 % ========================================================================
 % 原理：
 %   1) 用滑动中值 med 作为局部“正常水平”；
@@ -390,7 +358,7 @@ end
 end
 
 % ========================================================================
-% 局部函数 4：把 logical mask 转成 [start, end] run 列表
+% 局部函数 3：把 logical mask 转成 [start, end] run 列表
 % ========================================================================
 % 两端各补一个 false，这样第一段/最后一段也能被 diff 捕获：
 %   d = 1  -> run 开始
@@ -405,7 +373,7 @@ runs = [starts(:), ends(:)];
 end
 
 % ========================================================================
-% 局部函数 5：由 excitation 正向积分 activation
+% 局部函数 4：由 excitation 正向积分 activation（仅用于 QC 的 aPred）
 % ========================================================================
 % 离散格式（显式 Euler，x 取新时刻）：
 %   a_k = a_{k-1} + dt/tau * (x_k - a_{k-1})

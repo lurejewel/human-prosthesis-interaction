@@ -70,8 +70,8 @@ MocoInverse 输出并不是只有一种格式。当前项目里至少会出现�
 | 形态 | 包含的列 | 典型来源 | 接口如何补 |
 |---|---|---|---|
 | **完整解** | `/forceset/<muscle>/activation`、`/forceset/<muscle>`、`/jointset/.../value`、`/jointset/.../speed` | 未加 `--sagittal-cost` 的 Moco 解 | 直接用解里的坐标/速度；有 excitation 时可用 raw control |
-| **只有 activation** | 只有 18 个 `/forceset/<muscle>/activation` | 初步 `--sagittal-cost` 解 | **不支持**：接口需要 excitation，缺省会报 `NoExcitation`；请提供含 excitation 的最终解 |
-| **只有 excitation** | 只有 `/forceset/<muscle>` | `moco_inverse_excitations_*.sto` | 需要另给 activation 文件或由 x 积分出 a |
+| **只有 activation** | 只有 18 个 `/forceset/<muscle>/activation` | 初步 `--sagittal-cost` 解 | **不支持**：接口需要 excitation，缺省会报 `MissingExcitation`；请提供含 excitation 的最终解 |
+| **只有 excitation** | 只有 `/forceset/<muscle>` | `moco_inverse_excitations_*.sto` | **不完整**：必须另给 activation 文件；不会由 x 积分补 a |
 
 `read_moco_inverse_solution.m` 的列名匹配规则：
 
@@ -101,7 +101,7 @@ excitation : ^/?forceset/([^/]+)$
 | `model/human0918.osim` | 总是需要 | 计算 lCEN/fATN；必须是预测仿真实际使用的模型 |
 
 注意：`--sagittal-cost` 的初步结果通常只有 `activation + ik + grf`，**没有
-excitation**。这种结果不再被接口接受：运行时会直接报 `NoExcitation`。
+excitation**。这种结果不再被接口接受：运行时会直接报 `MissingExcitation`。
 正式 MocoInverse 结果必须包含 `/forceset/<muscle>` 的 excitation control。
 
 ---
@@ -141,8 +141,9 @@ vasti, gastroc, soleus, tib_ant
 先右腿 9 块，再左腿 9 块。LASSO 只拟合右腿 9 块，并假设双侧对称；左腿列
 仍然写入 `.sto`，方便以后做双侧分析。
 
-如果 `solutionFile` 缺 excitation/activation，可以用
-`excitationFile` / `activationFile` 额外补；接口只在主解缺该信号时才使用。
+如果 `solutionFile` 完全没有 excitation/activation，可以用
+`excitationFile` / `activationFile` 作为完整替代；接口不会按列合并，
+也不会用 NaN 填充。主解/替代文件都必须覆盖全部 18 块肌肉。
 
 ### 2.3 公共时间网格
 
@@ -193,9 +194,9 @@ tOut   = (starts:targetDt:ends).';
 
 目标只有一个来源：**清洗后的 raw excitation**。
 
-- 接口要求 `xRaw` 非空，且每块肌肉都有 finite excitation；
-- 如果解里没有 excitation，直接报 `NoExcitation`；
-- 不再提供 activation-consistent / activation 等回退方案；
+- 接口要求 `xRaw` 和 `aRaw` 都非空，且每块肌肉都有 finite excitation/activation；
+- 缺失 excitation → `MissingExcitation`；缺失 activation → `MissingActivation`；
+- 不用 NaN 填充，也不从另一个信号反演/积分补全；
 - `aClean` 只用于下一步计算 `fATN/lCEN`，不参与 target 构造。
 
 详见第 4 节。
@@ -604,8 +605,9 @@ Hampel 滤波 = **用一个滑动窗口的中值作为“局部正常水平”�
 因此当前逻辑是：
 
 ```text
-有 excitation  -> 清洗后作为 target
-没有 excitation -> 直接报 NoExcitation，停止
+excitation + activation 都完整 -> 清洗后拟合
+缺 excitation              -> MissingExcitation，停止
+缺 activation              -> MissingActivation，停止
 不存在从 activation 反演 excitation 的路径
 ```
 
@@ -646,13 +648,15 @@ activationReconRMSE = RMSE(aPred, aClean)
 
 | 情况 | 行为 |
 |---|---|
-| `xRaw` 为空 | 报 `NoExcitation` |
-| 某块肌肉 excitation 整列缺失 | 报 `MissingExcitationChannel` |
-| 某块肌肉 activation 缺失 | 不会报错；用 `xRaw` 积分出 activation 供特征使用 |
-| `xRaw` 有 excitation，`aRaw` 也有 | target 用 x；a 只用于特征 |
+| `xRaw` 为空 | 报 `MissingExcitation` |
+| 某块肌肉 excitation 整列缺失 | 报 `MissingExcitation`，并列出肌肉名 |
+| `aRaw` 为空 | 报 `MissingActivation` |
+| 某块肌肉 activation 整列缺失 | 报 `MissingActivation`，并列出肌肉名 |
+| 任一信号含 NaN/Inf | 报 `NonFiniteExcitation` / `NonFiniteActivation` |
+| `xRaw` 和 `aRaw` 都完整 | target 用 x；a 只用于特征 |
 
-`aRaw` 缺失时对 x 积分得到的 activation 只是为了计算 `fATN/lCEN`，
-**不是**“自己求解 excitation”，也不会改变 target。
+这里不会用 NaN 填充，也不会从 excitation 积分补 activation；正式
+MocoInverse 解必须同时包含完整的 excitation 和 activation。
 
 ### 4.6 裁剪与 censoring floor
 
@@ -1271,7 +1275,7 @@ Feature reconstruction test PASSED.
 ### 9.3 在 B30 初步结果上的参考数值
 
 这些只是当前数据的量级参考，不是判据。注意：`B30_right_final.sto` 是
-activation-only 的初步解，新逻辑会直接报 `NoExcitation`；这里的数值只用于
+activation-only 的初步解，新逻辑会直接报 `MissingExcitation`；这里的数值只用于
 说明特征/清洗的量级，不代表该文件还能跑通完整接口。
 
 - `lCEN ≈ 0.58–1.33`（不受 Fmax 影响）；
@@ -1288,9 +1292,9 @@ activation-only 的初步解，新逻辑会直接报 `NoExcitation`；这里的�
 
 | 现象 | 可能原因 | 处理 |
 |---|---|---|
-| `NoExcitation` | 解里没有 `/forceset/<muscle>` excitation（例如初步 activation-only 解） | 换用含 excitation 的正式解，或显式提供 `excitationFile` |
-| `MissingExcitationChannel` | 某块肌肉的 excitation 整列缺失 | 重新导出完整 18 块 excitation；不要用部分通道文件 |
-| `MissingActivation` | activation 文件存在但某块肌肉整列缺失 | 用完整 18 块解，或提供完整 activation 文件 |
+| `MissingExcitation` | 解里没有 excitation，或某些肌肉的 excitation 整列缺失 | 重新导出完整 18 块 excitation；不要用部分通道文件 |
+| `MissingActivation` | 解里没有 activation，或某些肌肉的 activation 整列缺失 | 重新导出完整 18 块 activation；不会从 excitation 积分补全 |
+| `NonFiniteExcitation` / `NonFiniteActivation` | 某些肌肉的信号含 NaN/Inf | 检查 Moco 求解是否失败；不要在接口里填 NaN |
 | `noMuscleColumns` | 读错文件（例如 IK/GRF） | 确认 `solutionFile` 是 Moco solution |
 | `columnNotFound` / GRF 列找不到 | XML 缺失或列名不是 `_vy` | 显式设 `rightColumn/leftColumn` 或提供 XML |
 | `invalidPhase` | GRF/COM 数据不满足 `cal_gait_phase.m` 规则 | 检查 GRF 列/符号、`bodyWeight`、COM 计算模型和坐标单位；不要改 0.02 阈值 |

@@ -41,7 +41,7 @@ leg1_r.state
 MocoInverse 的输出不是这个格式：
 
 - 初步 `--sagittal-cost` 解只有 18 个肌肉 **activation** state，没有坐标、没有
-  excitation control；
+  excitation control；接口不接受这种文件（会报 `MissingExcitation`）；
 - 即使完整解包含 excitation，也没有 `fiber_length_norm` / `mtu_force_norm`
   （Moco 使用了 `ModOpIgnoreTendonCompliance`，纤维长度不是轨迹 state）；
 - 没有 SCONE 的 `leg1_r.state`，步态相位必须从 GRF 重建。
@@ -87,9 +87,11 @@ modelFile    = fullfile(repoRoot,'model','human0918.osim');
 targetDt     = 0.01;
 ```
 
-> `solutionFile` 必须包含 excitation（`/forceset/<muscle>` 控制列）。
-> 如果检测不到 excitation，接口会直接报 `NoExcitation`，不会从 activation
-> 反演。正式的 MocoInverse 结果应满足这个条件。
+> `solutionFile` 必须同时包含 excitation（`/forceset/<muscle>` 控制列）
+> 和 activation（`/forceset/<muscle>/activation` state），且覆盖全部 18 块
+> 肌肉。缺列、整列缺失或含 NaN/Inf 时接口直接报
+> `MissingExcitation` / `MissingActivation` / `NonFiniteExcitation` /
+> `NonFiniteActivation`；不会用 NaN 填充，也不会从另一个信号反演/积分补全。
 
 然后：
 

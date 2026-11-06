@@ -1,0 +1,12 @@
+=====================================================================
+ MocoInverse -> LASSO dataset builder
+ repository : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation
+ output dir : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\Sparse Group LASSO Validation\moco_dataset
+ started    : 2026-11-06 19:02:04
+=====================================================================
+
+[1] solution : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\experiments\moco\outputs\moco_inverse_solution_B30_right_final.sto
+    time range in solution : 210.0000 .. 240.0000 s (3001 samples)
+    activation present     : 1
+    excitation present     : 1
+    coordinates in solution: 0

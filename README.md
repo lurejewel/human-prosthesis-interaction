@@ -248,46 +248,61 @@ The optimisation terminates when:
 
 ---
 
-## Recent Changes (v2.2)
+## Recent Changes (v2.3)
 
-- **Model upgrade**: switched from `human0714` (14 muscles, 7/leg) to
-  `human0918` (18 muscles, 9/leg).  Muscle names were updated accordingly
-  (hamstrings, bifemsh, glut_max, iliopsoas, rect_fem, vasti, gastroc,
-  soleus, tib_ant).
-- **Feature dimension update**: feature vector expanded from 22 to 26
-  elements (9 fibre lengths + 9 MTU forces + 8 joint kinematics) to match
-  the 9-muscle model.  Coefficient matrix is now 26 × 9.
-- **Grouped LASSO format (v2)**: controllers can now be shared across phase
-  groups (e.g., one stance controller for phases 0–1, one swing controller
-  for phases 2–4).  Eliminates parameter duplication and reduces the CMA-ES
-  search dimension.
-- **Checkpoint / resume**: full CMA-ES state saved every 10 generations to
-  `results/checkpoint.mat`.  Set `resumeFromCheckpoint = true` to resume
-  from the last snapshot.  The checkpoint stores `a_opt` and `dofNames` for
-  fully transparent recovery.
-- **RNG reproducibility**: deterministic `threefry` generator with fixed
-  `rngSeed = 2026`.
-- **Staged stall handling**: soft sigma-boost (×2.0) is attempted before
-  triggering an IPOP restart, giving the optimiser a gentler nudge.
-- **Legacy controller deprecated**: the hand-crafted 28-parameter reflex
-  controller is no longer functional.  The code is retained (commented out)
-  in `cal_muscle_excitation.m` and `DEPRECATED_muscle_reflex_param_defs.m`.
-- **New validation tests**: `test_inverse_dynamics_validation.m` and
-  `test_muscle_moment_summation.m` for verifying the OpenSim pipeline.
-- **Ankle limit measure**: added to the multi-objective fitness to penalise
-  ankle hyperextension/hyperflexion.
-- **Simulation cache**: `forward_simulation.m` pre-builds a cache of Java
-  handles to avoid per-frame JNI overhead.
-- **Model Fmax update (2026-11)**: all `human0918.osim` muscle
-  `max_isometric_force` values were doubled (now matching `SQR_simbody.osim`).
-  Code reads Fmax dynamically, and normalized `lCEN`/`fATN` features are
-  invariant under a uniform Fmax scaling, so existing LASSO controllers and
-  `UN.sto` normalized forces remain valid as feature mappings.  However, the
-  absolute force capacity changes forward dynamics and static optimisation;
-  old checkpoints/optimisation results should not be resumed and CMA-ES must
-  be retuned.  See
+v2.3 adds an **experimental-data-informed front end** on top of the v2.2
+predictive core.  The core itself is unchanged: `human0918` (18 muscles,
+9/leg), 26-feature grouped LASSO controller, IPOP-CMA-ES, checkpoint/resume.
+
+- **MocoInverse integration** (`experiments/moco/`): Python/OpenSim Moco
+  scripts now solve MocoInverse on measured Vicon/GRF data, optionally with
+  sEMG tracking, and export full solutions (activation/excitation,
+  residual/reserve actuators), summaries, IK/GRF windows and segment-level
+  diagnostics.  Key scripts are `moco_inverse.py`, `moco_env_check.py` and
+  `read_moco_results.m`.
+- **sEMG tracking with adjustable scale factors**: added the reverse-scaled
+  B-form control tracking goal `(e - s·u)²` (with `g = 1/s`) alongside the
+  original A-form `(u - g·e)²`, implemented by the
+  `MocoReverseScaledControlTrackingGoal` plugin.  Each tracked muscle has
+  its own scale `s`, which can be fixed (`--emg-s-values`), initialised from
+  a previous solution, or updated by the outer closed-form loop
+  (`s_i = Σ e_i u_i / Σ u_i²`, clipped to 0.5–2).  This makes the
+  EMG-informed trajectory less sensitive to the EMG/activation amplitude
+  mismatch and provides an explicit, interpretable scaling parameter.
+- **MocoInverse → LASSO interface**: new `.m` pipeline
+  [`moco_inverse_to_lasso_dataset.m`](<Sparse Group LASSO Validation/moco_inverse_to_lasso_dataset.m>)
+  converts Moco results + IK + GRF into a SCONE-style LASSO dataset:
+  - requires complete excitation and activation for all 18 muscles
+    (missing channels raise `MissingExcitation` / `MissingActivation`,
+    not NaN filling);
+  - reconstructs `fiber_length_norm` / `mtu_force_norm` with
+    `human0918.osim` and sub-stepped fibre-length integration;
+  - rebuilds the exact `cal_gait_phase.m` 0..4 phases from 0.02·BW GRF plus
+    pelvis/calcn COM (no hysteresis or percentage heuristics);
+  - cleans raw excitation with Hampel despiking + zero-phase low-pass;
+  - writes `moco_lasso_dataset.sto`, `moco_lasso_dataset.mat`, QC figures
+    and `sampleWeight` for seam/invalid samples.
+- **New Moco-specific LASSO main**:
+  [`Adaptive_LASSO_MocoInverse.m`](<Sparse Group LASSO Validation/Adaptive_LASSO_MocoInverse.m>)
+  fits the per-phase adaptive LASSO with sample weights and Huber IRLS
+  (both on the initial OLS and on the post-selection refit), and writes
+  `results/lasso_controller_result_moco.mat`.  The old
+  `UN.sto → Adaptive_LASSO_StanceSwing.m` path is untouched.
+- **Model update (2026-11)**: all `human0918.osim` muscle
+  `max_isometric_force` values were doubled, now matching
+  `SQR_simbody.osim`.  Code reads Fmax dynamically; normalized `lCEN` /
+  `fATN` features are invariant under a uniform Fmax scaling, but the
+  absolute force capacity changes forward dynamics and static optimisation.
+  Old checkpoints/optimisation results should not be resumed and CMA-ES
+  must be retuned.  See
   [`docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md`](docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md)
   §14.
+- **Validation and documentation**: added
+  [`test_moco_feature_reconstruction.m`](tests/test_moco_feature_reconstruction.m)
+  for the fibre-length reconstruction, plus
+  [`docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md`](docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md)
+  and [`docs/MOCOINVERSE_LASSO_INTERFACE.md`](docs/MOCOINVERSE_LASSO_INTERFACE.md)
+  for the end-to-end workflow, parameter tables and troubleshooting.
 
 ## Planned Extensions
 

@@ -70,14 +70,14 @@
 % diary 同时把控制台输出写到 report 文件，便于把一次接口运行归档。
 close all; clear; clc;
 
-scriptFullPath = mfilename('fullpath');
+scriptFullPath = mfilename('fullpath'); % Sparse Group LASSO Validation\
 if isempty(scriptFullPath)
     scriptDir = pwd;
 else
     scriptDir = fileparts(scriptFullPath);
 end
-addpath(scriptDir);
-repoRoot = fileparts(scriptDir);
+addpath(scriptDir); 
+repoRoot = fileparts(scriptDir); % Muscle-Reflex-Based Predictive Simulation\
 outDir = fullfile(scriptDir, 'moco_dataset');
 if ~exist(outDir, 'dir')
     mkdir(outDir);
@@ -102,14 +102,15 @@ fprintf('=====================================================================\n
 % 所有与“这次数据”相关的路径/参数都集中在这里。换受试者/换 Moco 结果时
 % 通常只需要改这一块，不需要动下面的处理逻辑。
 %
-% 重要：solutionFile 必须包含 excitation（/forceset/<muscle> 控制列）。
-% 推荐直接指向正式 MocoInverse 的完整解：
+% 重要：solutionFile 必须同时包含 excitation（/forceset/<muscle> 控制列）
+% 和 activation（/forceset/<muscle>/activation state）。推荐直接指向正式
+% MocoInverse 的完整解：
 %   * 完整解（activation + excitation + 可选 /jointset 坐标）；
-%   * 或“完整解 + 单独 excitationFile”的组合。
+%   * 或“完整解 + 单独 excitationFile/activationFile”的组合。
 %
 % 注意：下面默认的 B30 preliminary 解只有 activation、没有 excitation，
-% 在新逻辑下会直接报 NoExcitation。运行正式数据前请把这里改成包含
-% excitation 的最终解。
+% 在新逻辑下会直接报 MissingExcitation。运行正式数据前请把这里改成包含
+% 完整 excitation + activation 的最终解。
 solutionFile = fullfile(repoRoot, 'experiments', 'moco', 'outputs', ...
     'moco_inverse_solution_B30_right_final.sto');
 
@@ -252,31 +253,34 @@ if nT < 50
 end
 
 %% ---- 2. activation / excitation onto the common grid -------------------
-% 正式 MocoInverse 解必须提供 excitation；LASSO 的 target 只来自 excitation。
-% activation 仍然需要（用于 fATN/lCEN），但如果解里没有 activation，后面
-% 可以由 xRaw 积分出来补特征；但绝不会由 activation 反演 excitation。
+% 正式 MocoInverse 解必须同时提供 excitation 和 activation：
+%   * excitation 是 LASSO target；
+%   * activation 用于计算 fATN/lCEN。
+% 两者都不允许缺失；缺失/NaN 会在下面 assert_complete_muscle_signal
+% 直接报错，不用 NaN 填充，也不从另一个信号反演/积分补全。
 % 这里用 interp_matrix 而不是直接赋值，是因为 Moco 输出网格（1–10 ms）
 % 可能和 targetDt 不完全一致；INTERP 逐列做。
 aRaw = [];
 xRaw = [];
+% 在插值之前先检查源矩阵：如果主解/替代文件本身缺列或含 NaN/Inf，
+% 直接报错。这样 interp_matrix 不会把“部分 NaN”悄悄插值补掉。
 if S.hasActivation
+    assert_complete_muscle_signal(S.activation, muscleNames, 'Activation');
     aRaw = interp_matrix(S.time, S.activation, tOut);
 elseif ~isempty(extraAct)
+    assert_complete_muscle_signal(extraAct.activation, muscleNames, 'Activation');
     aRaw = interp_matrix(extraAct.time, extraAct.activation, tOut);
 end
 if S.hasExcitation
+    assert_complete_muscle_signal(S.excitation, muscleNames, 'Excitation');
     xRaw = interp_matrix(S.time, S.excitation, tOut);
 elseif ~isempty(extraExc)
+    assert_complete_muscle_signal(extraExc.excitation, muscleNames, 'Excitation');
     xRaw = interp_matrix(extraExc.time, extraExc.excitation, tOut);
 end
-if isempty(xRaw)
-    error('NoExcitation', ...
-        ['MocoInverse excitation is missing. This usually means the file is ' ...
-         'an activation-only preliminary --sagittal-cost solution. The formal ' ...
-         'MocoInverse solution must contain "/forceset/<muscle>" excitation ' ...
-         'controls (or an explicit excitationFile). This interface no longer ' ...
-         'reconstructs excitation from activation.']);
-end
+% 再检查插值后的目标网格；这里是最终防线，确保没有 NaN 进入 LASSO。
+assert_complete_muscle_signal(xRaw, muscleNames, 'Excitation');
+assert_complete_muscle_signal(aRaw, muscleNames, 'Activation');
 
 %% ---- 3. kinematics ------------------------------------------------------
 % 两条分支：
@@ -349,12 +353,7 @@ fprintf('    activation recon RMSE  : mean %.4f, max %.4f\n', ...
     mean(qcClean.activationReconRMSE), max(qcClean.activationReconRMSE));
 fprintf('    flagged excitation %%   : mean %.2f, max %.2f\n', ...
     mean(qcClean.pctFlaggedExcitation), max(qcClean.pctFlaggedExcitation));
-if any(~isfinite(aClean(:)))
-    error('MissingActivation', ...
-        ['At least one muscle has no activation trajectory.  The preliminary ' ...
-         '--sagittal-cost solutions contain all 18 activations; if you are ' ...
-         'using a partial file, provide a full activation file or a full solution.']);
-end
+
 
 %% ---- 5. muscle features (lCEN, fATN) -----------------------------------
 % 用 aClean（而不是 raw activation）计算 fATN，保持“清洗后的 activation ->
@@ -448,8 +447,8 @@ ds.meta = struct( ...
     'unitConvention', 'radians, metres, seconds');
 ds.time        = tOut;
 ds.muscleNames = muscleNames;
-ds.rawActivation = aRaw;   % pre-cleaning (may be empty)
-ds.rawExcitation = xRaw;   % pre-cleaning (may be empty)
+ds.rawActivation = aRaw;   % pre-cleaning, complete 18-muscle matrix
+ds.rawExcitation = xRaw;   % pre-cleaning, complete 18-muscle matrix
 ds.activation  = aClean;
 ds.excitation  = xClean;
 ds.lCEN        = F.lCEN;
@@ -499,12 +498,49 @@ fprintf('=====================================================================\n
 diary off;
 
 %% ======================= local helpers ==================================
-% 局部函数 1：多列线性插值
+% 局部函数 1：检查 excitation/activation 是否覆盖全部肌肉
+% -------------------------------------------------------------------------
+% 用户要求：如果 Moco 结果缺少部分肌肉，不要用 NaN 填充，直接报错。
+% 这里同时检查：
+%   * M 是否为空；
+%   * 列数是否等于 muscleNames 的数量；
+%   * 哪些肌肉整列为 NaN（完全缺失）；
+%   * 哪些肌肉含 NaN/Inf（部分缺失/求解失败）。
+% 报错信息会列出具体肌肉名，方便回去重导 Moco 解。
+function assert_complete_muscle_signal(M, names, label)
+if isempty(M)
+    error(['Missing' label], ...
+        '%s is empty. Expected columns for: %s.', ...
+        label, strjoin(names, ', '));
+end
+if size(M, 2) ~= numel(names)
+    error(['Missing' label], ...
+        '%s has %d columns, expected %d (%s).', ...
+        label, size(M, 2), numel(names), strjoin(names, ', '));
+end
+
+missing = names(~any(isfinite(M), 1));
+if ~isempty(missing)
+    error(['Missing' label], ...
+        '%s is completely missing for: %s.', ...
+        label, strjoin(missing, ', '));
+end
+
+bad = names(any(~isfinite(M), 1));
+if ~isempty(bad)
+    error(['NonFinite' label], ...
+        '%s contains NaN/Inf for: %s.', ...
+        label, strjoin(bad, ', '));
+end
+end
+
+% 局部函数 2：多列线性插值
 % -------------------------------------------------------------------------
 % 为什么不用 interp1(tSrc, M, tOut)：
 %   * interp1 对矩阵默认按列插值，但要求每列有相同的时间点；
-%   * 我们的 M 可能包含整列 NaN（可选 excitation 通道），interp1 会报错；
-%   * 这里逐列检查有限样本，单点列用常数填充，全 NaN 列保持 NaN。
+%   * 我们的 M 可能包含整列 NaN（缺失通道），interp1 会报错；
+%   * 这里逐列插值并保留全 NaN 列，随后由
+%     assert_complete_muscle_signal 直接报错，不做 NaN 填充。
 %
 % 输入：
 %   tSrc  nTsrc×1
@@ -537,7 +573,7 @@ for c = 1:nCol
 end
 end
 
-% 局部函数 2：逐列中心差分
+% 局部函数 3：逐列中心差分
 % -------------------------------------------------------------------------
 % gradient 对非均匀 t 也按中心差分处理（端点单边）。逐列调用是为了避免
 % gradient(Q,t) 在矩阵/向量 t 组合下的维度歧义。
