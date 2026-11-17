@@ -1,0 +1,12 @@
+两类实验。
+第一类：验证辨识多种运动的肌肉反射机制的能力：
+- SQR walking;
+- JW fast walking
+- JW running;
+- JW uphill walking;
+- JW downhill walking.
+
+第二类：验证辨识不同人肌肉反射特性的能力：
+- SQR walking;
+- JW walking;
+- DDH patient walking (the 1st one).

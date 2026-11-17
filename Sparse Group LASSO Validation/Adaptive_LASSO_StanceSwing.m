@@ -13,7 +13,7 @@
 %   1. Load and preprocess data
 %   2. Compute OLS initial estimate on uncensored samples
 %   3. Derive adaptive weights w_j = 1/max(|beta_OLS_j|, eps)^gamma
-%   4. Column-scale A to convert adaptive LASSO to standard LASSO
+%   4. Column-scale X to convert adaptive LASSO to standard LASSO
 %   5. Solve via sgl_fit (lambda1 = 0)
 %   6. Recover coefficients in original space
 %   7. Post-selection OLS on support set via sgl_fit (lambda = 0)
@@ -116,25 +116,20 @@ fprintf('Lambda path config: nLambda=%d, alpha from %.3g to %.3g, tolSelect=%.3g
     lambdaPathConfig.nLambda, lambdaPathConfig.alphaGrid(1), lambdaPathConfig.alphaGrid(end), ...
     lambdaPathConfig.tolSelect, lambdaPathConfig.selectionMetric);
 
-% Extract base muscle to initialize shared X and M.
-[yAllBase, XAll, featureToIndexMap, M, phase] = extractStoMuscleFeatures(stoFilePath, muscleNames{1});
+% Extract base muscle to initialize shared X.
+[yAllBase, XAll, featureToIndexMap, phase] = extractStoMuscleFeatures(stoFilePath, muscleNames{1});
 [yBase, X] = preprocessExcitationAndFeatures(yAllBase, XAll, delaySteps, excitationThreshold);
 
 Y = zeros(numel(yBase), numTargets);
 Y(:, 1) = yBase;
 
-% Load remaining muscles and verify shared feature/mask assumptions.
+% Load remaining muscles and verify shared feature assumptions.
 for m = 2:numTargets
-    [yAllM, XAllM, featureToIndexMapM, MM, ~] = extractStoMuscleFeatures(stoFilePath, muscleNames{m});
+    [yAllM, XAllM, featureToIndexMapM, ~] = extractStoMuscleFeatures(stoFilePath, muscleNames{m});
 
     if ~isequal(size(XAllM), size(XAll)) || max(abs(XAllM(:) - XAll(:))) > 1e-12
         error('Adaptive_LASSO:FeatureMismatch', ...
             'Feature matrix for %s is not identical to base muscle %s.', muscleNames{m}, muscleNames{1});
-    end
-
-    if ~isequal(MM, M)
-        error('Adaptive_LASSO:MaskMismatch', ...
-            'Mask matrix for %s is not identical to base muscle %s.', muscleNames{m}, muscleNames{1});
     end
 
     if ~isequal(sort(keys(featureToIndexMapM)), sort(keys(featureToIndexMap)))
@@ -154,21 +149,19 @@ end
 fprintf('Loaded %d muscles with shared feature matrix: X size = [%d, %d], Y size = [%d, %d].\n', ...
     numTargets, size(X, 1), size(X, 2), size(Y, 1), size(Y, 2));
 
-% Build one shared A = X * M and solve each muscle independently.
-A = X * M; % feature matrix X (augmented), masked with the sparse matrix M
-
+% Design matrix is X directly (legacy: A = X*M with identity M; removed).
 % Center and scale features before OLS/optimization (population std).
-A_orig = A;
-muA = mean(A_orig, 1);
-sA = std(A_orig, 1, 1);
-sA(sA == 0) = 1;
-A = (A_orig - muA) ./ sA;
-p = size(A, 2);
+X_orig = X;
+muX = mean(X_orig, 1);
+sX = std(X_orig, 1, 1);
+sX(sX == 0) = 1;
+X = (X_orig - muX) ./ sX;
+p = size(X, 2);
 
 nMus = (p - 8) / 2;
 if nMus < 1 || abs(nMus - round(nMus)) > 1e-12
     error('Adaptive_LASSO:InvalidPredictorCount', ...
-        'size(A,2) must satisfy p = 2*#mus + 8. Got p = %d.', p);
+        'size(X,2) must satisfy p = 2*#mus + 8. Got p = %d.', p);
 end
 
 %% ===== STEP 2: OPTIMIZATION SETTINGS =====
@@ -182,7 +175,7 @@ optsCommon.L0 = 1000;
 optsCommon.tolCensor = 1e-12;
 
 %% ===== STEP 2B: MAP PHASE INDICES TO DELAYED DATA =====
-nSamples = size(A, 1);
+nSamples = size(X, 1);
 rawStanceIdx = phase.stanceIdx(:);
 rawSwingIdx = phase.swingIdx(:);
 
@@ -261,8 +254,8 @@ for m = 1:numTargets
     for phaseIter = 1:numel(phaseNames)
         phaseName = phaseNames{phaseIter};
         idx = phaseIdxMap.(phaseName);
-        A_phase = A(idx, :);
-        A_phase_orig = A_orig(idx, :);
+        X_phase = X(idx, :);
+        X_phase_orig = X_orig(idx, :);
         Y_phase = Y(idx, m);
 
         % --- STEP 3: INITIAL OLS ESTIMATE ---
@@ -278,25 +271,25 @@ for m = 1:numTargets
             beta_OLS_std = zeros(p, 1);
             b_OLS_std = c_m;
         else
-            A_U = A_phase(Uidx, :);
+            X_U = X_phase(Uidx, :);
             y_U = Y_phase(Uidx);
-            augA = [A_U, ones(nU, 1)];
+            augX = [X_U, ones(nU, 1)];
 
-            if rank(augA) < min(size(augA))
+            if rank(augX) < min(size(augX))
                 warning('Adaptive_LASSO:RankDeficient', ...
                     'OLS for %s (%s) is rank-deficient (nU=%d, p=%d). Using pinv.', ...
                     muscleNames{m}, phaseName, nU, p);
-                coeffs = pinv(augA) * y_U;
+                coeffs = pinv(augX) * y_U;
             else
-                coeffs = augA \ y_U;
-            end     
+                coeffs = augX \ y_U;
+            end
 
             beta_OLS_std = coeffs(1:p);
             b_OLS_std = coeffs(end);
         end
 
-        beta_OLS_orig = beta_OLS_std ./ sA.';
-        b_OLS_orig = b_OLS_std - muA * beta_OLS_orig;
+        beta_OLS_orig = beta_OLS_std ./ sX.';
+        b_OLS_orig = b_OLS_std - muX * beta_OLS_orig;
         beta_OLS.(phaseName)(:, m) = beta_OLS_orig;
         b_OLS.(phaseName)(m) = b_OLS_orig;
 
@@ -312,10 +305,10 @@ for m = 1:numTargets
         W.(phaseName)(:, m) = w;
 
         % --- STEP 5: ADAPTIVE LASSO VIA sgl_fit (LAMBDA PATH) ---
-        % Column-scale A to absorb adaptive weights into standard L1.
-        A_star = A_phase .* (1 ./ w)';
+        % Column-scale X to absorb adaptive weights into standard L1.
+        X_star = X_phase .* (1 ./ w)';
         [lambda2Max, b0AtZero, lambdaMaxInfo] = ...
-            compute_lambda2_max_censored(A_star, Y_phase, c_m, rho, tolC);
+            compute_lambda2_max_censored(X_star, Y_phase, c_m, rho, tolC);
 
         if lambda2Max > 0
             alphaGridThis = lambdaPathConfig.alphaGrid;
@@ -358,7 +351,7 @@ for m = 1:numTargets
                 optsM.doWarmStart = true;
 
                 [betaStarStdK, interceptAdaStdK, ~, statsAdaK] = ...
-                    sgl_fit(A_star, Y_phase, lambda1, lambda2_k, optsM);
+                    sgl_fit(X_star, Y_phase, lambda1, lambda2_k, optsM);
             end
 
             betaAdaStdK = betaStarStdK ./ w;
@@ -370,9 +363,9 @@ for m = 1:numTargets
                 statsRefitK = struct('exitType', 'intercept_only_empty_support', ...
                     'lambda1', 0, 'lambda2', 0, 'converged', true, 'iters', 0);
             else
-                A_refit = A_phase;
+                X_refit = X_phase;
                 nonS = setdiff(1:p, S_k);
-                A_refit(:, nonS) = 0;
+                X_refit(:, nonS) = 0;
 
                 beta0Refit = betaAdaStdK;
                 beta0Refit(nonS) = 0;
@@ -386,14 +379,14 @@ for m = 1:numTargets
                 optsRefit.b0 = interceptAdaStdK;
 
                 [betaRefitStdK, interceptRefitStdK, ~, statsRefitK] = ...
-                    sgl_fit(A_refit, Y_phase, 0, 0, optsRefit);
+                    sgl_fit(X_refit, Y_phase, 0, 0, optsRefit);
                 betaRefitStdK(nonS) = 0;
             end
 
-            yPredAdaK = max(A_phase * betaAdaStdK + interceptAdaStdK, c_m);
+            yPredAdaK = max(X_phase * betaAdaStdK + interceptAdaStdK, c_m);
             trainErrorAdaptive(kk) = sqrt(mean((Y_phase - yPredAdaK).^2));
 
-            yPredRefitK = max(A_phase * betaRefitStdK + interceptRefitStdK, c_m);
+            yPredRefitK = max(X_phase * betaRefitStdK + interceptRefitStdK, c_m);
             trainErrorRefit(kk) = sqrt(mean((Y_phase - yPredRefitK).^2));
 
             betaStarStdPath(:, kk) = betaStarStdK;
@@ -472,21 +465,21 @@ for m = 1:numTargets
             muscleNames{m}, phaseName, lambda2Max, selectedIdx, nPath, alphaGridThis(selectedIdx), ...
             lambdaGridThis(selectedIdx), minErr, trainErrorRefit(selectedIdx), numel(supportPath{selectedIdx}));
 
-        betaAdaOrig = betaAdaStd ./ sA.';
-        interceptAdaOrig = interceptAdaStd - muA * betaAdaOrig;
-        betaRefitOrig = betaRefitStd ./ sA.';
-        interceptRefitOrig = interceptRefitStd - muA * betaRefitOrig;
+        betaAdaOrig = betaAdaStd ./ sX.';
+        interceptAdaOrig = interceptAdaStd - muX * betaAdaOrig;
+        betaRefitOrig = betaRefitStd ./ sX.';
+        interceptRefitOrig = interceptRefitStd - muX * betaRefitOrig;
 
         Beta_adaptive.(phaseName)(:, m) = betaAdaOrig;
         Intercept_adaptive.(phaseName)(m) = interceptAdaOrig;
         Beta_refit.(phaseName)(:, m) = betaRefitOrig;
         Intercept_refit.(phaseName)(m) = interceptRefitOrig;
 
-        yPredAda = max(A_phase_orig * betaAdaOrig + interceptAdaOrig, c_m);
+        yPredAda = max(X_phase_orig * betaAdaOrig + interceptAdaOrig, c_m);
         YPred_adaptive.(phaseName){m} = yPredAda;
         RMSE_adaptive.(phaseName)(m) = sqrt(mean((Y_phase - yPredAda).^2));
 
-        yPredRefit = max(A_phase_orig * betaRefitOrig + interceptRefitOrig, c_m);
+        yPredRefit = max(X_phase_orig * betaRefitOrig + interceptRefitOrig, c_m);
         YPred_refit.(phaseName){m} = yPredRefit;
         RMSE_refit.(phaseName)(m) = sqrt(mean((Y_phase - yPredRefit).^2));
 
@@ -614,9 +607,9 @@ end
 %% ===== COLLECT RESULTS =====
 results = struct();
 results.muscleNames = muscleNames;
-results.A = A_orig;
-results.A_std = A;
-results.featureScaling = struct('muA', muA, 'sA', sA);
+results.X = X_orig;
+results.X_std = X;
+results.featureScaling = struct('muX', muX, 'sX', sX);
 results.Y = Y;
 results.phase = struct();
 results.phase.stanceIdx = stanceIdx;
@@ -744,8 +737,8 @@ end
 % [ ] Post-selection OLS nnz should equal adaptive LASSO nnz per phase
 % [ ] Post-selection OLS RMSE should be <= adaptive LASSO RMSE per phase
 %     (debiasing reduces shrinkage bias)
-% [ ] max(abs(A_refit(:,nonS) * Beta_refit(nonS,m))) should be 0
-% [ ] reported YPred = max(A*beta+b, c) >= c by construction;
-%     for censored samples the latent A*beta+b should be <= c
+% [ ] max(abs(X_refit(:,nonS) * Beta_refit(nonS,m))) should be 0
+% [ ] reported YPred = max(X*beta+b, c) >= c by construction;
+%     for censored samples the latent X*beta+b should be <= c
 %     (rho pushes it down, not up)
 % [ ] stats_ada.(phase){m}.objHist should be non-increasing

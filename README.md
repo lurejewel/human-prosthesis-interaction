@@ -30,6 +30,7 @@ experimental data and then refined by CMA-ES inside the forward-dynamics loop.
 | **Static Optimisation** | Iterative QP solver determines physiologically accurate initial muscle activations from first-frame kinematics and joint moments, replacing the uniform 0.05 default. |
 | **Gait Phase Detection** | Real-time per-leg phase identification (5 phases: Early Stance, Late Stance, Liftoff, Swing, Landing). |
 | **Muscle Reflex Controller** | LASSO sparse linear per-phase model with optional **grouped format** (v2): phases sharing the same controller reference a single `beta`/`bias`/`mask`, eliminating parameter duplication. Legacy hand-crafted controller is deprecated. |
+| **Structure Identification (stability)** | K random seeds × run-level bootstrap → per-entry selection frequency π → consensus 0-1 mask (majority vote) → frozen-mask refit on the full data. The 0-1 map is hard-frozen for CMA-ES; coefficients are only the initial guess. See [`docs/LASSO_STABILITY_IDENTIFICATION.md`](docs/LASSO_STABILITY_IDENTIFICATION.md). |
 | **Optimisation (IPOP-CMA-ES)** | Restart strategy with soft sigma-boost before restart; population size doubles on restart. Parallelised over all available cores. Reproducible via `rngSeed` + `threefry`. |
 | **Fitness Evaluation** | Multi-objective: gait completeness, velocity tracking, joint hyperextension (knee + ankle), GRF ceiling, metabolic effort. |
 | **Checkpoint / Resume** | Full-state checkpoint saved every 10 generations. Resume from crash or intentional stop by setting `resumeFromCheckpoint = true`. |
@@ -161,6 +162,30 @@ the short contract and the list of new `.m` files, and
 for the detailed end-to-end workflow, equations, parameter tables and
 troubleshooting.
 
+### 7. 多随机种子一致性结构辨识（stability selection）
+
+```matlab
+cd('Sparse Group LASSO Validation')
+Adaptive_LASSO_MocoInverse_Stability
+```
+
+同一份实验数据、同一套辨识程序（超参不变），用 `nSeeds`（默认 20）个随机
+种子对**步态片段 (run)** 做有放回重采样，各跑一次 adaptive LASSO，得到
+K 个 26×9 的 0-1 结构。按逐条目入选频率 π 做**多数投票**得到共识 mask——
+"20 个种子里 13 个收敛到同一框架就选它"正是 π ≥ 0.5 的特例（13/20 > 0.5，
+每个条目都被多数覆盖）。最后在**全量数据**上冻结 mask、只重新估计系数。
+
+- 0-1 图是**硬约束**：`unpack_lasso_reflex_params` 每帧强制 `beta(~mask)=0`，
+  CMA-ES 只能改有值条目的数值；
+- 系数只是 CMA-ES 的 **initial guess**（real2sim gap 交给优化吸收）；
+- 若最大一致簇占比低于 `minDominantFraction`（默认 0.6），说明这份数据
+  没有唯一可辨识的结构，脚本会报警而不是硬选一个。
+
+输出 `results/lasso_controller_result_moco_consensus.mat`（可直接替换
+`lassoFile`）与 `results/lasso_stability_diagnostics.mat`（π、Jaccard、
+聚类、每个种子的 mask……）。详见
+[`docs/LASSO_STABILITY_IDENTIFICATION.md`](docs/LASSO_STABILITY_IDENTIFICATION.md)。
+
 ---
 
 ## Controller Modes
@@ -226,6 +251,10 @@ The optimisation terminates when:
 | `results/` | `opt_result_yyyy-mm-dd_HH-MM-SS.mat` | `result` struct: `bestFit`, `bestPara`, `fitHistory`, `timeHistory`, controller metadata, `bestReflexParams` |
 | `results/` | `checkpoint.mat` | Full CMA-ES state + loop bookkeeping for crash recovery (overwritten every 10 gens) |
 | `results/` | `lasso_controller_result.mat` | LASSO controller definition (input to the demo) |
+| `results/` | `lasso_controller_result_moco_consensus.mat` | Consensus (stability) controller; frozen 0-1 map + `identification`/`stability` metadata |
+| `results/` | `lasso_stability_diagnostics.mat` | Per-seed masks, π, Jaccard/clusters, frozen-mask refit + unfrozen reference fit |
+| `results/` | `lasso_stability_checkpoint.mat` | Resume point of the multi-seed identification |
+| `results/` | `lasso_stability_*.png` | Stability diagnostics figures |
 | `results/` | `sim_result_*.sto` | State histories (optional, when `simConfig.saveSTO = 1`) |
 | `results/` | `opensim*.log` | OpenSim runtime logs |
 
@@ -303,6 +332,50 @@ predictive core.  The core itself is unchanged: `human0918` (18 muscles,
   [`docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md`](docs/MOCOINVERSE_TO_LASSO_WORKFLOW.md)
   and [`docs/MOCOINVERSE_LASSO_INTERFACE.md`](docs/MOCOINVERSE_LASSO_INTERFACE.md)
   for the end-to-end workflow, parameter tables and troubleshooting.
+
+## Recent Changes (v2.4) — 多随机种子一致性结构辨识
+
+v2.4 在 LASSO 前端增加稳定性选择（stability selection），解决“0-1 结构到底
+可不可信”的问题。核心（`human0918`、26-feature grouped controller、
+IPOP-CMA-ES、checkpoint/resume）不变。
+
+- **新功能**：[`Adaptive_LASSO_MocoInverse_Stability.m`](<Sparse Group LASSO Validation/Adaptive_LASSO_MocoInverse_Stability.m>)
+  用 `nSeeds` 个随机种子对步态片段做 run-level bootstrap 重采样，各跑一次
+  同一套 adaptive LASSO，按逐条目入选频率 π 做多数投票得到共识 0-1 结构，
+  再在全量数据上冻结 mask 重拟合系数。输出
+  `results/lasso_controller_result_moco_consensus.mat`。
+- **稀疏度分析**：[`analyze_lasso_sparsity.m`](<Sparse Group LASSO Validation/analyze_lasso_sparsity.m>)
+  量化“多一个非零条目换来多少误差”（lambda path 边际收益 + π 阈值扫描 +
+  `tolSelect` 扫描），并用 Kneedle 判据给出膝点：**λ path 膝点 = 2–3 项/肌肉**，
+  **π 阈值膝点 = 175 参数（π≥0.70）**。结论：π≥0.7 的 stability 选择给出
+  **175** 个参数（比 majority 的 247 少 29%，留出 RMSE +8.5%），见
+  `results/lasso_sparsity_tradeoff.png` 与
+  `results/lasso_controller_result_moco_consensus_pi70.mat`。
+- **拟合效果可视化**：[`plot_lasso_fit_quality.m`](<Sparse Group LASSO Validation/plot_lasso_fit_quality.m>)
+  画出右腿 9 块肌肉的实测 vs 预测 excitation（全程 30 s、3 s 放大、逐肌肉 RMSE 柱状），
+  175 与 247 参数的预测曲线肉眼几乎重合。
+- **重采样对照**：[`compare_bootstrap_resampling.m`](<Sparse Group LASSO Validation/compare_bootstrap_resampling.m>)
+  证明 i.i.d. 重采样会把稳定性系统性夸大（Jaccard 0.67/0.75 vs run-level 0.53/0.59），
+  但不改变 nnz。
+- **重构**：`fit_adaptive_lasso_phase_model.m` 拆成
+  [`load_lasso_design_matrices.m`](<Sparse Group LASSO Validation/load_lasso_design_matrices.m>)
+  + [`fit_adaptive_lasso_core.m`](<Sparse Group LASSO Validation/fit_adaptive_lasso_core.m>)，
+  原函数保留为薄 wrapper（签名、默认值、输出字段全部不变）。等价性由
+  [`tests/check_lasso_refactor_equivalence.m`](tests/check_lasso_refactor_equivalence.m)
+  用重构前基线逐项验证（容差 1e-12）。
+- **`sgl_fit.m`**：每次求解的 summary 打印改为受 `opts.verbose` 控制
+  （K×60 lambda 的集合运行不再刷屏；数值完全不变）。
+- **测试**：[`tests/test_lasso_stability_identification.m`](tests/test_lasso_stability_identification.m)
+  覆盖“13/20 就选它”的多数投票性质、π=0.5 tie-break、bootstrap 可复现性、
+  合成数据的端到端结构不变量与 loader round-trip。
+- **文档**：[`docs/LASSO_STABILITY_IDENTIFICATION.md`](docs/LASSO_STABILITY_IDENTIFICATION.md)
+  （参考手册）、
+  [`docs/STABILITY_IDENTIFICATION_EXPLAINED.md`](docs/STABILITY_IDENTIFICATION_EXPLAINED.md)
+  （从零讲起：词汇、手算例子、每一步的输入输出、参数手册、FAQ），
+  [`docs/LASSO_SPARSITY_ANALYSIS_ARCHIVE.md`](docs/LASSO_SPARSITY_ANALYSIS_ARCHIVE.md)
+  （论文素材：稀疏度曲线、膝点、与 Meunier 1993 的关系），
+  [`docs/REFLEX_CONTROLLER_INTERPRETATION.md`](docs/REFLEX_CONTROLLER_INTERPRETATION.md)
+  （`y = Xβ + b` 的生理学解释：反馈通道 + CPG + 相位调制）。
 
 ## Planned Extensions
 

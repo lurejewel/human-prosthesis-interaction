@@ -111,17 +111,19 @@ end
 % -------------------------------------------------------------------------
 % 1. 载入模型并建立坐标映射
 % -------------------------------------------------------------------------
-% 注意：这里只把模型自己拥有的坐标设进去；IK 里可能还有 pelvis_list、
-% hip_adduction 等 3D 坐标，human0918 没有，直接忽略。这样同一段代码可以
-% 同时服务 2D human0918 和 3D SQR_simbody。
+% 注意：
+%   * qNames 里可以有多余的坐标（例如 3D IK 的 pelvis_list/hip_adduction，
+%     human0918 没有），这些列直接忽略；
+%   * 但模型拥有的每个坐标都必须在 qNames 里出现。缺任何一个都报
+%     missingCoordinates 并列出名字，不再把它静默设为 0。
 nMus = numel(muscleNames);
 model = org.opensim.modeling.Model(char(modelFile));
 state = model.initSystem();
 
 % coordHandles : 模型坐标 Java 对象
 % coordNamesModel : 模型坐标名
-% coordCol : 该模型坐标对应 q/qdot 的哪一列；0 表示 IK 里没有这个坐标
-%            （对这种坐标，set_coordinates 会设 0）。
+% coordCol : 该模型坐标对应 q/qdot 的哪一列；0 表示 qNames 里没有这个坐标。
+%            0 会在下面直接报错，不会进入 set_coordinates。
 cs = model.getCoordinateSet();
 nCoordModel = cs.getSize();
 coordHandles = cell(1, nCoordModel);
@@ -136,6 +138,16 @@ for i = 1:nCoordModel
     if ~isempty(j)
         coordCol(i) = j;
     end
+end
+
+% 模型坐标必须全部出现在 qNames 中；缺一个都不行。
+% 不能把缺失坐标设为 0：那会改变骨盆/关节姿态，进而改变 lCEN/fATN。
+missingCoords = coordNamesModel(coordCol == 0);
+if ~isempty(missingCoords)
+    error('build_lasso_features_from_kinematics:missingCoordinates', ...
+        ['Model coordinates missing from qNames: %s. ' ...
+         'Provide all model DOFs; refusing to silently set them to 0.'], ...
+        strjoin(missingCoords, ', '));
 end
 
 % -------------------------------------------------------------------------
@@ -158,25 +170,43 @@ for i = 1:ms.getSize()
     modelMuscleHandles{i} = m;
 end
 
+% 肌肉名必须和模型肌肉集合完全一致：
+%   * 调用者多给了模型没有的肌肉 -> unknownMuscle；
+%   * 模型有肌肉但调用者漏掉 -> missingMuscles；
+% 不允许“少几块肌肉也继续跑”，否则 lCEN/fATN 的列数会和模型/控制器不一致。
+if numel(unique(muscleNames)) ~= numel(muscleNames)
+    error('build_lasso_features_from_kinematics:duplicateMuscle', ...
+        'muscleNames contains duplicate entries.');
+end
+missingInModel = muscleNames(~ismember(muscleNames, modelMuscleNames));
+if ~isempty(missingInModel)
+    error('build_lasso_features_from_kinematics:unknownMuscle', ...
+        'Muscles not present in %s: %s.', ...
+        modelFile, strjoin(missingInModel, ', '));
+end
+missingInList = modelMuscleNames(~ismember(modelMuscleNames, muscleNames));
+if ~isempty(missingInList)
+    error('build_lasso_features_from_kinematics:missingMuscles', ...
+        ['Model muscles missing from muscleNames: %s. ' ...
+         'Provide all model muscles; refusing to drop them.'], ...
+        strjoin(missingInList, ', '));
+end
+
 muscleHandles = cell(1, nMus);
-muscleLongNames = cell(1, nMus);   % full path names used by the model
 lopt = zeros(1, nMus);
 for i = 1:nMus
+    % 上面的集合检查已经保证每个 muscleNames{i} 都能找到；
+    % 这里是 strcmp 精确匹配，找到的 modelMuscleNames{j} 就是 muscleNames{i}。
     j = find(strcmp(modelMuscleNames, muscleNames{i}), 1);
-    if isempty(j)
-        error('build_lasso_features_from_kinematics:unknownMuscle', ...
-            'Muscle "%s" is not present in %s.', muscleNames{i}, modelFile);
-    end
     muscleHandles{i} = modelMuscleHandles{j};
-    muscleLongNames{i} = modelMuscleNames{j};
     lopt(i) = muscleHandles{i}.getOptimalFiberLength();
 end
 
 actPaths = cell(1, nMus);
 flPaths  = cell(1, nMus);
 for i = 1:nMus
-    actPaths{i} = ['/forceset/' muscleLongNames{i} '/activation'];
-    flPaths{i}  = ['/forceset/' muscleLongNames{i} '/fiber_length'];
+    actPaths{i} = ['/forceset/' muscleNames{i} '/activation'];
+    flPaths{i}  = ['/forceset/' muscleNames{i} '/fiber_length'];
 end
 
 % -------------------------------------------------------------------------
@@ -331,18 +361,13 @@ end
     % ---- nested helper: prescribe q / qdot for one frame ----------------
     % 嵌套函数共享父函数的 state/coordHandles/coordCol，避免每帧重复查找
     % Java 对象。k 只用于可读性/调试，不参与索引（因此标 INUSD）。
-    % 模型里有、但 qNames 里没有的坐标统一设 0：对 human0918 只有 9 个
-    % 坐标，全部都能匹配；对 3D 模型则不会漏设坐标。
+    % 前面的 missingCoordinates 检查保证所有 coordCol(cc) > 0，
+    % 所以这里不再有“设 0”的 fallback。
     function set_coordinates(k, qRow, qdRow) %#ok<INUSD>
         for cc = 1:nCoordModel
             h = coordHandles{cc};
-            if coordCol(cc) > 0
-                h.setValue(state, qRow(coordCol(cc)), false);
-                h.setSpeedValue(state, qdRow(coordCol(cc)));
-            else
-                h.setValue(state, 0, false);
-                h.setSpeedValue(state, 0);
-            end
+            h.setValue(state, qRow(coordCol(cc)), false);
+            h.setSpeedValue(state, qdRow(coordCol(cc)));
         end
     end
 end

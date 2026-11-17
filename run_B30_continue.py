@@ -275,7 +275,8 @@ def main():
             print(f"ERROR: cannot read checkpoint {args.resume}: {exc}", flush=True)
             return 2
         s_current = [float(x) for x in ck["s_current"]]
-        guess = ck["solution"]
+        _sol = ck["solution"]
+        guess = _sol if os.path.isabs(_sol) else os.path.join(root, _sol)
         update_id = int(ck["update_id"])
         total_updates = int(ck["total_updates"])
         pending_s = [float(x) for x in ck["s_hat"]]
@@ -464,8 +465,8 @@ def main():
             "total_updates": total_updates,
             "s_current": s_solve,
             "s_hat": s_hat_new,
-            "solution": merged,
-            "guess": guess,
+            "solution": os.path.relpath(merged, root),
+            "guess": os.path.relpath(guess, root),
             "J": J,
             "effort": effort,
             "tracking": tracking,

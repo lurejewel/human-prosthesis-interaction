@@ -2,11 +2,42 @@
  MocoInverse -> LASSO dataset builder
  repository : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation
  output dir : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\Sparse Group LASSO Validation\moco_dataset
- started    : 2026-11-06 19:02:04
+ started    : 2026-11-10 16:05:19
 =====================================================================
 
-[1] solution : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\experiments\moco\outputs\moco_inverse_solution_B30_right_final.sto
+[1] solution : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\experiments\moco\outputs\B30_cont2_final.sto
     time range in solution : 210.0000 .. 240.0000 s (3001 samples)
     activation present     : 1
     excitation present     : 1
     coordinates in solution: 0
+    LASSO time grid        : 210.0000 .. 240.0000 s, dt = 0.0100 s, n = 3001
+    kinematics source      : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\experiments\moco\outputs\ik_radians.mot (filtered IK)
+
+[2] cleaning muscle drives (target = raw excitation, low-pass = 6.00 Hz)
+    raw excitation present : 1
+    raw activation present : 1
+    activation recon RMSE  : mean 0.0287, max 0.0466
+    flagged excitation %   : mean 13.43, max 32.62 (gastroc_l)
+
+[3] computing muscle features with C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\model\human0918.osim
+[features] C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\model\human0918.osim: lCEN [0.565, 1.348], fATN [-0.000, 1.019], mean substeps/frame = 5.3
+    feature low-pass       : 6.00 Hz
+
+[4] reconstructing gait phases from GRF + pelvis/calcn COM
+    GRF file               : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\experiments\moco\outputs\grf_window_209p5_240.mot
+    right vertical column  : ground_force2_vy
+    left  vertical column  : ground_force1_vy
+    stance threshold       : 0.0200 BW = 15.30 N
+    right stance fraction  : 0.490
+    left  stance fraction  : 0.510
+    right phase-0 onsets   : 26
+[write] C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\Sparse Group LASSO Validation\moco_dataset\moco_lasso_dataset.sto  (3001 rows x 93 columns)
+
+[5] saved
+    dataset .sto : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\Sparse Group LASSO Validation\moco_dataset\moco_lasso_dataset.sto
+    dataset .mat : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\Sparse Group LASSO Validation\moco_dataset\moco_lasso_dataset.mat
+    QC csv       : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\Sparse Group LASSO Validation\moco_dataset\moco_lasso_dataset_qc.csv
+    report       : C:\Users\lurej\OneDrive\Jin Wei\PKU\Muscle-Reflex-Based Predictive Simulation\Sparse Group LASSO Validation\moco_dataset\moco_lasso_dataset_report.txt
+
+Next step: run Adaptive_LASSO_MocoInverse.m
+=====================================================================

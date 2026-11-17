@@ -1,40 +1,40 @@
-function [betaOrig, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2, opts)
+function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2, opts)
 %SGL_FIT Censored sparse-group-lasso regression via FISTA + backtracking.
-%   [betaOrig, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2, opts)
+%   [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2, opts)
 %   solves (Option 2 surrogate):
 %     min_{beta,b}
-%       0.5*|| y_U - (A_U*beta + b) ||_2^2
-%     + (rho/2)*|| (A_C*beta + b - c)_+ ||_2^2
+%       0.5*|| y_U - (X_U*beta + b) ||_2^2
+%     + (rho/2)*|| (X_C*beta + b - c)_+ ||_2^2
 %     + lambda1*sum_g ||beta_g||_2 + lambda2*||beta||_1
 %   where U = {i: y_i > c + tolCensor}, C = {i: y_i <= c + tolCensor},
 %   and (t)_+ = max(t,0) elementwise.
 %
-%   Direction of the censored term: it penalizes A_C*beta + b > c, i.e.
+%   Direction of the censored term: it penalizes X_C*beta + b > c, i.e.
 %   predictions ABOVE the floor on censored samples. Larger rho pushes
-%   A_C*beta + b <= c (not >= c), so that (A_C*beta + b - c)_+ -> 0.
+%   X_C*beta + b <= c (not >= c), so that (X_C*beta + b - c)_+ -> 0.
 %
 %   IMPORTANT NOTES:
 %   - y is NOT centered; threshold c is on ORIGINAL y scale and NEVER transformed.
-%   - A is used as provided. If you want centering/scaling, do it before calling.
-%   - c is a censoring floor on original scale: y_i = max(z_i, c) where z_i = A_i*beta_orig + b_orig
-%   - Warm starts opts.beta0, opts.b0 are in the same feature scale as A.
-%   - Outputs betaOrig, intercept are in the same feature scale as A.
+%   - X is used as provided. If you want centering/scaling, do it before calling.
+%   - c is a censoring floor on original scale: y_i = max(z_i, c) where z_i = X_i*beta_orig + b_orig
+%   - Warm starts opts.beta0, opts.b0 are in the same feature scale as X.
+%   - Outputs betaOrig, intercept are in the same feature scale as X.
 %   - betaStd equals betaOrig when no external standardization is applied.
-% 
-%   Group structure is inferred from p = size(A,2), where p = 2*#mus + 8:
+%
+%   Group structure is inferred from p = size(X,2), where p = 2*#mus + 8:
 %     group1: 1:#mus
 %     group2: #mus+1:2*#mus
 %     group3: 2*#mus+1:2*#mus+8
 %
 %   Inputs:
-%     A       - n x p predictor matrix (already masked feature matrix if needed upstream)
+%     X       - n x p predictor matrix
 %     y       - n x 1 response vector
 %     lambda1 - group-l2 penalty weight
 %     lambda2 - l1 penalty weight
 %     opts    - optional struct:
 %               c             (default 0.01)
 %               rho           (default 100 if empty; larger = harder enforcement
-%                              of A_C*beta+b <= c for censored samples)
+%                              of X_C*beta+b <= c for censored samples)
 %               maxIter       (default 2000)
 %               tol           (default 1e-6)
 %               verbose       (default true)
@@ -50,7 +50,7 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(A, y, lambda1, lambda2,
 %                             robust Huber IRLS.
 %
 %   Outputs:
-%     betaOrig  - p x 1 coefficients on original A scale
+%     betaOrig  - p x 1 coefficients on original X scale
 %     intercept - optimized intercept bOrig on original y scale
 %     betaStd   - p x 1 coefficients in internal optimization space
 %     stats     - optimization traces and metadata
@@ -62,10 +62,10 @@ opts = apply_default_opts(opts);
 
 y = y(:);
 
-n = size(A, 1);
-p = size(A, 2);
+n = size(X, 1);
+p = size(X, 2);
 if numel(y) ~= n
-    error('sgl_fit:BadResponseSize', 'y must have %d rows to match A.', n);
+    error('sgl_fit:BadResponseSize', 'y must have %d rows to match X.', n);
 end
 
 groups = group_indices(p);
@@ -77,8 +77,8 @@ if opts.L0 <= 0
     error('sgl_fit:BadL0', 'opts.L0 must be positive.');
 end
 %% ========== FEATURE PREPROCESSING ==========
-% No internal centering/scaling. Use A as provided.
-AStd = A;
+% No internal centering/scaling. Use X as provided.
+XStd = X;
 
 c = opts.c;
 rho = opts.rho;
@@ -90,9 +90,9 @@ tolCensor = opts.tolCensor;
 Uidx = find(y > c + tolCensor);        % uncensored indices: y_i strictly above c
 Cidx = find(y <= c + tolCensor);       % censored indices: y_i at or below c (treated as y=c)
 
-AU = AStd(Uidx, :);                    % |U| x p, rows of AStd for uncensored
+XU = XStd(Uidx, :);                    % |U| x p, rows of XStd for uncensored
 yU = y(Uidx);                          % |U| x 1, responses for uncensored (unchanged scale)
-AC = AStd(Cidx, :);                    % |C| x p, rows of AStd for censored
+XC = XStd(Cidx, :);                    % |C| x p, rows of XStd for censored
 % Note: yC is not extracted; we use the fact that censored obs are modeled as y=c in the objective.
 
 % ---- optional sample weights (default: all ones) -------------------------
@@ -122,7 +122,7 @@ wU = sw(Uidx);
 wC = sw(Cidx);
 
 %% ========== INITIALIZE OPTIMIZATION VARIABLES FROM WARM STARTS ==========
-% Warm starts are provided in the same feature scale as A.
+% Warm starts are provided in the same feature scale as X.
 betaOrig0 = zeros(p, 1);              % default: zero initialization
 if ~isempty(opts.beta0)
     if ~isvector(opts.beta0) || numel(opts.beta0) ~= p
@@ -148,7 +148,7 @@ tFista = 1;                                    % FISTA acceleration parameter (s
 step = 1 / max(opts.L0, eps);                  % initial step size (inverse of Lipschitz estimate)
 
 % Record objective at generation 0 (initial warm start point)
-smooth0 = compute_f_smooth(AU, yU, AC, c, rho, beta, b, wU, wC);
+smooth0 = compute_f_smooth(XU, yU, XC, c, rho, beta, b, wU, wC);
 obj0 = smooth0 + lambda1 * group_l2_sum(beta, groups) + lambda2 * norm(beta, 1);
 
 objHist = nan(opts.maxIter + 1, 1);
@@ -180,7 +180,7 @@ for k = 1:opts.maxIter
     bOld = b;
 
     % Gradient of smooth part at extrapolated point
-    [gBeta, gb, fY] = compute_grad_smooth(AU, yU, AC, c, rho, yBeta, yb, wU, wC);
+    [gBeta, gb, fY] = compute_grad_smooth(XU, yU, XC, c, rho, yBeta, yb, wU, wC);
 
     % ===== Backtracking line search =====
     t = step;
@@ -193,7 +193,7 @@ for k = 1:opts.maxIter
         dBeta = betaCand - yBeta;
         db = bCand - yb;
 
-        fCand = compute_f_smooth(AU, yU, AC, c, rho, betaCand, bCand, wU, wC);
+        fCand = compute_f_smooth(XU, yU, XC, c, rho, betaCand, bCand, wU, wC);
         % Quadratic upper bound condition from Nesterov proximal gradient
         quadUpper = fY + gBeta.' * dBeta + gb * db + ...
             (1 / (2 * t)) * (norm(dBeta, 2)^2 + db^2);
@@ -221,7 +221,7 @@ for k = 1:opts.maxIter
 
     smoothVal = fCand;
     % Compute full objective (smooth + nonsmooth penalties)
-    obj = compute_objective_total(AU, yU, AC, c, rho, beta, b, lambda1, lambda2, groups, wU, wC);
+    obj = compute_objective_total(XU, yU, XC, c, rho, beta, b, lambda1, lambda2, groups, wU, wC);
 
     iters = k;
     objHist(k + 1) = obj;
@@ -338,18 +338,22 @@ stats.lambda1 = lambda1;
 stats.lambda2 = lambda2;
 stats.exitType = exitType;
 
-fprintf('\n===== CENSORED SGL FIT SUMMARY =====\n');
-fprintf('Iterations: %d\n', iters);
-fprintf('Converged: %d\n', converged);
-fprintf('Stop reason: %s\n', exitType);
-fprintf('Uncensored |U| = %d, censored |C| = %d\n', numel(Uidx), numel(Cidx));
-fprintf('c = %.12g, rho = %.12g\n', c, rho);
-fprintf('Final objective: %.12g\n', objHist(end));
-fprintf('Overall nonzeros: %d / %d\n', nnz(betaStd), p);
-for g = 1:numel(groups)
-    idx = groups{g};
-    fprintf('Group %d (cols %d:%d) number of non zeros = %d / %d, all-zero = %d\n', ...
-        g, idx(1), idx(end), nnzPerGroup(g), numel(idx), groupAllZero(g));
+% The per-solve summary is diagnostics only: gate it behind opts.verbose so a
+% multi-seed ensemble (hundreds of lambda-path solves) does not flood the log.
+if opts.verbose
+    fprintf('\n===== CENSORED SGL FIT SUMMARY =====\n');
+    fprintf('Iterations: %d\n', iters);
+    fprintf('Converged: %d\n', converged);
+    fprintf('Stop reason: %s\n', exitType);
+    fprintf('Uncensored |U| = %d, censored |C| = %d\n', numel(Uidx), numel(Cidx));
+    fprintf('c = %.12g, rho = %.12g\n', c, rho);
+    fprintf('Final objective: %.12g\n', objHist(end));
+    fprintf('Overall nonzeros: %d / %d\n', nnz(betaStd), p);
+    for g = 1:numel(groups)
+        idx = groups{g};
+        fprintf('Group %d (cols %d:%d) number of non zeros = %d / %d, all-zero = %d\n', ...
+            g, idx(1), idx(end), nnzPerGroup(g), numel(idx), groupAllZero(g));
+    end
 end
 
 if opts.verbose
@@ -367,8 +371,8 @@ end
 % 2) stats.objHist should generally decrease with backtracking-enabled updates.
 
 % % test
-% z1 = A * betaOrig + intercept;
-% z2 = AStd * betaStd + stats.bStd;
+% z1 = X * betaOrig + intercept;
+% z2 = XStd * betaStd + stats.bStd;
 % fprintf('max abs diff in linear predictor = %.3g\n', max(abs(z1-z2)));
 % yhat1 = max(z1, c);
 % yhat2 = max(z2, c);
@@ -418,7 +422,7 @@ end
 
 % Set rho default based on problem hardness if not provided
 if isempty(opts.rho)
-    % rho controls hardness of A_C*beta + b <= c; larger means harder enforcement.
+    % rho controls hardness of X_C*beta + b <= c; larger means harder enforcement.
     % 40-70% of data often censored, so rho=100 provides reasonable constraint enforcement
     opts.rho = 100;
 end
@@ -429,7 +433,7 @@ function groups = group_indices(p)
 % Define group structure for sparse group lasso regularization.
 % Groups capture domain structure: muscle activations, post-activations, and other features.
 %
-% Input: p = size(A,2) = total number of features
+% Input: p = size(X,2) = total number of features
 % Output: groups = cell array of 3 groups, each containing column indices
 %
 % Assumes: p = 2*nMus + 8 (e.g., 26 = 2*9 + 8 for 9 muscles)
@@ -440,7 +444,7 @@ function groups = group_indices(p)
 nMus = (p - 8) / 2;
 if nMus < 1 || abs(nMus - round(nMus)) > eps(max(1, nMus))
     error('sgl_fit:InvalidPredictorCount', ...
-        'size(A,2) must satisfy p = 2*#mus + 8. Got p = %d.', p);
+        'size(X,2) must satisfy p = 2*#mus + 8. Got p = %d.', p);
 end
 nMus = round(nMus);
 
@@ -451,11 +455,11 @@ groups = {
     };
 end
 
-function [gradBeta, gradb, fVal] = compute_grad_smooth(AU, yU, AC, c, rho, beta, b, wU, wC)
+function [gradBeta, gradb, fVal] = compute_grad_smooth(XU, yU, XC, c, rho, beta, b, wU, wC)
 % Compute gradient of smooth (non-regularized) part of the objective.
 %
 % Smooth objective:
-%   f(beta, b) = 0.5*||yU - (AU*beta + b)||_2^2 + 0.5*rho*||(AC*beta+b-c)_+||_2^2
+%   f(beta, b) = 0.5*||yU - (XU*beta + b)||_2^2 + 0.5*rho*||(XC*beta+b-c)_+||_2^2
 %
 % Outputs:
 %   gradBeta: p x 1 gradient w.r.t. beta
@@ -463,39 +467,39 @@ function [gradBeta, gradb, fVal] = compute_grad_smooth(AU, yU, AC, c, rho, beta,
 %   fVal: current value of f(beta, b)
 
 % Uncensored residual and gradient contributions
-rU = AU * beta + b - yU;
+rU = XU * beta + b - yU;
 % Censored term: only the positive part is active
-tC = AC * beta + b - c;
+tC = XC * beta + b - c;
 pC = max(tC, 0);
 
 % Gradient contribution from uncensored and censored terms (weighted).
 % 注意：wU/wC 是列向量；wU.*rU 逐样本加权，等价于把每个残差乘以
 % sqrt(w) 后再做最小二乘，但这里保留在原目标里，避免改变 censoring
 % 阈值 c 的尺度。
-gradBeta = AU.' * (wU .* rU) + rho * (AC.' * (wC .* pC));
+gradBeta = XU.' * (wU .* rU) + rho * (XC.' * (wC .* pC));
 gradb = sum(wU .* rU) + rho * sum(wC .* pC);
 % Function value（与上面的梯度严格对应）
 fVal = 0.5 * (rU.' * (wU .* rU)) + 0.5 * rho * (pC.' * (wC .* pC));
 end
 
-function f = compute_f_smooth(AU, yU, AC, c, rho, beta, b, wU, wC)
+function f = compute_f_smooth(XU, yU, XC, c, rho, beta, b, wU, wC)
 % Compute value of smooth objective (wrapper for single value query).
 % 与 compute_grad_smooth 使用完全相同的加权公式；wU/wC 默认全 1 时
 % 退化为旧版未加权目标，保证旧 UN.sto 流程数值不变。
-rU = AU * beta + b - yU;
-tC = AC * beta + b - c;
+rU = XU * beta + b - yU;
+tC = XC * beta + b - c;
 pC = max(tC, 0);
 f = 0.5 * (rU.' * (wU .* rU)) + 0.5 * rho * (pC.' * (wC .* pC));
 end
 
-function obj = compute_objective_total(AU, yU, AC, c, rho, beta, b, lambda1, lambda2, groups, wU, wC)
+function obj = compute_objective_total(XU, yU, XC, c, rho, beta, b, lambda1, lambda2, groups, wU, wC)
 % Compute total objective: smooth part + SGL penalties (L1 + group-L2).
 %
 % Total objective:
 %   f(beta,b) + lambda1*sum_g ||beta_g||_2 + lambda2*||beta||_1
 % where f is the smooth part and penalties are the non-smooth regularization.
 
-f = compute_f_smooth(AU, yU, AC, c, rho, beta, b, wU, wC);
+f = compute_f_smooth(XU, yU, XC, c, rho, beta, b, wU, wC);
 obj = f + lambda1 * group_l2_sum(beta, groups) + lambda2 * norm(beta, 1);
 end
 

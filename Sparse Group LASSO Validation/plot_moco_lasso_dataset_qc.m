@@ -40,7 +40,7 @@ muscleNames = ds.muscleNames(rightIdx);
 % 只画右腿 9 块（LASSO 实际拟合的对象）；左腿列存在但不画，避免图太满。
 % 三条线：
 %   activation（蓝）     —— 清洗后的激活，用来判断 target 是否跟得上
-%   raw x（灰点线）      —— 仅当接口有 raw excitation 时
+%   raw x（灰虚线）      —— 仅当接口有 raw excitation 时
 %   target x（橙）       —— LASSO 真正拟合的目标
 % 浅蓝背景 = stance；空白 = swing。
 f1 = figure('Name', 'Moco -> LASSO drives', 'Color', 'w', ...
@@ -55,8 +55,8 @@ for k = 1:numel(rightIdx)
             'LineWidth', 1.1);
     end
     if isfield(ds, 'rawExcitation') && ~isempty(ds.rawExcitation)
-        plot(t, ds.rawExcitation(:, j), ':', 'Color', [0.55 0.55 0.55], ...
-            'LineWidth', 0.9);
+        plot(t, ds.rawExcitation(:, j), '--', 'Color', [0.45 0.45 0.45], ...
+            'LineWidth', 1.0);
     end
     plot(t, ds.excitation(:, j), '-', 'Color', [0.85 0.33 0.10], ...
         'LineWidth', 1.3);
@@ -66,7 +66,7 @@ for k = 1:numel(rightIdx)
     if k == 1
         leg = {'activation'};
         if isfield(ds, 'rawExcitation') && ~isempty(ds.rawExcitation)
-            leg{end+1} = 'raw x';
+            leg{end+1} = 'raw x (dashed)';
         end
         leg{end+1} = 'LASSO target x';
         legend(leg, 'Location', 'southoutside', 'FontSize', 7);

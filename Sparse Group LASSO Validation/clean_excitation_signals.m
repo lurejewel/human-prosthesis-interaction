@@ -120,9 +120,6 @@ if isempty(aRaw)
          'integrates activation from excitation.']);
 end
 
-hasX = true;
-hasA = true;
-
 % -------------------------------------------------------------------------
 % 1. 输入类型/尺寸检查 + 非有限值检查
 % -------------------------------------------------------------------------
@@ -158,7 +155,7 @@ if size(aRaw, 2) ~= nMus
 end
 
 % -------------------------------------------------------------------------
-% 3. activation 的 despike + 低通
+% 2 & 3. activation 的 despike + 低通
 % -------------------------------------------------------------------------
 % 先 despike 再低通：如果先低通，spike 会被抹成较宽的“鼓包”，反而更难
 % 用 Hampel 检测。despike 只替换短 run，不会削掉持续的真实峰值。
@@ -175,31 +172,21 @@ aClean = zero_phase_lowpass(aProc, fs, opts.lowpassHz, opts.filterOrder);
 aClean = min(max(aClean, 0), 1);
 
 % -------------------------------------------------------------------------
-% 4. 构造 LASSO 回归 target
+% 4. 构造 LASSO 回归 target（清洗 xRaw，即 excitation）
 % -------------------------------------------------------------------------
-% flagX 只用于 QC：记录 raw x 里被判为短 spike 的样本，方便在 QC 图/CSV
-% 里报告“原始 excitation 有多脏”。
+% flagX 只用于 QC：记录 raw x 里被判为短 spike 的样本，方便在 QC 图/CSV 里报告
+% “原始 excitation 有多脏”。
 flagX = false(nT, nMus);
-xProc = [];
-if hasX
-    if opts.doDespike
-        [xProc, flagX] = despike_columns(xRaw, opts.medianWindow, ...
-            opts.hampelSigma, opts.despikeMinSigma, opts.maxBurstSamples);
-    else
-        xProc = xRaw;
-    end
+if opts.doDespike
+    [xProc, flagX] = despike_columns(xRaw, opts.medianWindow, ...
+        opts.hampelSigma, opts.despikeMinSigma, opts.maxBurstSamples);
+else
+    xProc = xRaw;
 end
 
-% target 只有一个来源：清洗后的 raw excitation。
-% 不再有 activation / activation_consistent 分支。
+% target 来源：清洗后的 raw excitation
 xClean = zero_phase_lowpass(xProc, fs, opts.lowpassHz, opts.filterOrder);
 targetUsed = 'excitation';
-
-if any(~isfinite(xClean(:)))
-    error('clean_excitation_signals:missingExcitationChannel', ...
-        ['Excitation is required for every muscle; at least one channel ' ...
-         'is still non-finite after interpolation.']);
-end
 
 % 统一裁剪。floor 必须与 fit_adaptive_lasso_phase_model 的 options.c 一致；
 % 否则“y_i <= c 视为 censored”的假设会和 target 的实际下限错位。
@@ -209,19 +196,14 @@ xClean = min(max(xClean, opts.floor), opts.ceiling);
 aPred = integrate_activation(xClean, time, opts.tauAct, opts.tauDeact);
 reconRmse = sqrt(mean((aPred - aClean).^2, 1)).';
 
-nRawX   = nan(1, nMus);
-meanRawX = nan(1, nMus);
-maxRawX  = nan(1, nMus);
-if hasX
-    nRawX    = sum(isfinite(xRaw), 1);
-    meanRawX = mean(xRaw, 1, 'omitnan');
-    maxRawX  = max(xRaw, [], 1, 'omitnan');
-end
+nRawX    = sum(isfinite(xRaw), 1);
+meanRawX = mean(xRaw, 1, 'omitnan');
+maxRawX  = max(xRaw, [], 1, 'omitnan');
 
 qc = struct();
 qc.targetSource          = targetUsed;
-qc.hasRawExcitation      = hasX;
-qc.hasRawActivation      = hasA;
+qc.hasRawExcitation      = true;
+qc.hasRawActivation      = true;
 qc.fs                    = fs;
 qc.dt                    = dt;
 qc.activationReconRMSE   = reconRmse;
@@ -342,9 +324,8 @@ for c = 1:size(x, 2)
     % oscillation as a spike.
     s = max(s, minSigma);
     f = abs(res) > nSigma * s;
-    if ~any(f)
-        continue;
-    end
+    % 如果 f 全为 false，logical_runs 返回 0×2，下面的 run 循环不会执行，
+    % replace 全为 false，赋值也是 no-op；不需要单独写 if ~any(f) continue。
     runs = logical_runs(f);
     replace = false(nT, 1);
     for r = 1:size(runs, 1)

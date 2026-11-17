@@ -1,6 +1,6 @@
-function [lambda2Max, b0, info] = compute_lambda2_max_censored(A, y, c, rho, tolCensor)
+function [lambda2Max, b0, info] = compute_lambda2_max_censored(X, y, c, rho, tolCensor)
 %COMPUTE_LAMBDA2_MAX_CENSORED Compute lambda2 max for censored LASSO.
-%   [lambda2Max, b0, info] = compute_lambda2_max_censored(A, y, c, rho, tolCensor)
+%   [lambda2Max, b0, info] = compute_lambda2_max_censored(X, y, c, rho, tolCensor)
 %   returns the smallest lambda2 such that beta=0 is optimal for the
 %   censored least-squares objective used in sgl_fit.m (without 1/n scaling).
 
@@ -8,8 +8,8 @@ if nargin < 5 || isempty(tolCensor)
     tolCensor = 1e-12;
 end
 
-if ~isnumeric(A) || ndims(A) ~= 2
-    error('compute_lambda2_max_censored:BadDesign', 'A must be a numeric 2D matrix.');
+if ~isnumeric(X) || ndims(X) ~= 2
+    error('compute_lambda2_max_censored:BadDesign', 'X must be a numeric 2D matrix.');
 end
 if ~isnumeric(y)
     error('compute_lambda2_max_censored:BadResponse', 'y must be numeric.');
@@ -25,9 +25,9 @@ if ~isscalar(tolCensor) || ~isfinite(tolCensor) || tolCensor < 0
 end
 
 y = y(:);
-[n, p] = size(A);
+[n, p] = size(X);
 if numel(y) ~= n
-    error('compute_lambda2_max_censored:BadResponseSize', 'y must have %d rows to match A.', n);
+    error('compute_lambda2_max_censored:BadResponseSize', 'y must have %d rows to match X.', n);
 end
 
 Uidx = find(y > c + tolCensor);
@@ -57,9 +57,9 @@ b0 = (sum(y(Uidx)) + rho * nC * c) / (nU + rho * nC);
 rU = b0 - y(Uidx);
 pC = max(b0 - c, 0);
 
-gradBetaAtZero = A(Uidx, :).'* rU;
+gradBetaAtZero = X(Uidx, :).' * rU;
 if nC > 0 && pC > 0
-    gradBetaAtZero = gradBetaAtZero + rho * (A(Cidx, :).'* (pC * ones(nC, 1)));
+    gradBetaAtZero = gradBetaAtZero + rho * (X(Cidx, :).' * (pC * ones(nC, 1)));
 end
 
 lambda2Max = max(abs(gradBetaAtZero));

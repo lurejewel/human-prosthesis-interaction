@@ -40,8 +40,9 @@ function C = compute_com_x_from_kinematics(modelFile, time, q, qdot, qNames)
 % 注意
 % ----
 % * 这里只需要位置，不需要动力学；realizePosition 足够。
-% * 只设置模型拥有的坐标；IK 里多出来的 3D 坐标（pelvis_list 等）对
-%   human0918 不存在，直接忽略。
+% * qNames 里可以有多余的 3D 坐标（pelvis_list 等），直接忽略；
+%   但模型拥有的每个坐标都必须在 qNames 中出现，缺一个就报
+%   missingCoordinates，不会静默设为 0。
 % * q/qdot 必须有限；上层接口已经检查过。
 
 if ~isfile(modelFile)
@@ -68,13 +69,23 @@ cs = model.getCoordinateSet();
 nCoord = cs.getSize();
 coordHandles = cell(1, nCoord);
 coordCol = zeros(1, nCoord);
+missingCoords = {};
 for i = 1:nCoord
     c = cs.get(i - 1);
     coordHandles{i} = c;
-    j = find(strcmp(qNames, char(c.getName())), 1);
+    cname = char(c.getName());
+    j = find(strcmp(qNames, cname), 1);
     if ~isempty(j)
         coordCol(i) = j;
+    else
+        missingCoords{end+1} = cname; %#ok<AGROW>
     end
+end
+if ~isempty(missingCoords)
+    error('compute_com_x_from_kinematics:missingCoordinates', ...
+        ['Model coordinates missing from qNames: %s. ' ...
+         'Provide all model DOFs; refusing to silently set them to 0.'], ...
+        strjoin(missingCoords, ', '));
 end
 
 % ---- 三个 body 的质心局部坐标 -----------------------------------------
@@ -93,15 +104,11 @@ C.calcnL = zeros(nT, 1);
 C.modelFile = char(modelFile);
 
 for k = 1:nT
-    % 设置所有模型坐标；qNames 里没有的坐标设为 0。
+    % 所有模型坐标都已在上面的 missingCoordinates 检查中确认存在，
+    % 这里不再需要“缺失坐标设 0”的 fallback。
     for i = 1:nCoord
-        if coordCol(i) > 0
-            coordHandles{i}.setValue(state, q(k, coordCol(i)), false);
-            coordHandles{i}.setSpeedValue(state, qdot(k, coordCol(i)));
-        else
-            coordHandles{i}.setValue(state, 0, false);
-            coordHandles{i}.setSpeedValue(state, 0);
-        end
+        coordHandles{i}.setValue(state, q(k, coordCol(i)), false);
+        coordHandles{i}.setSpeedValue(state, qdot(k, coordCol(i)));
     end
     model.realizePosition(state);
 

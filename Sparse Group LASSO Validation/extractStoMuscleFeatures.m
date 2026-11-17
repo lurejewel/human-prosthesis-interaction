@@ -1,4 +1,4 @@
-function [excitation, featureMatrix, featureMap, maskMatrix, phaseData] = extractStoMuscleFeatures(stoFilePath, muscleName)
+function [excitation, featureMatrix, featureMap, phaseData] = extractStoMuscleFeatures(stoFilePath, muscleName)
 % extractStoMuscleFeatures
 % Read a SCONE/OpenSim .sto file with OpenSim API and extract:
 % 1) T x 1 excitation of a target muscle
@@ -91,9 +91,6 @@ for i = 1:numFeatures
 end
 
 featureMap = containers.Map(featureLabels, num2cell(1:numFeatures));
-
-% Build mask matrix M
-maskMatrix = buildMask(numel(forceLabels));
 
 % Split all time-series outputs by gait phase for downstream processing.
 phaseData = struct();

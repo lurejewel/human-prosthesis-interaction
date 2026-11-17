@@ -590,6 +590,7 @@ Hampel 滤波 = **用一个滑动窗口的中值作为“局部正常水平”�
 - 普通 `filter` 是因果滤波，会引入相位延迟；对反射控制来说，相位延迟等价于
   人为改变反射延迟；
 - `filtfilt` 正向+反向，净相位为 0，只改变幅频特性，不移动峰值时刻；
+- 输入必须是有限值；NaN/Inf 直接报错，不再插值或跳过整列；
 - 默认 6 Hz：步态主频约 1 Hz，6 Hz 保留步态谐波，去掉 Moco 的高频 chatter；
 - 如果研究跑步/快速反射，可提高到 10–15 Hz；设为 0 可做“不滤波”的消融。
 
@@ -782,15 +783,14 @@ GRF <  th  -> 与 swing/landing 相关的判断
 `extractStoMuscleFeatures.m` 从 `.sto` 读出：
 
 - `Y`：nSamples × 9 的右腿 excitation；
-- `X`：nSamples × 26 的特征；
-- `M`：mask（当前 identity）；
+- `X`：nSamples × 26 的特征。设计矩阵直接用 `X`（旧版写作 `A = X*M`，`M` 是单位阵，现已移除；全文统一用 `X`）；
 - `phase.stanceIdx/swingIdx`：来自 `leg1_r.state`。
 
 然后按 `delaySteps` 做延迟对齐：
 
 ```text
 target : y(t_k)        -> 去掉第一个样本
-feature: A(t_{k-1})    -> 去掉最后一个样本
+feature: X(t_{k-1})    -> 去掉最后一个样本
 ```
 
 默认 `delaySteps = 1`，100 Hz 下就是 10 ms 反射延迟。
@@ -798,18 +798,17 @@ feature: A(t_{k-1})    -> 去掉最后一个样本
 ### 6.2 设计矩阵
 
 ```text
-A = X * M
-A_orig = A
-muA = mean(A_orig, 1)
-sA  = std(A_orig, 1, 1)
-A   = (A_orig - muA) ./ sA
+X_orig = X
+muX = mean(X_orig, 1)
+sX  = std(X_orig, 1, 1)
+X   = (X_orig - muX) ./ sX
 ```
 
 标准化只改变优化条件数；最终系数会反变换回原始特征尺度：
 
 ```text
-beta_orig = beta_std ./ sA'
-b_orig    = b_std - muA * beta_orig
+beta_orig = beta_std ./ sX'
+b_orig    = b_std - muX * beta_orig
 ```
 
 ### 6.3 censored 回归目标
@@ -818,9 +817,9 @@ b_orig    = b_std - muA * beta_orig
 
 $$
 \min_{\beta,b}\;
-\frac12 \sum_{i \in U} w_i \left(y_i - (A_i\beta+b)\right)^2
+\frac12 \sum_{i \in U} w_i \left(y_i - (X_i\beta+b)\right)^2
 +
-\frac{\rho}{2} \sum_{i \in C} w_i \left((A_i\beta+b-c)_+\right)^2
+\frac{\rho}{2} \sum_{i \in C} w_i \left((X_i\beta+b-c)_+\right)^2
 +
 \lambda_1 \sum_g \|\beta_g\|_2
 +
@@ -833,13 +832,13 @@ $$
 - `C = {i: y_i <= c + tolCensor}`，被 floor 在 `c` 的样本；
 - `c = 0.01`；
 - `(z)_+ = max(z,0)`，所以 censored 项只惩罚
-  `A_i beta + b > c`，**不惩罚** `A_i beta + b <= c`；
+  `X_i beta + b > c`，**不惩罚** `X_i beta + b <= c`；
 - `rho = 50` 越大，越强制 censored 样本的 latent prediction
-  `A_C beta + b <= c`，即把这一项压到 0；它不是强制 `>= c`；
+  `X_C beta + b <= c`，即把这一项压到 0；它不是强制 `>= c`；
 - `w_i` 是 `sampleWeight`（0 = 排除，1 = 正常，Huber 时 0–1）；
 - group 结构固定为：1–9 纤维长度、10–18 MTU 力、19–26 运动学。
 
-> 注意：代码里计算 RMSE 时常用 `max(A beta + b, c)` 作为“报告值”，
+> 注意：代码里计算 RMSE 时常用 `max(X beta + b, c)` 作为“报告值”，
 > 因此打印/画图看起来总是 `>= c`；那是评估时的 clip，不是优化目标对
 > censored 样本的要求。优化目标本身是让 censored 样本的 latent
 > prediction 不超过 `c`。
@@ -856,7 +855,7 @@ lambda2 = lambda % 沿 path 变化
 先用 uncensored 样本做（加权）OLS 初估：
 
 ```text
-beta_OLS = argmin sum_{U} w_i (y_i - A_i beta - b)^2
+beta_OLS = argmin sum_{U} w_i (y_i - X_i beta - b)^2
 ```
 
 这个初始 OLS **默认也做 Huber IRLS**（`robustInitIter=2`）：
@@ -891,7 +890,7 @@ $$
 列缩放：
 
 ```text
-A_star = A ./ w
+X_star = X ./ w
 ```
 
 这样对 `beta_star` 的普通 L1 等价于对原始 `beta` 的加权 L1：
@@ -912,7 +911,7 @@ lambdaGrid = lambda2Max * alphaGrid
 
 对每个 `lambda_k`：
 
-1. `sgl_fit(A_star, y, 0, lambda_k)` → `beta_star`；
+1. `sgl_fit(X_star, y, 0, lambda_k)` → `beta_star`；
 2. 换回 `beta_ada = beta_star ./ w`；
 3. support `S_k = {j: |beta_ada_j| > nzTol}`，`nzTol=1e-5`；
 4. 在 `S_k` 上做 post-selection refit（`lambda=0`），得到 `beta_refit`；
@@ -921,7 +920,7 @@ lambdaGrid = lambda2Max * alphaGrid
 $$
 \mathrm{RMSE}_k =
 \sqrt{
-\frac{\sum_i w_i (y_i - \max(A_i\beta_k+b_k,c))^2}
+\frac{\sum_i w_i (y_i - \max(X_i\beta_k+b_k,c))^2}
      {\sum_i w_i}
 }
 $$
@@ -976,7 +975,7 @@ $$
 
 ```text
 1. 用当前权重 wCur 做 support 上的 WLS（lambda=0）
-2. 计算 latent prediction: latent = A*beta + b
+2. 计算 latent prediction: latent = X*beta + b
 3. 只取 uncensored 样本的残差:
        rU = y(U) - latent(U)
 4. scale = 1.4826 * MAD(rU)
@@ -996,14 +995,14 @@ $$
 #### 6.7.3 为什么只对 uncensored 样本降权
 
 censored 样本的观测值是 `y_i = c`。如果 latent prediction
-`A_i beta+b > c`，这是**需要被 `rho` 惩罚的 hinge 违反**，不是“y 的离群点”。
+`X_i beta+b > c`，这是**需要被 `rho` 惩罚的 hinge 违反**，不是“y 的离群点”。
 
-如果也对 censored 样本按 `|y - max(A beta+b,c)|` 降权，就会把本来应该被
+如果也对 censored 样本按 `|y - max(X beta+b,c)|` 降权，就会把本来应该被
 `rho` 压下去的违反项也削弱，等于削弱 censoring 约束。因此：
 
 - uncensored 样本：按 Huber 权重降权 burst；
 - censored 样本：保持 `wBase`（通常为 1），让 `rho` 继续约束
-  `A beta+b <= c`；
+  `X beta+b <= c`；
 - `wBase=0` 的接缝/无效样本始终保持 0。
 
 #### 6.7.4 Huber 用在两处，但不在 lambda path
@@ -1052,21 +1051,21 @@ for muscle m = 1..9
     OLS on uncensored samples -> beta_OLS
       (Huber IRLS, robustInitIter=2)
     adaptive w = 1/max(|beta_OLS|, eps)^gamma
-    A_star = A ./ w
+    X_star = X ./ w
 
     for lambda in path
-      beta_star = sgl_fit(A_star, y, 0, lambda, weights=wBase)
+      beta_star = sgl_fit(X_star, y, 0, lambda, weights=wBase)
       beta_ada  = beta_star ./ w
       S = support(beta_ada)
-      beta_refit = sgl_fit(A_refit, y, 0, 0, weights=wBase)
-      rmse = weighted_rmse(y, max(A beta_refit + b, c), wBase)
+      beta_refit = sgl_fit(X_refit, y, 0, 0, weights=wBase)
+      rmse = weighted_rmse(y, max(X beta_refit + b, c), wBase)
     end
 
     select lambda by (1+tolSelect)*min(rmse), first feasible
 
     for iter = 1..robustIter
-      beta_refit = sgl_fit(A_refit, y, 0, 0, weights=wCur)
-      latent = A beta_refit + b
+      beta_refit = sgl_fit(X_refit, y, 0, 0, weights=wCur)
+      latent = X beta_refit + b
       U = y > c + tol                 % 只对 uncensored 样本算 Huber
       rU = y(U) - latent(U)
       wHuber = ones(size(y))
@@ -1162,6 +1161,38 @@ fit.featureNames                     26 个特征名
 
 lambda path 的 `stats` 已经 compact，不会把每次 FISTA 的 20k 步 objHist
 全部写入磁盘。
+
+### 7.5 `results/lasso_controller_result_moco_consensus.mat`（多随机种子共识结构）
+
+用 K 个随机种子重复辨识（run-level bootstrap，见
+[`LASSO_STABILITY_IDENTIFICATION.md`](LASSO_STABILITY_IDENTIFICATION.md)）后，
+输出的是**共识结构** controller。格式与 7.3 **完全一致**，
+`load_lasso_reflex_controller.m` 无需修改，另外附带两组诊断字段：
+
+```matlab
+lasso.identification = struct( ...
+    'method', 'run_level_bootstrap_stability_selection', ...
+    'nSeeds', 20, 'baseSeed', 2026, 'resampleMode', 'run_bootstrap', ...
+    'consensusRule', 'majority', 'tieBreak', 'include', ...
+    'nValid', [20 20], ...                 % 每个 group 的有效种子数
+    'modeCount', [...], 'modeFraction', [...], ...   % 众数 mask 得票 / 占比
+    'dominantClusterFraction', [...], ...            % 最大 Jaccard 簇占比
+    'nStableOn', [...], 'nStableOff', [...], 'nAmbiguous', [...], ...
+    'maskSignature', [...], 'totalParameters', 247, ...
+    'rmseDelta', [...], ...                % 冻结 mask 后全量 RMSE 的相对变化
+    'seeds', [...], 'validMask', [...] );
+
+lasso.stability = struct('Pi', {...}, 'mask', {...}, 'modeMask', {...}, ...
+    'medoidMask', {...}, 'clusterSizes', {...}, 'supportSizes', {...});
+```
+
+- `Pi{g}`：26×9 的**入选频率**，即 0-1 图的“置信度图”；
+- `mask{g}`：最终冻结的共识 0-1 结构；
+- `totalParameters = nnz(mask_stance) + 9 + nnz(mask_swing) + 9`，就是
+  CMA-ES 的向量长度。
+
+> loader 只读 `groups(g).beta/bias/mask/phases/label` 与
+> `nPhases/phaseIds`，上述额外字段不影响加载。
 
 ---
 
@@ -1274,9 +1305,9 @@ Feature reconstruction test PASSED.
 
 ### 9.3 在 B30 初步结果上的参考数值
 
-这些只是当前数据的量级参考，不是判据。注意：`B30_right_final.sto` 是
-activation-only 的初步解，新逻辑会直接报 `MissingExcitation`；这里的数值只用于
-说明特征/清洗的量级，不代表该文件还能跑通完整接口。
+这些只是当前数据的量级参考，不是判据。当前 `B30_right_final.sto` 同时包含
+activation 和 excitation；如果换成 activation-only 的初步解，接口会直接报
+`MissingExcitation`。这里的数值只用于说明特征/清洗的量级。
 
 - `lCEN ≈ 0.58–1.33`（不受 Fmax 影响）；
 - `fATN ≈ 0–0.79`（均匀缩放 Fmax 不改变该范围）；
@@ -1355,6 +1386,10 @@ activation-only 的初步解，新逻辑会直接报 `MissingExcitation`；这�
 6. `c = 0.01` 与 `cleanOpts.floor` 的一致性检查；
 7. 不同 `lambdaPathConfig.tolSelect`（0.02 / 0.05 / 0.10）；
 8. 用 `excludeTimeWindows` 排除/不排除 Moco 分段接缝。
+9. 多随机种子一致性（stability）辨识：`nSeeds` 与 `minDominantFraction`
+   的影响；对比 `resampleMode = run_bootstrap` / `run_subsample` /
+   `iid_bootstrap`（最后一种预期“过于稳定”，正好用来证明按 run 重采样
+   的必要性）。见 [`LASSO_STABILITY_IDENTIFICATION.md`](LASSO_STABILITY_IDENTIFICATION.md)。
 
 每组实验都建议保存独立的 `lasso_controller_result_moco_<tag>.mat`，避免覆盖。
 

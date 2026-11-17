@@ -79,7 +79,7 @@ fprintf('=====================================================================\n
 % 关键参数说明：
 %   c = 0.01               censoring floor，必须与 cleanOpts.floor 一致；
 %   rho = 50               censored hinge 强度；越大越强制
-%                          A_C*beta+b <= c（不是 >= c）；
+%                          X_C*beta+b <= c（不是 >= c）；
 %   delaySteps = 1          100 Hz 网格下 10 ms 反射延迟；
 %   robustIter = 2         选定 support 后的 Huber IRLS 次数；0 可做消融；
 %   huberDeltaFactor=1.345 正态分布下 95% 效率的经典 Huber 常数；

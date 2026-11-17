@@ -14,6 +14,9 @@
 TOOL_*.m
 tmp_*.py
 __pycache__/
+references/
+experiments/moco/_history_files/
+experiments/moco/outputs/
 DEPRECATED_*
 Deprecated_*
 experiments/data/

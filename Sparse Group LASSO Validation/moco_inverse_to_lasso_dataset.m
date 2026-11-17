@@ -84,8 +84,14 @@ if ~exist(outDir, 'dir')
 end
 outStem = 'moco_lasso_dataset';
 reportFile = fullfile(outDir, [outStem '_report.txt']);
+% 先关掉可能还开着的 diary，避免旧 report 被占用导致 delete 报警。
+diary off;
 if isfile(reportFile)
-    delete(reportFile);
+    try
+        delete(reportFile);
+    catch
+        % 如果文件仍被其他进程占用，保留旧文件；下面的 diary 会继续追加。
+    end
 end
 diary(reportFile);
 diary on;
@@ -108,11 +114,15 @@ fprintf('=====================================================================\n
 %   * 完整解（activation + excitation + 可选 /jointset 坐标）；
 %   * 或“完整解 + 单独 excitationFile/activationFile”的组合。
 %
-% 注意：下面默认的 B30 preliminary 解只有 activation、没有 excitation，
-% 在新逻辑下会直接报 MissingExcitation。运行正式数据前请把这里改成包含
-% 完整 excitation + activation 的最终解。
+% 注意：运行前确认 solutionFile 同时包含完整的 excitation 和 activation
+% （每块肌肉都不能缺列/含 NaN）。当前 B30 文件同时包含这两类列；如果换成
+% activation-only 的初步解，接口会直接报 MissingExcitation。
+%
+% 2026-11：改用 MocoInverse 外层交替迭代**收敛后**的最终解
+% （B30_cont2_final.sto，与 moco_inverse_solution_B30_cont2_u021_merged.sto
+%  MD5 相同）。旧的非收敛版本已归档到 experiments/moco/_history_files/outputs/。
 solutionFile = fullfile(repoRoot, 'experiments', 'moco', 'outputs', ...
-    'moco_inverse_solution_B30_right_final.sto');
+    'B30_cont2_final.sto');
 
 % Optional separate files.  Leave empty when the solution already contains
 % the corresponding columns.
@@ -231,10 +241,13 @@ starts = S.time(1);
 ends   = S.time(end);
 if ~isempty(extraExc), starts = max(starts, extraExc.time(1)); ends = min(ends, extraExc.time(end)); end
 if ~isempty(extraAct), starts = max(starts, extraAct.time(1)); ends = min(ends, extraAct.time(end)); end
+% IK 只在这里读一次：下面 kinematics 分支直接复用 IK，避免重复读文件。
+% 如果 Moco 解自带坐标，则 IK 保持空，不参与时间交集，也不读文件。
+IK = [];
 if ~S.hasCoordinates && isfile(ikFile)
-    IK0 = read_sto_mot_table(ikFile);
-    starts = max(starts, IK0.time(1));
-    ends   = min(ends, IK0.time(end));
+    IK = read_sto_mot_table(ikFile);
+    starts = max(starts, IK.time(1));
+    ends   = min(ends, IK.time(end));
 end
 if isfile(grfFile)
     G0 = read_sto_mot_table(grfFile);
@@ -309,11 +322,12 @@ if S.hasCoordinates
     end
     fprintf('    kinematics source      : Moco solution /jointset values\n');
 else
-    if ~isfile(ikFile)
+    % 这里复用上面 1b 节读到的 IK。
+    % 若 IK 为空，说明 ikFile 为空/不存在，或 S.hasCoordinates 的判断有误。
+    if isempty(IK)
         error('NoKinematics', ...
             'Solution has no coordinates and ikFile is empty/not found: %s', ikFile);
     end
-    IK = read_sto_mot_table(ikFile);
     qNamesOut = IK.labels(2:end);
     qIK = IK.data(:, 2:end);
     if IK.inDegrees
@@ -351,8 +365,14 @@ fprintf('    raw excitation present : %d\n', qcClean.hasRawExcitation);
 fprintf('    raw activation present : %d\n', qcClean.hasRawActivation);
 fprintf('    activation recon RMSE  : mean %.4f, max %.4f\n', ...
     mean(qcClean.activationReconRMSE), max(qcClean.activationReconRMSE));
-fprintf('    flagged excitation %%   : mean %.2f, max %.2f\n', ...
-    mean(qcClean.pctFlaggedExcitation), max(qcClean.pctFlaggedExcitation));
+% pctFlaggedExcitation 是“每块肌肉被 despike 替换的样本百分比”：
+%   mean = 18 块肌肉的平均值；
+%   max  = 单块肌肉的最大值（下面同时打印对应肌肉名）。
+[~, maxFlagIdx] = max(qcClean.pctFlaggedExcitation);
+fprintf('    flagged excitation %%   : mean %.2f, max %.2f (%s)\n', ...
+    mean(qcClean.pctFlaggedExcitation), ...
+    qcClean.pctFlaggedExcitation(maxFlagIdx), ...
+    muscleNames{maxFlagIdx});
 
 
 %% ---- 5. muscle features (lCEN, fATN) -----------------------------------
@@ -580,7 +600,6 @@ end
 % 输出单位：Q 是 rad/m，t 是 s -> D 是 rad/s 或 m/s。
 function D = derivative_matrix(t, Q)
 %DERIVATIVE_MATRIX  Central-difference speed, one column at a time.
-nT = size(Q, 1);
 D = nan(size(Q));
 for c = 1:size(Q, 2)
     D(:, c) = gradient(Q(:, c), t);

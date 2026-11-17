@@ -54,9 +54,9 @@ The loader supports two formats, auto-detected:
 |-------|------|-------------|
 | `.label` | `char` | Human-readable label (e.g., `'stance'`, `'swing'`) |
 | `.phases` | `1 × k` double | Phase IDs that use this controller (e.g., `[0 1]`) |
-| `.beta` | `22 × 7` double | Coefficient matrix (features × canonical muscles) |
-| `.bias` | `1 × 7` double | Bias/intercept vector |
-| `.mask` | `22 × 7` logical | Structural zero mask (`true` = optimizable entry) |
+| `.beta` | `26 × 9` double | Coefficient matrix (features × canonical muscles) |
+| `.bias` | `1 × 9` double | Bias/intercept vector |
+| `.mask` | `26 × 9` logical | Structural zero mask (`true` = optimizable entry) |
 
 ### Example grouped struct
 
@@ -71,7 +71,7 @@ lasso.groups = struct();
 % Stance controller — used by phases 0 and 1
 lasso.groups(1).label  = 'stance';
 lasso.groups(1).phases = [0 1];
-lasso.groups(1).beta   = betaStance;     % 22×7 double
+lasso.groups(1).beta   = betaStance;     % 26×9 double
 lasso.groups(1).bias   = biasStance;     % 1×9 double
 lasso.groups(1).mask   = maskStance;     % 26×9 logical
 
@@ -139,6 +139,13 @@ Each cell `lasso.bias{p}` must have **9 elements** (convertible to `1 × 9`).
 | `lasso.featureNames` | Cell array `26 × 1` or `1 × 26` of `char` | *(none)* |
 | `lasso.muscleNames` | Cell array `9 × 1` or `1 × 9` of `char` | *(none)* |
 
+> **Ignored metadata.** `results/lasso_controller_result_moco_consensus.mat`
+> additionally stores `lasso.identification` and `lasso.stability` (multi-seed
+> consensus diagnostics: selection frequency `Pi`, modal-mask counts, Jaccard
+> clusters, `maskSignature`, `totalParameters`).  The loader ignores unknown
+> fields, so these are purely informational — see
+> [`LASSO_STABILITY_IDENTIFICATION.md`](LASSO_STABILITY_IDENTIFICATION.md).
+
 ### `lasso.mask` (legacy format only)
 
 A `logical` matrix of the same size as each `beta{p}`.
@@ -173,7 +180,7 @@ For the current 5-phase gait model, expected values are:
 
 ---
 
-## Feature ordering — 22 elements (rows of `beta`)
+## Feature ordering — 26 elements (rows of `beta`)
 
 | Index | Feature | Source |
 |-------|---------|--------|

@@ -61,7 +61,7 @@ MocoInverse 的输出不是这个格式：
 | `read_sto_mot_table.m` | 纯 MATLAB 的 `.sto/.mot` 读取器（不依赖 OpenSim MATLAB 接口） |
 | `read_moco_inverse_solution.m` | 从 Moco 解中解析 `/forceset/<muscle>`、`/activation`、`/jointset/.../value|speed` |
 | `clean_excitation_signals.m` | despike + 零相位低通；target 始终是 cleaned raw excitation |
-| `zero_phase_lowpass.m` | 零相位 Butterworth（无 Signal Processing Toolbox 时退化为移动平均） |
+| `zero_phase_lowpass.m` | 零相位 Butterworth（`butter` + 逐列 `filtfilt`；要求输入有限） |
 | `compute_com_x_from_kinematics.m` | 计算 pelvis/calcn 质心全局 X，供 `cal_gait_phase` 规则使用 |
 | `detect_stance_from_grf.m` | 严格按 `cal_gait_phase.m` 重建 0..4 相位（0.02 BW 单阈值） |
 | `build_lasso_features_from_kinematics.m` | 沿给定运动积分纤维长度状态，计算 lCEN / fATN |
