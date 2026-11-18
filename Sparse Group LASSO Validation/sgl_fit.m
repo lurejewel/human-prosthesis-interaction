@@ -38,6 +38,8 @@ function [betaOrig, intercept, betaStd, stats] = sgl_fit(X, y, lambda1, lambda2,
 %               maxIter       (default 2000)
 %               tol           (default 1e-6)
 %               verbose       (default true)
+%               muscleName    (default 'muscle') label used only in the
+%                             verbose objective-history figure title
 %               backtrackBeta (default 0.5)
 %               L0            (default 1.0)
 %               beta0         (default []) warm start in ORIGINAL space
@@ -411,6 +413,10 @@ defaults.b0 = 0; % first guess of intercept (in original space) for warm start
 defaults.tolCensor = 1e-12;
 % Optional nonnegative sample weights ([] = all ones)
 defaults.sampleWeight = [];
+% Label used only in the verbose objective-history figure title.  Callers in the
+% lambda path set it per solve; without a default the title referenced a
+% non-existent field.
+defaults.muscleName = 'muscle';
 
 % Fill in missing options with defaults
 fn = fieldnames(defaults);

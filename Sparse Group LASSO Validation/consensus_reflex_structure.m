@@ -41,7 +41,10 @@ function C = consensus_reflex_structure(masks, opts)
 %   conformJaccard   0.8   a replicate "supports" the consensus when its
 %                          Jaccard similarity to the consensus mask is >= this
 %   valid            K x nGroups logical (default all true); invalid
-%                    replicates are excluded from that group's statistics
+%                    replicates are excluded from that group's statistics.
+%                    Invalid masks may be empty (e.g. failed replicates are
+%                    recorded as []) -- they are ignored, and only valid
+%                    masks are size-checked against each other.
 %
 %   Output C
 %   --------
@@ -84,17 +87,9 @@ if nGroups < 1
     error('consensus_reflex_structure:BadInput', 'masks must have at least one column.');
 end
 
-refSize = size(masks{1, 1});
-for k = 1:K
-    for g = 1:nGroups
-        if ~isequal(size(masks{k, g}), refSize)
-            error('consensus_reflex_structure:SizeMismatch', ...
-                'masks{%d,%d} is %s but masks{1,1} is %s.', ...
-                k, g, mat2str(size(masks{k, g})), mat2str(refSize));
-        end
-    end
-end
-
+% Validate opts.valid BEFORE the mask-size check: failed replicates are
+% recorded with empty masks and must be ignored here.  Only valid masks are
+% size-checked; the reference size comes from the first valid, non-empty mask.
 if isfield(opts, 'valid') && ~isempty(opts.valid)
     valid = logical(opts.valid);
     if ~isequal(size(valid), [K, nGroups])
@@ -105,6 +100,36 @@ else
     valid = true(K, nGroups);
 end
 
+refSize = [];
+for k = 1:K
+    for g = 1:nGroups
+        if valid(k, g) && ~isempty(masks{k, g})
+            refSize = size(masks{k, g});
+            break;
+        end
+    end
+    if ~isempty(refSize)
+        break;
+    end
+end
+if isempty(refSize)
+    error('consensus_reflex_structure:NoValidReplicate', ...
+        'No valid, non-empty replicate mask found (opts.valid has no usable entries).');
+end
+
+for k = 1:K
+    for g = 1:nGroups
+        if ~valid(k, g)
+            continue;   % failed/invalid replicate: mask may be empty, ignore it
+        end
+        if isempty(masks{k, g}) || ~isequal(size(masks{k, g}), refSize)
+            error('consensus_reflex_structure:SizeMismatch', ...
+                'masks{%d,%d} is %s but the reference mask is %s.', ...
+                k, g, mat2str(size(masks{k, g})), mat2str(refSize));
+        end
+    end
+end
+
 C = struct();
 C.rule           = opts.rule;
 C.piThreshold    = opts.piThreshold;
@@ -112,7 +137,7 @@ C.tieBreak       = opts.tieBreak;
 C.clusterJaccard = opts.clusterJaccard;
 C.nSeeds         = K;
 C.nGroups        = nGroups;
-C.nElem          = numel(masks{1, 1});
+C.nElem          = prod(refSize);
 C.valid          = valid;
 
 for g = 1:nGroups

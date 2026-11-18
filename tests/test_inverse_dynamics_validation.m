@@ -84,6 +84,7 @@ grfForceVals  = cell(2, 1);   % {Nframes x 3}
 grfMomentVals = cell(2, 1);   % {Nframes x 3}
 grfCopVals    = cell(2, 1);   % {Nframes x 3}
 legHasData    = false(2, 1);
+legHasGrm     = false(2, 1);   % 该腿是否有 grm_* 列 (自由力矩)
 
 for s = 1 : 2
     ln = legNames{s};
@@ -99,6 +100,7 @@ for s = 1 : 2
     [~, hasMz] = tryReadCol([ln, '.grm_z']);
     if hasMx && hasMy && hasMz
         grfMomentVals{s} = [readCol([ln, '.grm_x']), readCol([ln, '.grm_y']), readCol([ln, '.grm_z'])];
+        legHasGrm(s) = true;
         fprintf('  已提取 %s: GRF + GRM + COP\n', ln);
     else
         grfMomentVals{s} = zeros(nFrames, 3);
@@ -196,7 +198,7 @@ knownAliases = { ...
 % coordMatch{}.stoQ / stoU / stoA — Nframes x 1 数据
 fprintf('  匹配 STO 列 → 模型坐标 ...\n');
 coordMatch = {};
-targetJointModelIdx = zeros(1, 3);  % hip, knee, ankle 在模型中的 0-based 索引
+targetJointModelIdx = -1 * ones(1, 3);  % hip, knee, ankle 在模型中的 0-based 索引 (-1 = 未匹配; 0 是有效索引)
 targetJointStoName = {'hip_flexion_r', 'knee_extension_r', 'ankle_dorsiflexion_r'};
 
 for ci = 0 : nCoord - 1
@@ -254,9 +256,10 @@ for j = 1 : 3
     end
 end
 
-% --- 用 PrescribedForce 注入 GRF ---
+% --- 用 PrescribedForce 注入 GRF + GRM ---
 fprintf('  构建 PrescribedForce 对象 ...\n');
 nLegsAdded = 0;
+nLegsWithGrm = 0;
 for s = 1 : 2
     if ~legHasData(s), continue; end
     bodyName = legBodies{s};
@@ -264,18 +267,30 @@ for s = 1 : 2
     
     Fx = grfForceVals{s}(:, 1);  Fy = grfForceVals{s}(:, 2);  Fz = grfForceVals{s}(:, 3);
     Px = grfCopVals{s}(:, 1);    Py = grfCopVals{s}(:, 2);    Pz = grfCopVals{s}(:, 3);
-    % Mx = grfMomentVals{s}(:, 1); My = grfMomentVals{s}(:, 2); Mz = grfMomentVals{s}(:, 3);
     
     pfName = sprintf('grf_%s', legNames{s});
     pf = PrescribedForce(pfName, bodySet.get(bodyName));
     pf.setForceFunctions( buildPLF(Fx, time), buildPLF(Fy, time), buildPLF(Fz, time));
     pf.setPointFunctions( buildPLF(Px, time), buildPLF(Py, time), buildPLF(Pz, time));
+    % PrescribedForce 的 forceIsGlobal 同时决定 force 与 torque 的坐标系
     pf.setForceIsInGlobalFrame(true);
     pf.setPointIsInGlobalFrame(true);
+
+    % GRM = COP 处的自由力矩 (SCONE legN_*.grm_x/y/z, ground 全局系).
+    % 用 setTorqueFunctions 作为纯力矩注入, 与 force×COP 不重复计入.
+    if legHasGrm(s)
+        Mx = grfMomentVals{s}(:, 1);
+        My = grfMomentVals{s}(:, 2);
+        Mz = grfMomentVals{s}(:, 3);
+        pf.setTorqueFunctions( buildPLF(Mx, time), buildPLF(My, time), buildPLF(Mz, time));
+        nLegsWithGrm = nLegsWithGrm + 1;
+    end
+
     model.addForce(pf);
     nLegsAdded = nLegsAdded + 1;
 end
-fprintf('  已添加 %d 个 PrescribedForce (GRF+GRM+COP)\n', nLegsAdded);
+fprintf('  已添加 %d 个 PrescribedForce (GRF+COP 全局系; 其中 %d 个含 GRM 自由力矩)\n', ...
+    nLegsAdded, nLegsWithGrm);
 model.finalizeConnections();
 
 st = model.initSystem();

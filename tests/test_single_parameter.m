@@ -176,8 +176,9 @@ for i = 1 : nMus
 end
 
 % ---- state for moment-arm queries (fresh copy, kinematics set per frame) ----
-% labelHistory is in label order; permute to internal order for state.updY().set()
-permLabelToInternal = modelInfo.st.model.permLabelToInternal;
+% labelHistory is in label order; internalFrame = labelFrame(permInternalToLabel)
+% reorders label → internal for state.updY().set()
+permInternalToLabel = modelInfo.st.model.permInternalToLabel;
 stateMA = model.initSystem();
 nStates = stateMA.getNQ() + stateMA.getNU();
 
@@ -192,7 +193,7 @@ torque_ankleL = nan(1, nValid);
 for fi = 1 : nValid
     % Permute from label order to internal order for state.updY()
     labelFrame = labelHist(:, fi);
-    internalFrame = labelFrame(permLabelToInternal);
+    internalFrame = labelFrame(permInternalToLabel);
     Y = stateMA.updY();
     for i = 0 : nStates - 1
         Y.set(i, internalFrame(i + 1));
@@ -320,7 +321,7 @@ if showVideo
     model.setUseVisualizer(true);
     stateVis = model.initSystem();
     % labelHistory is in label order; permute to internal order for state.updY()
-    permInternalToLabel = modelInfo.st.model.permInternalToLabel; %permLabelToInternal;
+    permInternalToLabel = modelInfo.st.model.permInternalToLabel;
     nStates  = size(labelHist, 1);
 
     fprintf('Starting 3D playback (%d frames, %.1fx speed)...\n', nValid, playbackSpeed);

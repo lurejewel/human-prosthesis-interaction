@@ -9,7 +9,11 @@ function [initPara, reflexParamMap, reflexTemplate] = ...
 %     - 'grouped' (v2): controllers shared across phase groups; parameters
 %        are NOT duplicated in the flat vector.  Fields: .groups(g).beta,
 %        .groups(g).bias, .groups(g).mask, .groups(g).phases, .groups(g).label.
-%     - 'legacy'  (v1): per-phase beta/bias/mask cell arrays.
+%     - 'legacy'  (v1): per-phase beta/bias/mask cell arrays.  A `b` field is
+%       accepted as an alias for `bias`, and a missing `phaseIds` defaults to
+%       0:(nPhases-1).  The normalised struct is what the rest of this
+%       function consumes (the old helper normalised a local copy and its
+%       changes were lost).
 %
 % Input:
 %   lassoMatFile – path to .mat file containing a 'lasso' struct (or a single
@@ -29,7 +33,7 @@ contents = load(lassoMatFile);
 
 if isfield(contents, 'lasso')
     lasso = contents.lasso;
-elseif numel(vars) == 1 && isstruct(contents.(vars(1).name))
+elseif isscalar(vars) && isstruct(contents.(vars(1).name))
     lasso = contents.(vars(1).name);
 else
     error(['LASSO file must contain a variable named "lasso" or a single ' ...
@@ -43,7 +47,24 @@ if isfield(lasso, 'groups') && ~isempty(lasso.groups)
     nPhases = lasso.nPhases;
 else
     useGrouped = false;
-    nPhases = validate_and_normalise(lasso);
+    [nPhases, lasso] = validate_and_normalise(lasso);
+end
+
+%% ---- grouped format: fail early with a clear message ----
+if useGrouped
+    requiredGroupFields = {'label', 'phases', 'beta', 'bias', 'mask'};
+    for g = 1:nGroups
+        grp = lasso.groups(g);
+        if ~isstruct(grp)
+            error('lasso.groups(%d) must be a struct.', g);
+        end
+        for f = 1:numel(requiredGroupFields)
+            if ~isfield(grp, requiredGroupFields{f})
+                error('Group %d is missing required field "%s".', ...
+                    g, requiredGroupFields{f});
+            end
+        end
+    end
 end
 
 %% ---- build reflexTemplate ----
@@ -114,9 +135,24 @@ if useGrouped
 
     for g = 1:nGroups
         grp = lasso.groups(g);
-        betaMat = grp.beta;         % 26×9
-        biasVec = grp.bias(:)';     % 1×9
-        maskMat = grp.mask;         % 26×9 logical
+
+        % ---- validate shapes with clear error messages ----
+        betaMat = grp.beta;
+        if ~isnumeric(betaMat) || ~isequal(size(betaMat), [26, 9])
+            error('Group %d (%s): beta must be a 26×9 numeric matrix, got %s.', ...
+                g, grp.label, mat2str(size(betaMat)));
+        end
+        biasVec = grp.bias;
+        if ~isnumeric(biasVec) || numel(biasVec) ~= 9
+            error('Group %d (%s): bias must be numeric with 9 elements, got %s.', ...
+                g, grp.label, mat2str(size(biasVec)));
+        end
+        biasVec = biasVec(:)';     % 1×9
+        maskMat = grp.mask;
+        if ~islogical(maskMat) || ~isequal(size(maskMat), [26, 9])
+            error('Group %d (%s): mask must be a 26×9 logical matrix, got %s (%s).', ...
+                g, grp.label, mat2str(size(maskMat)), class(maskMat));
+        end
 
         % ---- validate mask consistency ----
         nonzeroOutsideMask = abs(betaMat(~maskMat)) > 0;
@@ -218,7 +254,48 @@ end
 end
 
 % ========================================================================
-function nPhases = validate_and_normalise(lasso)
+function [nPhases, lasso] = validate_and_normalise(lasso)
+% Normalise a legacy (v1) per-phase LASSO struct and validate it.
+% Returns the normalised struct as a second output: MATLAB passes structs by
+% value, so normalising a local copy without returning it left the caller
+% with the raw struct (missing phaseIds, `b` alias, column-cell layouts, ...).
+%
+% Normalisation:
+%   - beta, bias (and mask, when present) become column cell arrays;
+%   - `b` is accepted as an alias for `bias` and is copied to lasso.bias;
+%   - missing phaseIds defaults to 0:(nPhases-1);
+%   - each per-phase bias is stored as a 1x9 row vector.
+% Validation:
+%   - beta must be 26x9 numeric and bias must have 9 elements per phase;
+%   - mask, when present, must be 26x9 logical per phase.
+
+%% ---- required fields ----
+if ~isfield(lasso, 'beta')
+    error('Legacy LASSO struct must contain a "beta" field.');
+end
+if ~isfield(lasso, 'bias') && ~isfield(lasso, 'b')
+    error('Legacy LASSO struct must contain a "bias" (or "b") field.');
+end
+if ~iscell(lasso.beta)
+    error(['Legacy LASSO struct: "beta" must be a cell array of per-phase ' ...
+           '26×9 matrices.']);
+end
+if isfield(lasso, 'bias')
+    if ~iscell(lasso.bias)
+        error(['Legacy LASSO struct: "bias" must be a cell array of ' ...
+               'per-phase 9-element vectors.']);
+    end
+else
+    if ~iscell(lasso.b)
+        error(['Legacy LASSO struct: "b" (alias for "bias") must be a cell ' ...
+               'array of per-phase 9-element vectors.']);
+    end
+end
+if isfield(lasso, 'mask') && ~iscell(lasso.mask)
+    error(['Legacy LASSO struct: "mask" must be a cell array of per-phase ' ...
+           '26×9 logical matrices.']);
+end
+
 %% ---- phase count ----
 if isfield(lasso, 'nPhases')
     nPhases = lasso.nPhases;
@@ -226,20 +303,13 @@ else
     nPhases = numel(lasso.beta);
 end
 
-if ~isfield(lasso, 'beta')
-    error('LASSO struct must contain a "beta" field.');
-end
-if ~isfield(lasso, 'bias') && ~isfield(lasso, 'b')
-    error('LASSO struct must contain a "bias" (or "b") field.');
-end
-
 % ---- normalise to column cell arrays ----
 lasso.beta = lasso.beta(:);
 if isfield(lasso, 'bias')
     lasso.bias = lasso.bias(:);
 else
+    % legacy v1 alias: `b` == `bias`
     lasso.bias = lasso.b(:);
-    lasso.bias = lasso.bias(:);
 end
 
 if isfield(lasso, 'mask')

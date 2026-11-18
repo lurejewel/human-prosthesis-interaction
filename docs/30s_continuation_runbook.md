@@ -8,6 +8,13 @@ experiments/moco/moco_inverse.py
 experiments/moco/outputs/
 ```
 
+> **已弃用**：旧脚本 `run_B30_outer.py` 已重命名为
+> `DEPRECATED_run_B30_outer.py`，仅作历史参考，不要再用它启动新运行。它由本手册
+> 的 `run_B30_continue.py` 取代，并存在已知的 shared-segment race：4 个并行
+> chunk 都调用 `moco_inverse.py` 且未传 `--seg-dir`，会同时写
+> `outputs/segments/seg_XX.sto` 而互相覆盖；`run_B30_continue.py` 为每个 chunk
+> 使用独立的 `segments_<tag>/` 目录。
+
 目标不是“再跑固定 13/40 轮”，而是：
 
 > 在**目标、权重、bounds、求解精度不变**的前提下，检验 s 与原始 excitation/activation

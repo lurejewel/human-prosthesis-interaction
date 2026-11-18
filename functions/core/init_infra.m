@@ -2,8 +2,9 @@ function [model, modelInfo] = init_infra(projName, modelStaticProp, act0)
 % Name: init_infra
 % Description: initialize model states, including coordinate position/ 
 %   velocity, muscle activation, muscle fiber length, muscle force, etc.
-%   If act0 (14x1) is provided, muscle activations are set to act0
-%   before the initial equilibration, yielding a more accurate starting state.
+%   If act0 (nMusclesx1; 18x1 for the active 18-muscle model) is provided,
+%   muscle activations are set to act0 before the initial equilibration,
+%   yielding a more accurate starting state.
 
 if nargin < 3
     act0 = [];

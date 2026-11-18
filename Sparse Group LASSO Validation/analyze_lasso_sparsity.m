@@ -97,20 +97,34 @@ for g = 1:2
             end
         end
     end
-    % median curve across the 9 muscles (same 60 lambda indices)
-    nP = numel(fitPath.LambdaPath.(ph){1}.supportSize);
-    medN = zeros(nP, 1);
-    medE = zeros(nP, 1);
+    % Median curve across the 9 muscles.  Paths are aligned on the alpha grid
+    % but a muscle with lambda2Max == 0 gets a degenerate 1-point path, so do
+    % NOT assume muscle 1's length applies to all muscles: use the longest
+    % path and let shorter paths contribute NaN at the missing indices.
+    % Median then uses the muscles that still have a point at that index.
+    pathLens = zeros(1, nMus);
+    for m = 1:nMus
+        pathLens(m) = numel(fitPath.LambdaPath.(ph){m}.supportSize);
+    end
+    nP = max(pathLens);
+    medN = nan(nP, 1);
+    medE = nan(nP, 1);
     for k = 1:nP
-        vn = zeros(1, nMus);
-        ve = zeros(1, nMus);
+        vn = nan(1, nMus);
+        ve = nan(1, nMus);
         for m = 1:nMus
+            if k > pathLens(m)
+                continue;   % shorter/truncated path: NaN for this index
+            end
             p = fitPath.LambdaPath.(ph){m};
             vn(m) = p.supportSize(k);
             ve(m) = p.trainErrorRefit(k) / max(p.minTrainErrorRefit, eps);
         end
-        medN(k) = median(vn);
-        medE(k) = median(ve);
+        ok = isfinite(vn) & isfinite(ve);
+        if any(ok)
+            medN(k) = median(vn(ok));
+            medE(k) = median(ve(ok));
+        end
     end
     medianNnz{g} = medN;
     medianRelErr{g} = medE;
@@ -125,7 +139,7 @@ A.path.medianRelErr = medianRelErr;
 A.path.knee = cell(1, 2);
 fprintf('\n  knee of the median path curve (Pareto knee, Kneedle criterion):\n');
 for g = 1:2
-    [kx, ky, kk] = knee_point(medianNnz{g}, medianRelErr{g});
+    [kx, ky, ~] = knee_point(medianNnz{g}, medianRelErr{g});
     A.path.knee{g} = struct('nnz', kx, 'relErr', ky, 'tolSelect', ky - 1);
     fprintf('    %-6s : nnz=%.1f, RMSE/RMSEbest=%.3f -> implied tolSelect=%.2f\n', ...
         groupLabels{g}, kx, ky, ky - 1);
@@ -173,7 +187,7 @@ for i = 1:numel(thrGrid)
         mask{g} = (C.Pi{g} >= thrGrid(i) - 1e-12);
     end
     o.maskOverride = mask;
-    [fitF, lassoF] = fit_adaptive_lasso_core(D, o);
+    [fitF, ~] = fit_adaptive_lasso_core(D, o);
     piThr.nnz(i, :) = [nnz(mask{1}), nnz(mask{2})];
     piThr.params(i) = sum(piThr.nnz(i, :)) + 18;
     piThr.trainRMSE(i) = mean(fitF.RMSE_refit_full);

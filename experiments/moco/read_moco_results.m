@@ -821,6 +821,17 @@ function [vals, spds, tRef, names] = loadIKCurves(path, S)
     end
     isT = endsWith(names, ["_tx", "_ty", "_tz"]);
 
+    % Sort the reference time ONCE, before any column is interpolated.
+    % Sorting inside the column loop only reordered the first column: after
+    % that tRef was sorted, so `~issorted(tRef)` was false for every later
+    % column and interp1 paired a sorted tRef with an unsorted v.  Sorted IK
+    % input keeps ord empty and therefore takes the previous code path.
+    if ~issorted(tRef)
+        [tRef, ord] = sort(tRef);
+    else
+        ord = [];
+    end
+
     vals = nan(numel(S.time), numel(names));
     for c = 1:numel(names)
         j = find(strcmp(ikLabels, names{c}), 1);
@@ -829,8 +840,7 @@ function [vals, spds, tRef, names] = loadIKCurves(path, S)
         if degFlag && ~isT(c)
             v = deg2rad(v);
         end
-        if ~issorted(tRef)
-            [tRef, ord] = sort(tRef);
+        if ~isempty(ord)
             v = v(ord);
         end
         vals(:, c) = interp1(tRef, v, S.time, 'linear', 'extrap');
