@@ -4,13 +4,15 @@ function [state, modelInfo] = reset_particle_state(model, modelInfo, act0)
 %   their initial values before running a new particle's forward simulation.
 %   This ensures each particle starts from an identical, dynamically
 %   consistent initial state while reusing the same model instance.
-%   If act0 (14x1) is provided, muscle activations are set before equilibration.
+%   If act0 (nMusclesx1; 18x1 for the active 18-muscle model) is provided,
+%   muscle activations are set before equilibration.
 %
 % Input:
 %   model     - org.opensim.modeling.Model (already initialized)
 %   modelInfo - ModelInfo object (st holds static props, dy holds the
 %               initStateY snapshot and will have its record partially reset)
-%   act0      - (optional) 14x1 double, initial muscle activations
+%   act0      - (optional) nMusclesx1 double (18x1 for the active model),
+%               initial muscle activations
 % Output:
 %   state     - org.opensim.modeling.State, reset to t=0 with initPose
 

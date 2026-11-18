@@ -179,7 +179,22 @@ featureFilterHz = 6;
 
 % ---- GRF / phase settings ---------------------------------------------
 phaseOpts = struct();
-phaseOpts.bodyWeight        = 78 * 9.81;
+% Derive body weight from the actual model instead of hard-coding 78 kg.
+% This keeps the 0.02*BW stance threshold consistent with the simulated
+% model even when the subject/model mass changes.
+try
+    modelForMass = org.opensim.modeling.Model(modelFile);
+    massState = modelForMass.initSystem();
+    phaseOpts.bodyWeight = modelForMass.getTotalMass(massState) * 9.81;
+    fprintf('stance threshold body weight = %.2f N (model total mass %.3f kg)\n', ...
+        phaseOpts.bodyWeight, modelForMass.getTotalMass(massState));
+catch ME_mass
+    warning('moco_inverse_to_lasso_dataset:defaultBodyWeight', ...
+        ['Could not read model mass from %s (%s); falling back to ' ...
+         '78*9.81 N. If the model differs from 78 kg, the stance ' ...
+         'threshold will be inconsistent.'], modelFile, ME_mass.message);
+    phaseOpts.bodyWeight = 78 * 9.81;
+end
 % 必须与 forward_simulation.m 的 simCache.stanceTh 一致：0.02 * BW。
 % 不再使用 enter/exit 双阈值或 minStance/minSwingGap 清理。
 phaseOpts.stanceThresholdBW = 0.02;

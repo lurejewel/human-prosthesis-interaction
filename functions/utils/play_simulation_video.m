@@ -38,7 +38,9 @@ end
 
 %% ---- extract simulation data ----
 labelHist = modelInfo.dy.labelHistory;          % label order
-permLabelToInternal = modelInfo.st.model.permLabelToInternal;  % label→internal permutation
+% permInternalToLabel: internal-order index of each label position, i.e.
+% internalFrame = labelFrame(permInternalToLabel) reorders label → internal.
+permInternalToLabel = modelInfo.st.model.permInternalToLabel;
 timeSeries = modelInfo.st.simInfo.timeSeries;
 nValid = find(all(~isnan(labelHist)), 1, 'last');
 nStates = size(labelHist, 1);
@@ -64,7 +66,7 @@ stateVis.setTime(tVec(1));
 Y0 = stateVis.updY();
 % Permute from label order → SimTK internal order for the visualiser
 labelFrame = labelHist(:, 1);
-internalFrame = labelFrame(permLabelToInternal);
+internalFrame = labelFrame(permInternalToLabel);
 for i = 0:nStates - 1
     Y0.set(i, internalFrame(i + 1));
 end
@@ -90,7 +92,7 @@ for k = 1:nFrames
     Y = stateVis.updY();
     % Permute from label order → SimTK internal order for the visualiser
     labelFrame = labelHist(:, fi);
-    internalFrame = labelFrame(permLabelToInternal);
+    internalFrame = labelFrame(permInternalToLabel);
     for i = 0:nStates - 1
         Y.set(i, internalFrame(i + 1));
     end

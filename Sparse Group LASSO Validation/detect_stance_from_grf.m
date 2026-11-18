@@ -41,7 +41,8 @@ function P = detect_stance_from_grf(grfFile, time, comX, opts)
 %             .pelvis, .calcnR, .calcnL（nT×1 全局 X [m]）
 %   opts    : 可选
 %       .grfXmlFile        匹配的 ExternalLoads XML
-%       .bodyWeight        [N]，默认 78*9.81
+%       .bodyWeight        [N]，默认 78*9.81；未提供时发出 warning
+%                          （换受试者/模型时必须显式传入模型总质量*9.81）
 %       .stanceThresholdBW 默认 0.02（必须与 forward_simulation.m 一致）
 %       .rightColumn/.leftColumn 显式列名覆盖
 %
@@ -162,11 +163,28 @@ defaults = struct( ...
     'stanceThresholdBW', 0.02, ...
     'rightColumn', '', ...
     'leftColumn', '');
+usedDefaultBodyWeight = false;
 fn = fieldnames(defaults);
 for i = 1:numel(fn)
     if ~isfield(opts, fn{i}) || isempty(opts.(fn{i}))
+        if strcmp(fn{i}, 'bodyWeight')
+            usedDefaultBodyWeight = true;
+        end
         opts.(fn{i}) = defaults.(fn{i});
     end
+end
+% bodyWeight only scales the 0.02-BW stance threshold, so silently applying
+% the default would change the threshold semantics for any other model/
+% participant mass.  Warn loudly; the default value itself is kept unchanged.
+if usedDefaultBodyWeight
+    warning('detect_stance_from_grf:defaultBodyWeight', ...
+        ['opts.bodyWeight was not supplied; using the built-in default ' ...
+         '%.1f N (78 kg * 9.81 m/s^2). The stance threshold is %.3g * ' ...
+         'bodyWeight = %.1f N. If the model/participant mass differs from ' ...
+         '78 kg, pass opts.bodyWeight = totalMass * 9.81; the 0.02-BW ' ...
+         'threshold rule itself is unchanged.'], ...
+        opts.bodyWeight, opts.stanceThresholdBW, ...
+        opts.stanceThresholdBW * opts.bodyWeight);
 end
 end
 
@@ -261,11 +279,12 @@ phaseR = nan(nT, 1);
 phaseL = nan(nT, 1);
 
 % ---- 第一帧：cal_gait_phase.m 的初始化规则 ----------------------------
-% 注意比较符号严格照抄：opposite GRF 用 > / <，不是 >= / <=。
+% 注意：opposite GRF 用 >=，与 cal_gait_phase.m 的 first-frame 规则和
+% 后续 1->2 转移一致；精确相等时归入 Liftoff，而不是留下未赋值 phase。
 if grfR(1) >= stanceTh
     if calcnRCOM(1) >= pelvisCOM(1)
         phaseR(1) = 0;
-    elseif grfL(1) > stanceTh || calcnRCOM(1) + 1 < pelvisCOM(1)
+    elseif grfL(1) >= stanceTh || calcnRCOM(1) + 1 < pelvisCOM(1)
         phaseR(1) = 2;
     elseif grfL(1) < stanceTh
         phaseR(1) = 1;
@@ -279,7 +298,7 @@ end
 if grfL(1) >= stanceTh
     if calcnLCOM(1) >= pelvisCOM(1)
         phaseL(1) = 0;
-    elseif grfR(1) > stanceTh || calcnLCOM(1) + 1 < pelvisCOM(1)
+    elseif grfR(1) >= stanceTh || calcnLCOM(1) + 1 < pelvisCOM(1)
         phaseL(1) = 2;
     elseif grfR(1) < stanceTh
         phaseL(1) = 1;

@@ -1,5 +1,8 @@
 % -------------------------------------------------------------------------
-% Name: read_trc_file
+% Name: DEPRECATED_read_trc_file
+% DEPRECATED: legacy .trc visualization script, kept for reference only.
+%   No active caller.  It reads assets/subject01_walk1.trc, which is not
+%   shipped, and is not part of the active simulation pipeline.
 % Description: visualize the .trc file (marker movement from motion capture
 % data).
 % Note 1: OpenSim API does not provide direct tool related with the .trc

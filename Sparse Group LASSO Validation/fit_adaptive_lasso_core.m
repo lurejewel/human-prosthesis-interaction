@@ -343,7 +343,7 @@ for m = 1:numTargets
             % and is walked from strong to weak penalty with warm starts.
             X_star = X_phase .* (1 ./ w)';
             [lambda2Max, b0AtZero, lambdaMaxInfo] = ...
-                compute_lambda2_max_censored(X_star, Y_phase, c_m, rho, tolC);
+                compute_lambda2_max_censored(X_star, Y_phase, c_m, rho, tolC, wPhase);
 
             if lambda2Max > 0
                 alphaGridThis = lambdaPathConfig.alphaGrid;

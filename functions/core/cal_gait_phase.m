@@ -2,7 +2,8 @@ function modelInfo = cal_gait_phase(simCache, modelInfo, state, frameIndex)
 %% materials for gait phase detection
 GRF = [modelInfo.dy.grf.fyr(frameIndex), modelInfo.dy.grf.fyl(frameIndex)];
 
-% init gait phases
+% init gait phases (-1 = unassigned; the final check below errors instead of
+% silently propagating an unset phase)
 phaseR = -1;
 phaseL = -1;
 
@@ -32,15 +33,20 @@ if frameIndex == 1
 % [Late Stance]:  GRF >= stanceTh && calcnCOM < pelvisCOM && opposite GRF <
 % stanceTh
 % [Liftoff]:      GRF >= stanceTh && calcnCOM < pelvisCOM && (opposite GRF
-% > stanceTh || calcnCOM+1 < pelvisCOM)
+% >= stanceTh || calcnCOM+1 < pelvisCOM)
 % [Swing]:        GRF < stanceTh && calcnCOM < pelvisCOM
 % [Landing]:      GRF < stanceTh && calcnCOM >= pelvisCOM
+%
+% The first-frame rules must be exhaustive: a gap would leave phaseR/phaseL
+% at -1, which is caught by the check at the end.  The opposite-GRF test uses
+% >= (not >) to match the Late Stance -> Liftoff rule of the iterative
+% branches below and to close the gap when opposite GRF == stanceTh.
 
     % right
     if grfR >= stanceTh
         if calcnRCOM >= pelvisCOM
             phaseR = 0; % Early Stance
-        elseif grfL > stanceTh || calcnRCOM+1 < pelvisCOM
+        elseif grfL >= stanceTh || calcnRCOM+1 < pelvisCOM
             phaseR = 2; % Liftoff
         elseif grfL < stanceTh
             phaseR = 1; % Late Stance
@@ -55,7 +61,7 @@ if frameIndex == 1
     if grfL >= stanceTh
         if calcnLCOM >= pelvisCOM
             phaseL = 0; % Early Stance
-        elseif grfR > stanceTh || calcnLCOM+1 < pelvisCOM
+        elseif grfR >= stanceTh || calcnLCOM+1 < pelvisCOM
             phaseL = 2; % LiftOff
         elseif grfR < stanceTh
             phaseL = 1; % Late Stance

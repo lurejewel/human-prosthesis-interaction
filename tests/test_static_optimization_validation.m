@@ -206,9 +206,12 @@ for iter = 1:maxIter
         nRes = nCoords;
         H_aug = blkdiag(H, 2000 * eye(nRes));
         A_aug = [A_eq, eye(nCoords)];
+        % H_aug has (nMusTotal + nRes) columns → the linear term must be padded
+        % with zeros for the reserve actuators.
+        f_aug = [f_vec; zeros(nRes, 1)];
         lb_aug = [lb; -1000 * ones(nRes, 1)];
         ub_aug = [ub;  1000 * ones(nRes, 1)];
-        [a_aug, ~, exitflag, qpOut] = quadprog(H_aug, f_vec, [], [], A_aug, b_eq, ...
+        [a_aug, ~, exitflag, qpOut] = quadprog(H_aug, f_aug, [], [], A_aug, b_eq, ...
             lb_aug, ub_aug, [], opts);
         if exitflag > 0
             a_new = a_aug(1:nMusTotal);

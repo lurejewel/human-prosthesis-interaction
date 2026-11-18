@@ -19,6 +19,7 @@ experiments/moco/_history_files/
 experiments/moco/outputs/
 DEPRECATED_*
 Deprecated_*
+!functions/core/DEPRECATED_muscle_reflex_param_defs.m
 experiments/data/
 foot-ground contact model optimization/
 # Created by MocoCasADiSolver in the working directory on every solve.

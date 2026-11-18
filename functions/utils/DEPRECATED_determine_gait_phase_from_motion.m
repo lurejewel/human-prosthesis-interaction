@@ -1,4 +1,10 @@
-% Name: determine_gait_phase_from_motion
+% Name: DEPRECATED_determine_gait_phase_from_motion
+% DEPRECATED: legacy gait-phase validation script, kept for reference only.
+%   No active caller.  It calls the obsolete 3-argument
+%   cal_gait_phase(model, state, [grfR, grfL]) signature and depends on
+%   assets/subject01_walk1_ik.mot, assets/subject01_walk1_grf.mot and a
+%   pre-scaling model path that are not shipped.  The supported detector is
+%   functions/core/cal_gait_phase.m (used by the active pipeline).
 % Author(s): Jin Wei, Peking U.
 % Description: The function of this script is validate the availability of
 % detecting the gait phase of each leg of the musculoskeletal model at real

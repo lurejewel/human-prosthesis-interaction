@@ -25,7 +25,8 @@
 
 function muscleExcitations = cal_muscle_excitation(modelInfo, frameIndex)
 % Name: cal_muscle_excitation
-% Description: Compute 14×1 muscle excitation vector for the current frame.
+% Description: Compute the muscle excitation vector for the current frame.
+%   Length = dynamic number of muscles (18×1 for the active 18-muscle model).
 %   Supports two controller modes:
 %     - LASSO linear-phase controller (if modelInfo.reflexParams is nonempty)
 %     - Legacy hand-crafted reflex controller (fallback)
@@ -79,7 +80,7 @@ end
 A_L = extract_lasso_reflex_features(modelInfo, 'left', frameIndex);
 excL = A_L * rp.beta{phaseIdxL} + rp.bias{phaseIdxL};  % 1×9
 
-% ---- assemble 14×1 column: [right 1:7; left 8:14] ----
+% ---- assemble 18×1 column: [right 1:9; left 10:18] ----
 exc = [excR(:); excL(:)];
 end
 

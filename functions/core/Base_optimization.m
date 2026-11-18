@@ -16,9 +16,14 @@ classdef (Abstract) Base_optimization < handle
         function fixedPara = fix_parameters(obj, para)
             % Name: fix_parameters
             % Description: clip parameters so that their values are within
-            %   reasonable ranges.  Bounds are defined in the single-source
-            %   muscle_reflex_param_defs().
-            defs = muscle_reflex_param_defs();
+            %   reasonable ranges.  Bounds are defined in the legacy
+            %   single-source DEPRECATED_muscle_reflex_param_defs().
+            %   NOTE: this is a v1.0 (hand-crafted controller) helper.  The
+            %   active LASSO/CMA-ES path does not call it — box-constraint
+            %   clipping is intentionally disabled there (see
+            %   CMAES_optimization.generate_parameters).  The function name
+            %   matches its file name so the call below resolves.
+            defs = DEPRECATED_muscle_reflex_param_defs();
             fixedPara = para;
             for i = 1 : numel(defs)
                 d = defs(i);

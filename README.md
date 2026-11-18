@@ -20,6 +20,19 @@ experimental data and then refined by CMA-ES inside the forward-dynamics loop.
 > the legacy excitation code in `cal_muscle_excitation.m` are retained for
 > reference only and are no longer functional.
 
+> **Also deprecated (renamed with a `DEPRECATED_` prefix, reference only):**
+> `DEPRECATED_run_B30_outer.py` — early 30 s B30 outer-loop driver, superseded
+> by `run_B30_continue.py`; it has a known shared-segment race because the
+> parallel chunk solves share `experiments/moco/outputs/segments/` (see
+> [`docs/30s_continuation_runbook.md`](docs/30s_continuation_runbook.md));
+> `functions/utils/DEPRECATED_determine_gait_phase_from_motion.m` — uses the
+> obsolete 3-argument `cal_gait_phase` API and missing `subject01` assets;
+> `functions/utils/DEPRECATED_read_trc_file.m` — legacy `.trc` visualization
+> with missing assets.  None of these is part of an active pipeline.
+> By contrast,
+> [`Adaptive_LASSO_StanceSwing.m`](<Sparse Group LASSO Validation/Adaptive_LASSO_StanceSwing.m>)
+> is **not** deprecated: it remains the supported legacy `UN.sto` entry point.
+
 ---
 
 ## Key Components

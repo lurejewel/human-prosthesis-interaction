@@ -1,4 +1,15 @@
-"""Continue the 30 s right-leg B outer loop from round 3 to round 13.
+"""DEPRECATED (legacy) — superseded by `run_B30_continue.py`; do not start new runs.
+
+Kept for reference only.  This early driver has a known shared-segment race:
+the four parallel chunk solves call `experiments/moco/moco_inverse.py` without
+`--seg-dir`, so they all write `segments/seg_XX.sto` under
+`experiments/moco/outputs/` and clobber each other's segments.
+`run_B30_continue.py` fixes this with a dedicated `segments_<tag>/` directory
+per chunk, plus checkpoint/resume and an explicit `--s-domain` option; see
+`docs/30s_continuation_runbook.md` for the supported workflow.
+
+Historical behaviour: continue the 30 s right-leg B outer loop from round 3 to
+round 13.
 
 Each round:
   - solve 4 chunks in parallel with the current 5 per-muscle s;

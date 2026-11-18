@@ -120,6 +120,14 @@ for iter = 1:maxIter
             [lb; -1000 * ones(nRes, 1)], [ub; 1000 * ones(nRes, 1)], [], qpOpts);
         if exitflag > 0
             a_new = a_aug(1:nMusTotal);
+        else
+            % Reserve QP failed as well: keep the current activations instead
+            % of propagating an empty/invalid a_new.  deltaA becomes 0 below,
+            % so the loop converges and exits after this warning.
+            warning('iterative_static_optimization:reserveQPFailed', ...
+                ['Reserve QP also failed at iteration %d (exitflag=%d); ' ...
+                 'keeping previous activations.'], iter, exitflag);
+            a_new = a_opt;
         end
     end
 
