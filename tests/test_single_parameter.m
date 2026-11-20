@@ -20,7 +20,7 @@ addpath(genpath('assets'), genpath('model'), genpath('functions'))
 
 %% ---------- user configuration ----------
 projName       = 'human0918';  % <-- change to your model name (without .osim)
-paraSourceFile = 'results\opt_result_2026-09-29_17-54-54.mat';  % <-- change to your result file
+paraSourceFile = 'results\opt_result_2026-11-20_10-37-17.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
 simConfig.stepTime = 0.005;
@@ -108,7 +108,7 @@ modelInfo.read_muscleReflex_array(para);
 modelInfo = forward_simulation(model, modelInfo, state);
 
 %% fitness evaluation
-fit = measure_simResults(modelInfo);
+[fit, parts] = measure_simResults(modelInfo);
 fprintf('\n========== Fitness Summary ==========\n');
 fprintf('Total fitness              : %.6g\n', fit);
 fprintf('Last simulation time       : %.3f s (of %.0f s)\n', ...
@@ -116,6 +116,12 @@ fprintf('Last simulation time       : %.3f s (of %.0f s)\n', ...
 fprintf('Distance travelled         : %.3f m\n', ...
     modelInfo.dy.labelHistory(modelInfo.st.model.map('pelvis_tx/value'), ...
     find(all(~isnan(modelInfo.dy.labelHistory)), 1, 'last')));
+fprintf('  completeness (fall)      : %+.4f\n', parts.completeness);
+fprintf('  velocity                 : %+.4f\n', parts.velocity);
+fprintf('  knee_limit               : %+.4f\n', parts.knee_limit);
+fprintf('  ankle_limit              : %+.4f\n', parts.ankle_limit);
+fprintf('  grf_limit                : %+.4f\n', parts.grf_limit);
+fprintf('  effort (cost of transport): %+.4f\n', parts.effort);
 fprintf('======================================\n\n');
 
 %% prepare data for visualisation

@@ -4,6 +4,12 @@
 > 与 [`LASSO_SPARSITY_ANALYSIS_ARCHIVE.md`](LASSO_SPARSITY_ANALYSIS_ARCHIVE.md)
 > 配合使用（后者给出“mask 为什么可能注定稠密”的解剖学证据）。
 >
+> **定位**：下面引用的神经生理学证据用于**设计动机**（为什么框架里要有
+> 长度/力/抑制/相位项）与**结果的事后解释**（辨识出的结构与已知脊髓反射
+> 是否自洽），**不是优化先验**；`β` 的数值由数据（LASSO 稳定性选择 + CMA-ES）
+> 确定。证据强度分级见
+> [`REFLEX_NEUROPHYSIOLOGY_DESIGN_AND_VALIDATION.md`](REFLEX_NEUROPHYSIOLOGY_DESIGN_AND_VALIDATION.md)。
+>
 > 符号：`X` 26 个特征（设计矩阵旧版记作 `A = X*M`，`M` 为单位阵，已移除，现统一用 `X`），`β` 26×9 反馈增益，`b` 1×9 偏置，`y` 9 块肌肉的 excitation。
 > 相位组：stance（相位 0/1）、swing（相位 2/3/4）；每组一套 `β, b`。
 
@@ -62,8 +68,59 @@ y_m(t) = Σ_i β(i,m) · X_i(t) + b(m)          m = 1..9, 每组一套 β、b
 - `β(关节量, m)`：关节层面的状态对肌肉 m 的调制，承担**跨关节协调**与
   **姿势参照**（例如骨盆 tilt 影响髋伸肌的活动）。
 
+### 2.4 三类反馈的现代证据与建模含义
+
+> 以下证据用于**设计动机**与**事后解释**；证据强度分“较硬 / 中 / 推断”，
+> 写作时据此选择措辞（详见
+> [`REFLEX_NEUROPHYSIOLOGY_DESIGN_AND_VALIDATION.md`](REFLEX_NEUROPHYSIOLOGY_DESIGN_AND_VALIDATION.md) §3.3/§4.4）。
+
+**A. Ia 长度反馈（兴奋 + 交互抑制）**
+
+- 同源单突触兴奋（膝跳反射）在几乎所有运动单位都能测到；
+- **异名 Ia 兴奋广泛分布**，且可跨关节（Meunier 1993：股神经 → Sol 83%、→ TA 79%；
+  GM→Bi 21/21），但“**widely distributed, generally quantitatively weak**”
+  （异源峰一般 < 同源峰 20%）；
+- 对拮抗肌则是**双突触抑制**（交互抑制，经 Ia 抑制性中间神经元，甘氨酸能，
+  多约 1 ms）；**不对称**：跖屈肌→TA 的抑制强于反向（Crone 1987；Petersen 1999）。
+
+*建模含义*：`β(lCEN)` 的非对角正项可以**广泛但小**；拮抗肌对（如
+`gastroc/soleus → tib_ant`）**预期出现负项**。这为“稠密但多数很弱”的 mask
+提供了动机，但**不规定**哪一项一定非零。
+
+**B. Ib 力反馈（安静抑制、行走反转）**
+
+- GTO 与肌纤维**串联**，编码肌腱张力；Ib **从不单突触**（至少一个中继）；
+- **安静/站立**：力↑ → 抑制自己（自体抑制，负力反馈，保护性）；
+- **行走（伸肌）**：同一 Ib 网络被运动状态重新配置，**翻转为兴奋**（正力反馈，
+  帮助承重）；证据：脊髓猫（Pearson & Collins 1993）、清醒行走猫（Donelan 2009），
+  人体为间接证据（Grey 2007：仅 SOL、晚支撑相）；
+- **正反馈为何不发散**：环路增益 = 神经增益 K × 肌肉增益 M，M 随肌肉缩短而下降
+  （力–长度曲线），使 K·M 自限；延迟反而帮助稳定（Prochazka 1997）。
+
+*建模含义*：`β(fATN)` 的**符号应当与相位有关**——伸肌（尤其 SOL/GAS）在支撑相
+以正为主，摆动相可能为负；这正是“stance/swing 各一套 `β`”的生理依据。
+
+**C. 交互抑制与“抑制不止一种”**
+
+抑制至少三种来源，写作时不要混为一谈：
+
+1. **长度 Ia → 抑制拮抗肌**（交互抑制，双突触）；
+2. **力 Ib → 安静时抑制自己**（自体抑制，负力反馈）；
+3. **运动神经元回返抑制**（Renshaw，激活驱动）。
+
+> 常见误解澄清（引自神经生理学文档 §5）：
+> (i) **异名力反馈在生理上是可能的**（Ib 中间神经元多进多出），只是缺少像 Meunier
+> 那样的人体全图；跨关节踝→膝 Ib 基本未证。
+> (ii) **力负反馈真实存在**，Geyer 用负力反馈本身没有错；只是他那条
+> “跖屈肌力→抑制 TA”的具体跨肌肉项是**功能等效抽象**（真实交互抑制是 Ia 长度驱动）。
+> (iii) 协同肌之间的单突触连接**可能缺失**（GM→Sol = 0/9），所以“近协同”不等于“强连接”。
+
 > 注意：`β` 是**功能性增益**，不是解剖学连接强度。它把突触前抑制、突触后
 > 调制、运动单位募集阈值等全部“折合”成一个等效系数（详见 §5.5）。
+> 因此文献里的百分比（如 Crone 的 14.9%）只能作为“通路存在/不对称”的证据，
+> **不是可以移植到模型里的增益数值**。
+
+
 
 ---
 
@@ -124,17 +181,24 @@ y_m(t) = Σ_i β(i,m) · X_i(t) + b(m)          m = 1..9, 每组一套 β、b
 
 踝关节 H-reflex（可视为 Ia 通路的整体增益）在行走的支撑相与摆动相幅度差异显著，
 且与背景 EMG 解耦——说明增益调制发生在反射通路本身，而不只是运动神经元兴奋性
-变化。**我们按 stance/swing 分组各拟合一套 `β`，正是这一现象的最小实现。**
+变化。定量上（Capaday & Stein）：**站立时 soleus H-reflex 可比行走支撑相大至
+3.5 倍**（1986）；**跑步时 EMG 是行走的 2.4 倍、而 H-reflex 反而更小**（1987），
+作者归因于突触前抑制，并把它解释为“自动增益补偿”（防止反射饱和/失稳）。
+**我们按 stance/swing 分组各拟合一套 `β`，正是这一现象的最小实现。**
 
 ### 5.2 任务依赖
 
-同一块肌肉的 H-reflex 在站立、行走、跑步中幅度不同；增益随任务“重新配置”。
+同一块肌肉的 H-reflex 在站立、行走、跑步中幅度不同，**Ia 增益大致为
+站立 > 步行 > 跑步**；增益随任务“重新配置”。负荷也会缩放力反馈的贡献
+（猫 ±25° 坡度：下坡 ~35% → 平地 ~39% → 上坡 ~54%，Donelan 2009）。
 这意味着 `β` 不可能是一个跨任务的普适常数——**它是 task-dependent 的**。
 
 ### 5.3 方向反转（reflex reversal）
 
 某些通路在特定相位/任务下从兴奋变为抑制（如猫行走时来自跖肌的 Ib 传入对
 内侧腓肠肌的作用反转）。这说明矩阵的**符号**也受状态调制，而不只是幅度。
+交互抑制同样有相位门控：**背屈肌→跖屈肌的抑制在摆动相大、支撑相缺如**
+（Petersen 1999）。
 
 ### 5.4 机制：突触前抑制（presynaptic inhibition）
 
@@ -154,6 +218,23 @@ Meunier 等（1993）在讨论异源投射时明确指出：这些“预接线�
     由 **CMA-ES 在 `β` 上继续优化**是合理的——它优化的正是这个功能增益；
   - 结构（mask）可以跨任务迁移，**数值不行**——这正是我们把 0-1 结构冻结、
     只让 CMA-ES 调数值的理由。
+
+### 5.6 “谁在拧增益旋钮”：至少四只手
+
+把反射增益想成反馈回路上的音量旋钮，至少四只手同时在拧：
+
+1. **脊髓自己的运动模式（CPG/节律网络）**：进入“走路模式”就按相位调音量、甚至
+   翻转 Ib 符号。**脊髓猫（去大脑）照样有 Ib 反转与相位调制** → 很大程度是脊髓
+   自带的，但它是**动态网络状态**，不是固定查表；
+2. **大脑下行**：按任务/意图调整；反射变化**先于 EMG 约 50 ms**，说明是“提前
+   命令”而不是反馈的副产品；
+3. **突触前抑制**：直接作用在 Ia 终末（传感器“输出端子”），相当于旋钮本身，
+   脊髓和大脑都能拧；
+4. **任务力学**：负载/长度/速度不同 → 传感器放电不同 → 有效反馈不同。
+
+> 结论：**不是纯 CPG、也不是纯大脑，而是分层叠加**；每个任务里两者各占多少，
+> 目前尚未完全分清（Petersen 等明确称 unresolved）。这正好解释了为什么我们
+> 把一个“功能增益”交给 CMA-ES 去拟合，而不试图从解剖学推出它。
 
 ---
 
@@ -179,9 +260,10 @@ Meunier 等（1993）在讨论异源投射时明确指出：这些“预接线�
 - 但“稠密”不等于“每一项都可重复”：π 分析显示相当一部分条目只有 40–60% 的
   可重复性，稳定性选择（π≥0.7 → 175 项）剔除的是这部分；
 - 因此论文可以这样表述：
-  > 解剖学证据预测一个**广泛连接、单个增益较小**的反射矩阵；本研究的辨识结果
-  > 与这一先验一致，并通过多随机种子一致性分析区分出其中**可重复的核心**
-  > （175/234 项，π≥0.7）与**任务/噪声相关的外围**。
+  > 解剖学证据给出一个**广泛连接、单个增益较小**的预期；本研究的辨识结果与
+  > 这一**解剖学预期**在定性上一致（稠密、多数增益小），并通过多随机种子
+  > 一致性分析区分出其中**可重复的核心**（π≥0.7）与**任务/噪声相关的外围**。
+  > 注意这是**事后解释**，不是把解剖学当作优化先验。
 
 ---
 
@@ -198,8 +280,10 @@ Meunier 等（1993）在讨论异源投射时明确指出：这些“预接线�
 
 ## 9. 参考文献
 
-> ⚠️ 除 Meunier 1993（本仓库 `references/BF00234121.pdf`，页码已核对）外，
-> 其余条目的卷期/页码请在投稿前用数据库核对一遍。
+> 完整、带 DOI/PMCID 且已对照原文核对的清单见
+> [`REFLEX_NEUROPHYSIOLOGY_DESIGN_AND_VALIDATION.md`](REFLEX_NEUROPHYSIOLOGY_DESIGN_AND_VALIDATION.md) §9；
+> 逐字引文见 `references/_review_Ib_force_feedback.md` 与
+> `references/_review_reciprocal_inhibition.md`。
 
 **核心（本仓库已核对）**
 
@@ -226,6 +310,15 @@ Meunier 等（1993）在讨论异源投射时明确指出：这些“预接线�
 - Pearson KG, Collins DF. Reversal of the influence of group Ib afferents from
   plantaris on activity in medial gastrocnemius muscle during locomotor
   activity. *J Neurophysiol.* 1993;70:1009–1017.
+- Prochazka A, Gillard D, Bennett DJ. Positive force feedback control of
+  muscles. *J Neurophysiol.* 1997;77(6):3226–3236.
+- Grey MJ, Nielsen JB, Mazzaro N, Sinkjaer T. Positive force feedback in human
+  walking. *J Physiol.* 2007;581(Pt 1):99–105.
+- Sinkjaer T, Andersen JB, Ladouceur M, Christensen LO, Nielsen JB. Major role
+  for sensory feedback in soleus EMG activity in the stance phase of walking
+  in man. *J Physiol.* 2000;523(Pt 3):817–827.
+- Donelan JM, McVea DA, Pearson KG. Force regulation of ankle extensor muscle
+  activity in freely walking cats. *J Neurophysiol.* 2009;101(1):360–371.
 
 **突触前抑制与脊髓回路**
 
@@ -235,6 +328,23 @@ Meunier 等（1993）在讨论异源投射时明确指出：这些“预接线�
 - Pierrot-Deseilligny E, Burke D. *The Circuitry of the Human Spinal Cord:
   Spinal and Corticospinal Mechanisms of Movement.* Cambridge University Press;
   2012.
+
+**交互抑制**
+
+- Crone C, Hultborn H, Jespersen B, Nielsen J. Reciprocal Ia inhibition between
+  ankle flexors and extensors in man. *J Physiol.* 1987;389:163–185.
+- Petersen N, Morita H, Nielsen J. Modulation of reciprocal inhibition between
+  ankle extensors and flexors during walking in man. *J Physiol.*
+  1999;520(Pt 2):605–619.
+- Pierrot-Deseilligny E, Morin C, Bergego C, Tankov N. Pattern of group I fibre
+  projections from ankle flexor and extensor muscles in man. *Exp Brain Res.*
+  1981;42:337–350.
+
+**反射框架的设计来源**
+
+- Geyer H, Herr H. A muscle-reflex model that encodes principles of legged
+  mechanics produces human walking dynamics and muscle activities.
+  *IEEE Trans Neural Syst Rehabil Eng.* 2010;18(3):263–273.
 
 **CPG**
 
@@ -251,3 +361,18 @@ Meunier 等（1993）在讨论异源投射时明确指出：这些“预接线�
 - 反射增益的**受试者间变异**（subject-dependent）的定量文献；
 - 关节感受器（Ruffini/Pacinian）在步行中的具体贡献——目前 `β` 的关节项只能
   说“功能性”，不宜过度归因到某一种感受器。
+
+**表述边界（写作时务必注意，摘自神经生理学文档 §7.4）**
+
+1. 不要写“Ib 力反馈贡献 SOL 支撑相 EMG ~50%”：Sinkjaer 2000 的 ~50% 是**传入
+   总贡献**（作者倾向 group II）；Ib 特异数值来自猫（Donelan 约 35–54%），
+   人体力相关证据是 Grey 2007（仅 SOL、晚支撑、间接）。
+2. 不要照抄 Geyer 对 Christensen 2001 的描述：原文是**支撑相大、摆动相小**
+   （Geyer 写反了）；可辩护的是“短潜伏期 M1/Ia 成分摆动有、支撑无”。
+3. Geyer 的 `F−`（跖屈肌力→抑制 TA）是**功能抽象**：真实交互抑制是 Ia 长度驱动，
+   经典 Ib 符号相反；但**力负反馈本身真实存在**，不要说它不存在。
+4. HAM→HFL 的抑制是**假设**（髋屈肌运动神经元池从未被采样），宜作消融候选。
+5. 跨关节踝→膝 Ib **无证据**；异名 Ib 仅在踝伸肌群内有证据（猫）。
+6. 支撑相“跖屈肌→背屈肌大抑制”是**推断**（Petersen 明言无直接证据）。
+7. `β` 是功能增益，文献百分比（如 Crone 14.9%）是“通路存在/不对称”的证据，
+   **不是可移植的模型增益**。

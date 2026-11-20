@@ -1,4 +1,4 @@
-function plot_lasso_fit_quality(diagFile, dsMatFile, outDir, zoomWin)
+function plot_lasso_fit_quality(diagFile, dsMatFile, outDir, zoomWin, tag)
 %PLOT_LASSO_FIT_QUALITY  Per-muscle measured-vs-predicted excitation curves.
 %
 %   plot_lasso_fit_quality(diagFile, dsMatFile, outDir, zoomWin)
@@ -49,6 +49,7 @@ ds = ds.ds;
 
 Y = fit.Y;
 YP = fit.YPred_refit;
+stanceMask = fit.phase.stanceMask;
 nY = size(Y, 1);
 delaySteps = fit.options.delaySteps;
 t = ds.time(:);
@@ -64,6 +65,10 @@ if nargin < 4 || isempty(zoomWin)
     T = tFit(end) - tFit(1);
     zoomWin = [tFit(1) + 0.33 * T, tFit(1) + 0.33 * T + 3];
 end
+if nargin < 5 || isempty(tag)
+    tag = '';
+end
+sfx = tag;
 
 muscles = fit.muscleNames;
 nMus = numel(muscles);
@@ -84,19 +89,24 @@ end
 %% ---- Figure 1: full record ---------------------------------------------
 fig = figure('Name', 'LASSO fit quality (full record)', 'Color', 'w', ...
     'Position', [40 40 1500 900]);
-draw_grid(tFit, Y, YP, YP70, muscles, R.totalLen, len70, [tFit(1) tFit(end)]);
-sgtitle(sprintf('Measured vs predicted excitation, full 30 s (black = measured, %d vs %d parameters)', ...
+draw_grid(tFit, Y, YP, YP70, muscles, R.totalLen, len70, [tFit(1) tFit(end)], stanceMask);
+sgtitle(sprintf('Measured vs predicted excitation, full 30 s (black = measured, %d vs %d parameters; bg yellow = stance, blue = swing)', ...
     R.totalLen, len70), 'FontSize', 11);
-f1 = fullfile(outDir, 'lasso_fit_quality.png');
+f1 = fullfile(outDir, ['lasso_fit_quality' sfx '.png']);
 save_fig(fig, f1);
 
 %% ---- Figure 2: 3 s zoom -------------------------------------------------
 fig = figure('Name', 'LASSO fit quality (zoom)', 'Color', 'w', ...
     'Position', [40 40 1500 900]);
-draw_grid(tFit, Y, YP, YP70, muscles, R.totalLen, len70, zoomWin);
-sgtitle(sprintf('Zoom %.1f-%.1f s: one gait cycle structure (black = measured, %d vs %d parameters)', ...
-    zoomWin(1), zoomWin(2), R.totalLen, len70), 'FontSize', 11);
-f2 = fullfile(outDir, 'lasso_fit_quality_zoom.png');
+draw_grid(tFit, Y, YP, YP70, muscles, R.totalLen, len70, zoomWin, stanceMask);
+if isempty(YP70)
+    sgtitle(sprintf('Zoom %.1f-%.1f s: one gait cycle structure (black = measured, %d parameters; bg yellow = stance, blue = swing)', ...
+        zoomWin(1), zoomWin(2), R.totalLen), 'FontSize', 11);
+else
+    sgtitle(sprintf('Zoom %.1f-%.1f s: one gait cycle structure (black = measured, %d vs %d parameters; bg yellow = stance, blue = swing)', ...
+        zoomWin(1), zoomWin(2), R.totalLen, len70), 'FontSize', 11);
+end
+f2 = fullfile(outDir, ['lasso_fit_quality_zoom' sfx '.png']);
 save_fig(fig, f2);
 
 %% ---- Figure 3: per-muscle RMSE, three structures ----------------------
@@ -110,7 +120,7 @@ if isfield(R, 'fitReference') && ~isempty(R.fitReference)
     leg{end + 1} = sprintf('unfrozen full fit (%d)', R.referenceTotalLen);
 end
 M(:, end + 1) = fit.RMSE_refit_full(:);
-leg{end + 1} = sprintf('majority consensus (%d)', R.totalLen);
+leg{end + 1} = sprintf('frozen mask (%d)', R.totalLen);
 if ~isempty(YP70)
     M(:, end + 1) = R70.R.fitFinal.RMSE_refit_full(:);
     leg{end + 1} = sprintf('pi>=0.7 consensus (%d)', len70);
@@ -121,24 +131,29 @@ set(gca, 'XTick', 1:nMus, 'XTickLabel', strrep(muscles, '_', '\_'), ...
 ylabel('weighted RMSE (excitation units)');
 legend(leg, 'Location', 'northwest');
 title('Per-muscle fit error: does freezing / sparsifying cost much?');
-f3 = fullfile(outDir, 'lasso_fit_rmse_comparison.png');
+f3 = fullfile(outDir, ['lasso_fit_rmse_comparison' sfx '.png']);
 save_fig(fig, f3);
 
 fprintf('[fit-quality] wrote:\n  %s\n  %s\n  %s\n', f1, f2, f3);
 end
 
 %% ========================================================================
-function draw_grid(tFit, Y, YP, YP70, muscles, len1, len70, xl)
+function draw_grid(tFit, Y, YP, YP70, muscles, len1, len70, xl, stanceMask)
 nMus = numel(muscles);
 for m = 1:nMus
     subplot(3, 3, m);
     hold on; grid on;
+    ylim([0 1.05]);
+    if ~isempty(stanceMask)
+        shade_phase(tFit, stanceMask, [1.00 0.98 0.84]);   % very pale yellow
+        shade_phase(tFit, ~stanceMask, [0.87 0.94 1.00]);  % very pale blue
+    end
     hY = plot(tFit, Y(:, m), 'k-', 'LineWidth', 1.2);
-    hP = plot(tFit, YP(:, m), '-', 'Color', [0.85 0.33 0.10], 'LineWidth', 1.1);
+    hP = plot(tFit, min(YP(:, m), 1), '-', 'Color', [0.85 0.33 0.10], 'LineWidth', 1.1);
     hP70 = gobjects(1, 1);
     r1 = rmse_simple(Y(:, m), YP(:, m));
     if ~isempty(YP70)
-        hP70 = plot(tFit, YP70(:, m), '--', 'Color', [0.15 0.35 0.75], 'LineWidth', 1.0);
+        hP70 = plot(tFit, min(YP70(:, m), 1), '--', 'Color', [0.15 0.35 0.75], 'LineWidth', 1.0);
         r2 = rmse_simple(Y(:, m), YP70(:, m));
         title(sprintf('%s   RMSE %.4f (%d) / %.4f (%d)', ...
             strrep(muscles{m}, '_', '\_'), r1, len1, r2, len70), 'FontSize', 8);
@@ -162,6 +177,27 @@ for m = 1:nMus
             legend([hY hP hP70], {'measured', sprintf('consensus %d', len1), ...
                 sprintf('consensus %d', len70)}, 'Location', 'northwest', 'FontSize', 7);
         end
+    end
+end
+end
+
+%% ========================================================================
+function shade_phase(t, mask, color)
+%SHADE_PHASE  Paint contiguous TRUE runs of mask with a pale background.
+mask = logical(mask(:));
+if numel(mask) ~= numel(t)
+    return;
+end
+yl = ylim();
+d = diff([false; mask; false]);
+starts = find(d == 1);
+finish = find(d == -1) - 1;
+for r = 1:numel(starts)
+    a = starts(r); b = finish(r);
+    if a >= 1 && b <= numel(t)
+        patch([t(a), t(b), t(b), t(a)], ...
+            [yl(1), yl(1), yl(2), yl(2)], color, ...
+            'EdgeColor', 'none', 'FaceAlpha', 0.55, 'HandleVisibility', 'off');
     end
 end
 end

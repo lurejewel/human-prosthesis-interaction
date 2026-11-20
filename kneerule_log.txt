@@ -1,0 +1,85 @@
+[LASSO] 9 right-leg muscles detected in Sparse Group LASSO Validation/moco_dataset/moco_lasso_dataset.sto
+        hamstrings_r, bifemsh_r, glut_max_r, iliopsoas_r, rect_fem_r, vasti_r, gastroc_r, soleus_r, tib_ant_r
+[LASSO] design matrix: 3000 samples x 26 features, 9 targets
+[LASSO] stance n=1468, swing n=1532, valid weight sum=3000.0
+
+========== LASSO stability identification ==========
+  seeds        : 20 (baseSeed=2026, run_bootstrap)
+  consensus    : stability (piThreshold=0.70, tieBreak=include)
+  data         : 3000 samples (stance 1468 / swing 1532), 9 muscles
+����ʹ�� 'local' �����ļ��������г�(parpool)...
+�����ӵ����� 16 ���������̵Ĳ��гء�
+[stability] running 20 replicates on a parallel pool ...
+
+===== Fitting target muscle: hamstrings_r (1/9) =====
+[hamstrings_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0192794 | nnz=1
+[hamstrings_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0138087 | nnz=2
+
+===== Fitting target muscle: bifemsh_r (2/9) =====
+[bifemsh_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.088267 | nnz=1
+[bifemsh_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.041159 | nnz=1
+
+===== Fitting target muscle: glut_max_r (3/9) =====
+[glut_max_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0380474 | nnz=3
+[glut_max_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0193541 | nnz=1
+
+===== Fitting target muscle: iliopsoas_r (4/9) =====
+[iliopsoas_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0398931 | nnz=2
+[iliopsoas_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0248385 | nnz=3
+
+===== Fitting target muscle: rect_fem_r (5/9) =====
+[rect_fem_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0210529 | nnz=2
+[rect_fem_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0294604 | nnz=3
+
+===== Fitting target muscle: vasti_r (6/9) =====
+[vasti_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.00826183 | nnz=2
+[vasti_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0169195 | nnz=1
+
+===== Fitting target muscle: gastroc_r (7/9) =====
+[gastroc_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0265795 | nnz=3
+[gastroc_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0243259 | nnz=2
+
+===== Fitting target muscle: soleus_r (8/9) =====
+[soleus_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0504281 | nnz=2
+[soleus_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0976347 | nnz=2
+
+===== Fitting target muscle: tib_ant_r (9/9) =====
+[tib_ant_r|stance] selectedIdx=0 | selectedLambda2=0 | RMSE=0.0288129 | nnz=3
+[tib_ant_r|swing] selectedIdx=0 | selectedLambda2=0 | RMSE=0.030501 | nnz=6
+
+===== MASK-CONSTRAINED REFIT SUMMARY =====
+[hamstrings_r] frozen nnz: stance=1 swing=2 | RMSE_refit stance=0.01928 swing=0.01381
+[bifemsh_r] frozen nnz: stance=1 swing=1 | RMSE_refit stance=0.08827 swing=0.04116
+[glut_max_r] frozen nnz: stance=3 swing=1 | RMSE_refit stance=0.03805 swing=0.01935
+[iliopsoas_r] frozen nnz: stance=2 swing=3 | RMSE_refit stance=0.03989 swing=0.02484
+[rect_fem_r] frozen nnz: stance=2 swing=3 | RMSE_refit stance=0.02105 swing=0.02946
+[vasti_r] frozen nnz: stance=2 swing=1 | RMSE_refit stance=0.008262 swing=0.01692
+[gastroc_r] frozen nnz: stance=3 swing=2 | RMSE_refit stance=0.02658 swing=0.02433
+[soleus_r] frozen nnz: stance=2 swing=2 | RMSE_refit stance=0.05043 swing=0.09763
+[tib_ant_r] frozen nnz: stance=3 swing=6 | RMSE_refit stance=0.02881 swing=0.0305
+
+===== LASSO controller assembled (grouped format) =====
+  stance nnz(beta) = 19, swing nnz(beta) = 21
+  total optimizable parameters = 58
+=======================================================
+[����: frozen-mask refit RMSE is 26.5% above the full-data fit (threshold 15.0%); the consensus structure may be too sparse or missing a
+feature that the full-data selection needs.] 
+[> λ�ã�lasso_stability_from_design (�� 246 ��)
+λ��: lasso_stability_identification (�� 36 ��)
+λ��: run_kneerule (�� 9 ��)
+λ��: run (�� 112 ��)] 
+
+===== CONSENSUS STRUCTURE =====
+  stance : nnz= 19 / 234 | modal 1/20 (0.05) | coverage 0.48 | stable-on 11, ambiguous 58 | mean Jaccard 0.415
+  swing  : nnz= 21 / 234 | modal 1/20 (0.05) | coverage 0.56 | stable-on 13, ambiguous 49 | mean Jaccard 0.463
+  total CMA-ES parameters = 58 (frozen 0-1 structure)
+  full-data single fit     = 87 parameters (unfrozen reference)
+  RMSE vs full-data fit (mean over muscles) = +26.5%
+  RMSE vs replicate median (in-bag, informational) = +27.0%
+  total time = 355.5 s
+================================
+[stability] controller  : results\lasso_controller_result_moco_kneerule.mat
+[stability] diagnostics : results\lasso_stability_diagnostics_kneerule.mat
+
+=== KNEE RULE DONE ===
+ʹ�� 'Processes' �����ļ��Ĳ��г����ڹرա�

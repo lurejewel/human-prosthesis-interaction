@@ -27,8 +27,12 @@ function A = analyze_lasso_sparsity(stoFile, options)
 %   Output A
 %   --------
 %   .path        .targets, .nnzAtTarget (nTarget x nGroups), .nnzSelected,
-%                .medianNnz{g}/.medianRelErr{g} (60-point median curves),
-%                .knee{g} = .nnz/.relErr/.tolSelect
+%                .medianNnz{g}/.medianRelErr{g} (per-muscle median curves),
+%                .nnzMat/.errMat (nGroups x nMus x nPath),
+%                .totalParamsK / .allErrK / .aggRelErrK (aggregate curve:
+%                one global path index k applied to all muscles),
+%                .knee{g} (per-muscle) and .kneeAgg (total-parameter curve),
+%                .nPoints*.nDominated* (Pareto dominance counts)
 %   .piSweep     .thr, .params, .nnz,
 %                .trainRMSE  refit on ALL data, evaluated on ALL data
 %                .trainCV    in-fold train (fit on a fold, evaluated on it)
@@ -129,21 +133,96 @@ for g = 1:2
     medianNnz{g} = medN;
     medianRelErr{g} = medE;
 end
+
+% ---- per-muscle path matrices (NaN where a degenerate path is shorter) ----
+nP = max(cellfun(@numel, medianNnz));
+nnzMat = nan(2, nMus, nP);     % support size of muscle m, group g, path index k
+errMat = nan(2, nMus, nP);     % RMSE / best RMSE, same indexing
+for g = 1:2
+    ph = groupLabels{g};
+    for m = 1:nMus
+        p = fitPath.LambdaPath.(ph){m};
+        n = numel(p.supportSize);
+        nnzMat(g, m, 1:n) = p.supportSize(:).';
+        errMat(g, m, 1:n) = (p.trainErrorRefit(:) / ...
+            max(p.minTrainErrorRefit, eps)).';
+    end
+end
+
+% ---- aggregate trade-off: ONE path index k applied to all muscles --------
+% x = total CMA-ES parameters if the path is stopped at index k everywhere
+%     (same k for every muscle-group; this is what a global tolerance does);
+% y = median (and mean) relative RMSE over the 18 muscle-group curves.
+totalParamsK = squeeze(sum(sum(nnzMat, 2, 'omitnan'), 1, 'omitnan')) + 18;
+allErrK = reshape(permute(errMat, [2 1 3]), nMus * 2, nP);   % 18 x nP
+aggRelErrK = median(allErrK, 1, 'omitnan').';
+aggRelErrMeanK = mean(allErrK, 1, 'omitnan').';
+
 A.path.targets = targets;
 A.path.nnzAtTarget = nnzAtTarget;      % target x group x muscle
 A.path.nnzSelected = nnzSelected;      % group x muscle
 A.path.medianNnz = medianNnz;
 A.path.medianRelErr = medianRelErr;
+A.path.nnzMat = nnzMat;
+A.path.errMat = errMat;
+A.path.totalParamsK = totalParamsK;
+A.path.allErrK = allErrK;
+A.path.aggRelErrK = aggRelErrK;
+A.path.aggRelErrMeanK = aggRelErrMeanK;
 
-% ---- knee point of the sparsity/accuracy curve (per muscle-group curve) ---
-A.path.knee = cell(1, 2);
-fprintf('\n  knee of the median path curve (Pareto knee, Kneedle criterion):\n');
+% ---- Pareto structure: which path points are dominated? ------------------
+% A point (nnz, RMSE) is dominated if another lambda gives both no more
+% nonzeros AND no worse RMSE.  The lambda path is a *trajectory*, not a
+% Pareto front, so dominated points do exist (support-size plateaus, or a
+% later lambda that is both denser and worse).
+fprintf('\n  Pareto structure of the lambda paths (minimise nnz and RMSE):\n');
+A.path.nDominated = zeros(1, 2);
+A.path.nPoints = zeros(1, 2);
 for g = 1:2
-    [kx, ky, ~] = knee_point(medianNnz{g}, medianRelErr{g});
+    nd = pareto_flags(medianNnz{g}, medianRelErr{g});
+    A.path.nPoints(g) = sum(isfinite(medianNnz{g}) & isfinite(medianRelErr{g}));
+    A.path.nDominated(g) = A.path.nPoints(g) - nnz(nd);
+    fprintf('    %-6s median curve: %d/%d points non-dominated\n', ...
+        groupLabels{g}, nnz(nd), A.path.nPoints(g));
+end
+
+nDomMuscle = 0; nPtMuscle = 0;
+for g = 1:2
+    for m = 1:nMus
+        x = squeeze(nnzMat(g, m, :));
+        y = squeeze(errMat(g, m, :));
+        ok = isfinite(x) & isfinite(y);
+        nd = pareto_flags(x(ok), y(ok));
+        nPtMuscle = nPtMuscle + nnz(ok);
+        nDomMuscle = nDomMuscle + (nnz(ok) - nnz(nd));
+    end
+end
+A.path.nPointsMuscle = nPtMuscle;
+A.path.nDominatedMuscle = nDomMuscle;
+fprintf('    all 18 per-muscle paths: %d/%d points non-dominated\n', ...
+    nPtMuscle - nDomMuscle, nPtMuscle);
+
+% ---- knees --------------------------------------------------------------
+% (a) per phase group, on the per-muscle median curve (x = nnz per muscle)
+A.path.knee = cell(1, 2);
+fprintf('\n  knee of the per-muscle median curve (Kneedle):\n');
+for g = 1:2
+    [kx, ky] = knee_point(medianNnz{g}, medianRelErr{g});
     A.path.knee{g} = struct('nnz', kx, 'relErr', ky, 'tolSelect', ky - 1);
     fprintf('    %-6s : nnz=%.1f, RMSE/RMSEbest=%.3f -> implied tolSelect=%.2f\n', ...
         groupLabels{g}, kx, ky, ky - 1);
 end
+
+% (b) aggregate curve (x = total CMA-ES parameters, ONE global tolerance)
+ndAgg = pareto_flags(totalParamsK, aggRelErrK);
+A.path.nPointsAgg = numel(totalParamsK);
+A.path.nDominatedAgg = numel(totalParamsK) - nnz(ndAgg);
+[kx, ky] = knee_point(totalParamsK, aggRelErrK);
+A.path.kneeAgg = struct('params', kx, 'relErr', ky, 'tolSelect', ky - 1, ...
+    'nDominated', A.path.nDominatedAgg);
+fprintf(['    aggregate (total params): %d/%d non-dominated, knee at ' ...
+    '%d params (+%.1f%% RMSE, equivalent global tolSelect~%.2f)\n'], ...
+    nnz(ndAgg), numel(totalParamsK), kx, 100 * (ky - 1), ky - 1);
 
 fprintf('\n===== 1. LAMBDA-PATH MARGINAL RETURN (mean over 9 muscles) =====\n');
 fprintf('  tolerance to best RMSE |  stance nnz |  swing nnz\n');
@@ -249,59 +328,42 @@ A.reference.params = nnz(lassoPath.groups(1).mask) + 9 + ...
 A.reference.RMSE = mean(fitPath.RMSE_refit_full);
 
 %% ===== figure ==========================================================
-fig = figure('Name', 'LASSO sparsity trade-off', 'Color', 'w', ...
-    'Position', [80 80 1300 420]);
-
-subplot(1, 3, 1); hold on; grid on;
-hMed = gobjects(1, 2);
-for g = 1:2
-    ph = groupLabels{g};
-    for m = 1:nMus
-        p = fitPath.LambdaPath.(ph){m};
-        plot(p.supportSize, p.trainErrorRefit / max(p.minTrainErrorRefit, eps), ...
-            '-', 'Color', [0.75 0.75 0.75], 'LineWidth', 0.5, ...
-            'HandleVisibility', 'off');
-    end
-    hMed(g) = plot(medianNnz{g}, medianRelErr{g}, '-o', 'LineWidth', 1.6, 'MarkerSize', 3);
-    kn = A.path.knee{g};
-    plot(kn.nnz, kn.relErr, 'p', 'MarkerSize', 14, 'LineWidth', 1.2, ...
-        'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'k', 'HandleVisibility', 'off');
-end
-set(gca, 'YScale', 'log');
-xlabel('support size (nonzeros, per muscle-group)');
-ylabel('RMSE / best RMSE');
-title('lambda path: accuracy vs sparsity (knee = *)');
-legend(hMed, groupLabels, 'Location', 'northeast');
-ylim([0.99 3]);
-
-subplot(1, 3, 2); hold on; grid on;
-plot(piThr.params, piThr.trainRMSE, ':', 'Color', [0.4 0.4 0.4], 'LineWidth', 1.0);
-h1 = plot(piThr.params, piThr.trainCV, '-o', 'LineWidth', 1.6);
-h2 = plot(piThr.params, piThr.cvRMSE, '-s', 'LineWidth', 1.6);
-xlabel('CMA-ES parameters'); ylabel('mean RMSE');
-title('consensus pi threshold (2-fold CV)');
-legend([h1 h2], {'in-fold train', 'out-of-fold test'}, 'Location', 'northeast');
-kn = A.piSweep.knee;
-plot(kn.params, kn.cvRMSE, 'p', 'MarkerSize', 14, 'LineWidth', 1.2, ...
-    'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'k', 'HandleVisibility', 'off');
-
-subplot(1, 3, 3); hold on; grid on;
-plot(tolSweep.params, tolSweep.trainRMSE, '-o', 'LineWidth', 1.6);
-xlabel('CMA-ES parameters'); ylabel('mean RMSE');
-title('tolSelect (5% = current)');
-
+% Panel 1 uses the per-muscle-group support size on x: the lambda is selected
+% independently for every muscle-group, so a "total parameters" axis would mix
+% 18 separate decisions into a hypothetical global setting.
 figFile = fullfile(resultsDir, 'lasso_sparsity_tradeoff.png');
-try
-    exportgraphics(fig, figFile, 'Resolution', 150);
-catch
-    print(fig, figFile, '-dpng', '-r150');
-end
+plot_lasso_sparsity_tradeoff(A, R.R, figFile);
 
 %% ===== save ============================================================
 matFile = fullfile(resultsDir, 'lasso_sparsity_analysis.mat');
 A.files = struct('mat', matFile, 'figure', figFile);
 save(matFile, 'A', '-v7.3');
 fprintf('\n[sparsity] saved %s and %s\n', matFile, figFile);
+end
+
+%% ========================================================================
+function nd = pareto_flags(x, y)
+%PARETO_FLAGS  Non-dominated flags for a 2-objective MINIMISATION set.
+%   A point is dominated when another point has x <= and y <= with at least
+%   one strict inequality.  O(n^2); n here is at most a few hundred.
+x = x(:); y = y(:);
+n = numel(x);
+nd = true(n, 1);
+for i = 1:n
+    if ~isfinite(x(i)) || ~isfinite(y(i))
+        nd(i) = false;
+        continue;
+    end
+    for j = 1:n
+        if j == i || ~isfinite(x(j)) || ~isfinite(y(j))
+            continue;
+        end
+        if x(j) <= x(i) && y(j) <= y(i) && (x(j) < x(i) || y(j) < y(i))
+            nd(i) = false;
+            break;
+        end
+    end
+end
 end
 
 %% ========================================================================

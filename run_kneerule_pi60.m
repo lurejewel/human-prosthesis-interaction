@@ -1,0 +1,11 @@
+addpath('Sparse Group LASSO Validation');
+opt = struct();
+opt.outFile        = fullfile('results','lasso_controller_result_moco_kneerule_pi60.mat');
+opt.diagFile       = fullfile('results','lasso_stability_diagnostics_kneerule_pi60.mat');
+opt.checkpointFile = fullfile('results','lasso_stability_checkpoint_kneerule.mat');
+opt.resumeFromCheckpoint = true;
+opt.consensusRule  = 'stability';
+opt.piThreshold    = 0.6;
+opt.fitOptions     = struct('lambdaPathConfig', struct('selectionMode','knee','minSupport',1));
+R = lasso_stability_identification('Sparse Group LASSO Validation/moco_dataset/moco_lasso_dataset.sto', opt);
+fprintf('\n=== PI 0.6 DONE ===\n');

@@ -45,7 +45,7 @@ experimental data and then refined by CMA-ES inside the forward-dynamics loop.
 | **Muscle Reflex Controller** | LASSO sparse linear per-phase model with optional **grouped format** (v2): phases sharing the same controller reference a single `beta`/`bias`/`mask`, eliminating parameter duplication. Legacy hand-crafted controller is deprecated. |
 | **Structure Identification (stability)** | K random seeds × run-level bootstrap → per-entry selection frequency π → consensus 0-1 mask (majority vote) → frozen-mask refit on the full data. The 0-1 map is hard-frozen for CMA-ES; coefficients are only the initial guess. See [`docs/LASSO_STABILITY_IDENTIFICATION.md`](docs/LASSO_STABILITY_IDENTIFICATION.md). |
 | **Optimisation (IPOP-CMA-ES)** | Restart strategy with soft sigma-boost before restart; population size doubles on restart. Parallelised over all available cores. Reproducible via `rngSeed` + `threefry`. |
-| **Fitness Evaluation** | Multi-objective: gait completeness, velocity tracking, joint hyperextension (knee + ankle), GRF ceiling, metabolic effort. |
+| **Fitness Evaluation** | Multi-objective: gait completeness, velocity tracking, joint hyperextension (knee + ankle), GRF ceiling, metabolic effort. Every term is non-negative by construction: the effort term (cost of transport) uses the **forward** distance with a 0.5 m floor, so a fall/backward drift can never become a negative cost. `measure_simResults` also returns the per-term breakdown and warns if any term goes negative. |
 | **Checkpoint / Resume** | Full-state checkpoint saved every 10 generations. Resume from crash or intentional stop by setting `resumeFromCheckpoint = true`. |
 
 ---
@@ -118,10 +118,17 @@ test_single_parameter
 ```
 
 Loads a previously saved `result.bestPara`, runs **one** forward simulation
-(with static-optimisation initial activations), prints the fitness breakdown,
-and displays diagnostic figures (joint angles, pelvis trajectory, gait phases,
-muscle excitations, GRF, joint torques, gait-cycle-normalised plots).
+(with static-optimisation initial activations), prints the fitness breakdown
+(completeness / velocity / knee / ankle / GRF / effort), and displays
+diagnostic figures (joint angles, pelvis trajectory, gait phases, muscle
+excitations, GRF, joint torques, gait-cycle-normalised plots).
 Optionally plays a 3D visualisation of the gait.
+
+Lightweight alternative (no plots, no 3D, just the fitness terms):
+
+```matlab
+tests/evaluate_opt_result_fitness
+```
 
 ### 3. Static optimisation validation (standalone)
 
@@ -366,7 +373,9 @@ IPOP-CMA-ES、checkpoint/resume）不变。
   `results/lasso_controller_result_moco_consensus_pi70.mat`。
 - **拟合效果可视化**：[`plot_lasso_fit_quality.m`](<Sparse Group LASSO Validation/plot_lasso_fit_quality.m>)
   画出右腿 9 块肌肉的实测 vs 预测 excitation（全程 30 s、3 s 放大、逐肌肉 RMSE 柱状），
-  175 与 247 参数的预测曲线肉眼几乎重合。
+  175 与 247 参数的预测曲线肉眼几乎重合。另有
+  [`plot_controller_fit_quality.m`](<Sparse Group LASSO Validation/plot_controller_fit_quality.m>)：
+  直接读取**任意** controller `.mat`（不需要 diagnostics 文件）重建预测并出同样三张图。
 - **重采样对照**：[`compare_bootstrap_resampling.m`](<Sparse Group LASSO Validation/compare_bootstrap_resampling.m>)
   证明 i.i.d. 重采样会把稳定性系统性夸大（Jaccard 0.67/0.75 vs run-level 0.53/0.59），
   但不改变 nnz。

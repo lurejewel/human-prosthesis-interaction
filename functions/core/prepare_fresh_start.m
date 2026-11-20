@@ -86,7 +86,13 @@ a_opt = iterative_static_optimization(projName, initPose, dofNames, ...
     tauTarget, tauLimit, soCoordNames);
 
 %% ---- LASSO linear-phase controller initialisation ----
-lassoFile = fullfile('results', 'lasso_controller_result.mat');
+% Structure (0-1 mask) and initial values for CMA-ES.  Alternatives:
+%   ..._moco_consensus_knee.mat : knee rule, NO stability selection
+%                                 -> 84 parameters (held-out RMSE 0.030)
+%   ..._moco_consensus_pi70.mat : tolSelect + stability pi>=0.7
+%                                 -> 175 parameters (held-out +8.5%)
+%   ..._moco_consensus.mat      : majority consensus -> 247 parameters
+lassoFile = fullfile('results', 'lasso_controller_result_moco_consensus_knee.mat');
 [initPara, reflexParamMap, reflexTemplate] = ...
     load_lasso_reflex_controller(lassoFile);
 

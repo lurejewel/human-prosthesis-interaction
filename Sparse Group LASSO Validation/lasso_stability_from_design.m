@@ -360,6 +360,9 @@ lasso.identification.validMask = valid;
 lasso.identification.warnings = warnList;
 lasso.identification.groupLabels = fitOpts.groupLabels;
 lasso.identification.groupPhases = fitOpts.groupPhases;
+lasso.identification.lambdaSelectionMode = fitOpts.lambdaPathConfig.selectionMode;
+lasso.identification.minSupport = fitOpts.lambdaPathConfig.minSupport;
+lasso.identification.tolSelect = fitOpts.lambdaPathConfig.tolSelect;
 lasso.identification.featureNames = D.featureNames;
 lasso.identification.created = char(datetime);
 

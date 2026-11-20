@@ -83,11 +83,13 @@ classdef Measurements < handle
             th = 0.05;
             nR = length(obj.heelstrikeEventR);
             nL = length(obj.heelstrikeEventL);
-            velBuffer = nan(nR + nL - 2, 1);
-            if isempty(velBuffer)
+            nInt = nR + nL - 2;      % heel-strike to heel-strike intervals
+            if nInt < 1
+                % not even one full interval: treat as a failed gait
                 fit = weight * 1;
                 return;
             end
+            velBuffer = nan(nInt, 1);
 
             sh  = obj.modelInfo.dy.labelHistory;
             sm  = obj.modelInfo.st.model.map;
@@ -163,7 +165,14 @@ classdef Measurements < handle
             pelvisX = sh(sm('pelvis_tx/value'), obj.npts);
             m       = obj.mass;
 
-            fit = weight * obj.modelInfo.dy.totalMetabolic / m / pelvisX;
+            % Cost of transport = metabolic energy / (body mass * FORWARD
+            % distance covered).  Dividing by the SIGNED displacement is a
+            % trap: a model that fell after 1.9 s with pelvisX = -0.15 m
+            % scored -221 here, which CMA-ES (minimising) reads as a huge
+            % reward and easily beats the fall penalty.  Keep the
+            % denominator positive and floored.
+            fit = weight * Measurements.cost_of_transport( ...
+                obj.modelInfo.dy.totalMetabolic, m, pelvisX);
 
             % nMuscles = numel(obj.muscleMass);
             % Effort   = zeros(1, obj.npts);
@@ -196,6 +205,23 @@ classdef Measurements < handle
         end
     end
     methods (Static)
+        function c = cost_of_transport(metab, mass, pelvisX, minDist)
+            %COST_OF_TRANSPORT  Metabolic cost per metre of FORWARD travel.
+            %   c = cost_of_transport(metab, mass, pelvisX, minDist)
+            %   Always positive: non-positive or tiny net displacement
+            %   (standing still, walking backward, falling before moving)
+            %   must not turn the cost negative.  minDist (default 0.5 m)
+            %   is the floor of the distance used in the denominator.
+            if nargin < 4 || isempty(minDist)
+                minDist = 0.5;   % [m]
+            end
+            d = max(pelvisX, minDist);
+            if ~isfinite(d)
+                d = minDist;
+            end
+            c = metab / max(mass, eps) / d;
+        end
+
         function force = limit_force_calculation(ang, vel, angUpTh, angLowTh)
             kUp = 10;
             kLow = 10;

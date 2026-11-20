@@ -227,6 +227,35 @@ for m = 1:numTargets
 
     for phaseIter = 1:numel(phaseNames)
         phaseName = phaseNames{phaseIter};
+
+        % tolSelect may be a scalar (same tolerance for every phase group) or
+        % a 1 x nGroups vector (e.g. [0.05 0.20] to keep stance dense and make
+        % swing sparser).  It is a property of the SELECTION RULE, not of the
+        % lambda path itself: each (muscle, group) still gets its own lambda.
+        if isscalar(lambdaPathConfig.tolSelect)
+            tolSelThis = lambdaPathConfig.tolSelect;
+        else
+            if numel(lambdaPathConfig.tolSelect) ~= numel(phaseNames)
+                error('fit_adaptive_lasso_core:BadTolSelect', ...
+                    'lambdaPathConfig.tolSelect must be a scalar or a 1 x %d vector.', ...
+                    numel(phaseNames));
+            end
+            tolSelThis = lambdaPathConfig.tolSelect(phaseIter);
+        end
+
+        % Lambda selection rule: 'tolSelect' (relative-RMSE tolerance) or
+        % 'knee' (Kneedle knee of this muscle-group's own support/RMSE path).
+        selMode = lower(lambdaPathConfig.selectionMode);
+        if ~any(strcmp(selMode, {'tolselect', 'knee'}))
+            error('fit_adaptive_lasso_core:BadSelectionMode', ...
+                'lambdaPathConfig.selectionMode must be ''tolSelect'' or ''knee''.');
+        end
+        minSup = lambdaPathConfig.minSupport;
+        if ~(isscalar(minSup) && minSup >= 1 && floor(minSup) == minSup)
+            error('fit_adaptive_lasso_core:BadMinSupport', ...
+                'lambdaPathConfig.minSupport must be an integer >= 1.');
+        end
+
         idx = phaseIdxMap.(phaseName);
         X_phase = X_std(idx, :);
         X_phase_orig = X_orig(idx, :);
@@ -269,7 +298,7 @@ for m = 1:numTargets
             pathInfo.thresholdTrainErrorRefit = NaN;
             pathInfo.selectedTrainErrorRefit = NaN;
             pathInfo.selectedTrainErrorAdaptive = NaN;
-            pathInfo.tolSelect = lambdaPathConfig.tolSelect;
+            pathInfo.tolSelect = tolSelThis;
             pathInfo.selectionMetric = lambdaPathConfig.selectionMetric;
         else
             %% ---- STEP 3: INITIAL WEIGHTED OLS ESTIMATE ------------------
@@ -440,9 +469,10 @@ for m = 1:numTargets
                 prevInterceptStd = interceptAdaStdK;
             end
 
-            % Selection rule (unchanged): within (1+tolSelect) of the minimum
-            % refit RMSE, take the sparsest lambda (first feasible on the path,
-            % which is walked from strong to weak penalty).
+            % Selection rule: 'tolSelect' = sparsest lambda within
+            % (1+tolSelect) of the minimum refit RMSE; 'knee' = Kneedle knee of
+            % this muscle-group's own (support, RMSE) path, restricted to
+            % support >= minSupport.
             validErr = isfinite(trainErrorRefit);
             if ~any(validErr)
                 error('fit_adaptive_lasso_core:NoValidPathRMSE', ...
@@ -451,13 +481,20 @@ for m = 1:numTargets
             [minErr, localMinPos] = min(trainErrorRefit(validErr));
             validIdx = find(validErr);
             minIdx = validIdx(localMinPos);
-            thresholdErr = (1 + lambdaPathConfig.tolSelect) * minErr;
-            feasibleIdx = find(validErr & ...
-                trainErrorRefit <= thresholdErr + 10 * eps(max(1, thresholdErr)));
-            if isempty(feasibleIdx)
-                selectedIdx = minIdx;
-            else
-                selectedIdx = feasibleIdx(1);
+            thresholdErr = NaN;
+            switch selMode
+                case 'tolselect'
+                    thresholdErr = (1 + tolSelThis) * minErr;
+                    feasibleIdx = find(validErr & ...
+                        trainErrorRefit <= thresholdErr + 10 * eps(max(1, thresholdErr)));
+                    if isempty(feasibleIdx)
+                        selectedIdx = minIdx;
+                    else
+                        selectedIdx = feasibleIdx(1);
+                    end
+                case 'knee'
+                    selectedIdx = knee_index_path(supportSize, trainErrorRefit, ...
+                        validErr, minSup);
             end
 
             interceptAdaStd = interceptAdaStdPath(selectedIdx);
@@ -485,7 +522,9 @@ for m = 1:numTargets
             pathInfo.selectedLambda2 = lambdaGridThis(selectedIdx);
             pathInfo.selectedSupport = supportPath{selectedIdx};
             pathInfo.selectionMetric = lambdaPathConfig.selectionMetric;
-            pathInfo.tolSelect = lambdaPathConfig.tolSelect;
+            pathInfo.selectionMode = selMode;
+            pathInfo.minSupport = minSup;
+            pathInfo.tolSelect = tolSelThis;
             pathInfo.minTrainErrorRefit = minErr;
             pathInfo.thresholdTrainErrorRefit = thresholdErr;
             pathInfo.selectedTrainErrorRefit = trainErrorRefit(selectedIdx);
@@ -722,6 +761,40 @@ end
 % and by the mask-constrained refit (warm start = a support-restricted OLS).
 % Only uncensored samples get residual-scale Huber weights; censored samples
 % keep their base weight so rho still enforces the hinge constraint.
+function k = knee_index_path(sz, er, valid, minSup)
+%KNEE_INDEX_PATH  Kneedle knee of one (support size, refit RMSE) path.
+%   The knee is the point of maximum distance below the chord joining the two
+%   endpoints, computed on the Pareto-filtered (non-dominated) points only.
+%   support = 0 (all-zero beta) is never admissible; minSup = 1 excludes it.
+ok = valid(:) & isfinite(sz(:)) & isfinite(er(:)) & sz(:) >= minSup;
+if ~any(ok)
+    error('fit_adaptive_lasso_core:NoKneeCandidates', ...
+        'No path point has finite RMSE and support >= %d.', minSup);
+end
+x = sz(ok); y = er(ok); idx = find(ok);
+n = numel(x);
+if n < 3
+    k = idx(1);   % degenerate path: keep the sparsest admissible point
+    return;
+end
+nd = true(n, 1);
+for i = 1:n
+    for j = 1:n
+        if j ~= i && x(j) <= x(i) && y(j) <= y(i) && (x(j) < x(i) || y(j) < y(i))
+            nd(i) = false;
+            break;
+        end
+    end
+end
+x = x(nd); y = y(nd); idx = idx(nd);
+[xs, is] = sort(x); y = y(is); idx = idx(is);
+xn = (xs - min(xs)) / max(max(xs) - min(xs), eps);
+yn = (y - min(y)) / max(max(y) - min(y), eps);
+d = (1 - xn) - yn;
+[~, j] = max(d);
+k = idx(j);
+end
+
 function [betaS, bS, statsFinal, wCur] = robust_support_refit( ...
     X_phase, Y_phase, wPhase, S_k, c_m, rho, optsCommon, opts, ...
     beta0, b0, stats0, muscleName, phaseName)

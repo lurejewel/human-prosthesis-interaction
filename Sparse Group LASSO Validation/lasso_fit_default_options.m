@@ -11,7 +11,9 @@ function opts = lasso_fit_default_options(options)
 %   gamma 1, epsilonOLS 1e-8, nzTol 1e-5, lambda1 0
 %   lambdaPathConfig.nLambda 60
 %   lambdaPathConfig.lambdaMinRatio 1e-4
-%   lambdaPathConfig.tolSelect 0.05
+%   lambdaPathConfig.tolSelect 0.05  scalar, or 1 x nGroups (e.g. [0.05 0.20]
+%   lambdaPathConfig.selectionMode 'tolSelect'  'tolSelect' | 'knee'
+%   lambdaPathConfig.minSupport 1     knee mode: require support >= this
 %   lambdaPathConfig.selectionMetric 'post_refit_train_censored_rmse'
 %   c 0.01, rho 50, delaySteps 1, excitationThreshold 0.01
 %   sampleWeight []            (all ones; length n or n+delaySteps)
@@ -44,6 +46,8 @@ defaults.lambdaPathConfig = struct( ...
     'nLambda', 60, ...
     'lambdaMinRatio', 1e-4, ...
     'tolSelect', 0.05, ...
+    'selectionMode', 'tolSelect', ...   % 'tolSelect' | 'knee'
+    'minSupport', 1, ...                % knee mode: smallest admissible support
     'selectionMetric', 'post_refit_train_censored_rmse');
 defaults.c = 0.01;
 defaults.rho = 50;
