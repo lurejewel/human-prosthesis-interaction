@@ -22,16 +22,16 @@ cShort  = Measurements.cost_of_transport(metab, mass, 0.2);
 cWalk1  = Measurements.cost_of_transport(metab, mass, 1.0);
 cWalk10 = Measurements.cost_of_transport(metab, mass, 10.0);
 
+% non-positive displacement -> floored, never negative
 assert(cFell  > 0, 'backward displacement produced a non-positive cost');
 assert(cStand > 0, 'zero displacement produced a non-positive cost');
-assert(cShort > 0, '0.2 m displacement produced a non-positive cost');
-assert(abs(cShort - Measurements.cost_of_transport(metab, mass, 0.5)) < 1e-12, ...
-    'the 0.5 m distance floor is not applied');
+assert(abs(cFell  - metab / mass / 0.5) < 1e-9, 'backward case must use the floor');
+assert(abs(cStand - metab / mass / 0.5) < 1e-9, 'zero case must use the floor');
+% any positive displacement -> EXACTLY the old expression (no behaviour change)
+assert(abs(cShort - metab / mass / 0.2) < 1e-9, 'positive displacement must be unchanged');
+assert(abs(cWalk1  - metab / mass / 1.0) < 1e-9, 'positive displacement must be unchanged');
 assert(cWalk1 > cWalk10, 'cost must decrease as forward distance grows');
 assert(cWalk10 > 0, 'forward walking cost must be positive');
-
-% exact regression value for the failed run: metab / (mass * 0.5)
-assert(abs(cFell - metab / mass / 0.5) < 1e-9);
 
 fprintf('test_fitness_safety: OK  (fell=%.2f, stand=%.2f, 1m=%.2f, 10m=%.2f)\n', ...
     cFell, cStand, cWalk1, cWalk10);

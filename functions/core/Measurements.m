@@ -208,15 +208,16 @@ classdef Measurements < handle
         function c = cost_of_transport(metab, mass, pelvisX, minDist)
             %COST_OF_TRANSPORT  Metabolic cost per metre of FORWARD travel.
             %   c = cost_of_transport(metab, mass, pelvisX, minDist)
-            %   Always positive: non-positive or tiny net displacement
-            %   (standing still, walking backward, falling before moving)
-            %   must not turn the cost negative.  minDist (default 0.5 m)
-            %   is the floor of the distance used in the denominator.
+            %   For any positive net displacement this is EXACTLY the old
+            %   expression metabolic/(mass*distance); only a non-positive or
+            %   invalid displacement (standing still, walking backward,
+            %   falling before moving) is replaced by minDist (default 0.5 m)
+            %   so the cost can never become negative.
             if nargin < 4 || isempty(minDist)
                 minDist = 0.5;   % [m]
             end
-            d = max(pelvisX, minDist);
-            if ~isfinite(d)
+            d = pelvisX;
+            if ~isfinite(d) || d <= 0
                 d = minDist;
             end
             c = metab / max(mass, eps) / d;
