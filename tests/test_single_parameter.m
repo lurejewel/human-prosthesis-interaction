@@ -20,7 +20,7 @@ addpath(genpath('assets'), genpath('model'), genpath('functions'))
 
 %% ---------- user configuration ----------
 projName       = 'human0918';  % <-- change to your model name (without .osim)
-paraSourceFile = 'results\opt_result_2026-11-20_10-37-17.mat';  % <-- change to your result file
+paraSourceFile = 'results\opt_result_2026-11-24_22-44-16.mat';  % <-- change to your result file
 
 simConfig.endTime = 10;
 simConfig.stepTime = 0.005;

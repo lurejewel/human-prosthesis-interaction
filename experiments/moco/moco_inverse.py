@@ -717,6 +717,14 @@ def parse_args(argv=None):
                         "--sagittal-cost is used.  To mimic optimal_force=5 "
                         "with optimal_force=1, use 1/25 = 0.04 (not 0.2). "
                         "Default: 0.04.")
+    p.add_argument("--model-file", default=None,
+                   help="override the model path (portable per-trial runs)")
+    p.add_argument("--ik-file", default=None,
+                   help="override the filtered IK path")
+    p.add_argument("--grf-xml", default=None,
+                   help="override the ExternalLoads XML path")
+    p.add_argument("--out-dir", default=None,
+                   help="override the output directory")
     p.add_argument("--emg-tracking", default=None,
                    help="path to a TimeSeriesTable (.sto) whose columns are "
                         "/forceset/<muscle> control names for the 10 muscles "
@@ -725,48 +733,23 @@ def parse_args(argv=None):
     p.add_argument("--emg-weight", type=float, default=0.1,
                    help="weight of the sEMG control-tracking goal "
                         "(default 0.1; soft prior relative to excitation_effort)")
-    p.add_argument("--emg-gain-min", type=float, default=0.5,
-                   help="lower bound for the per-muscle EMG scale factor")
-    p.add_argument("--emg-gain-max", type=float, default=2.0,
-                   help="upper bound for the per-muscle EMG scale factor")
-    p.add_argument("--emg-no-gain", action="store_true",
-                   help=argparse.SUPPRESS)
-    p.add_argument("--emg-reinit", action="store_true",
-                   help=argparse.SUPPRESS)
-    p.add_argument("--emg-custom-study", action="store_true",
-                   help="dump the MocoInverse study to XML, reload it as a "
-                        "fresh MocoStudy, then add the EMG tracking goal and "
-                        "scale factors before the solver is initialized")
-    p.add_argument("--emg-one-gain", action="store_true",
-                   help=argparse.SUPPRESS)
-    p.add_argument("--emg-rev-goal", action="store_true",
-                   help="use the reverse-scaled plugin goal "
-                        "(error = reference - s * model)")
-    p.add_argument("--emg-rev-plugin", default=None,
-                   help="path to osimRevGoal.dll (default: revgoal/build_vs/"
-                        "Release/osimRevGoal.dll)")
     p.add_argument("--emg-initial-guess", default=None,
-                   help="MocoTrajectory (.sto) used as the initial guess; "
-                        "with --emg-rev-goal this also switches sparsity "
-                        "detection to 'initial-guess'")
+                   help="MocoTrajectory (.sto) used as the initial guess")
     p.add_argument("--emg-leg", choices=["both", "right"], default="both",
                    help="which leg gets sEMG tracking; 'right' uses only "
                         "rect_fem_r, vasti_r, hamstrings_r, tib_ant_r, gastroc_r")
     p.add_argument("--emg-s-values", default=None,
                    help="comma-separated fixed s values in active-muscle order "
-                        "(10 for both, 5 for --emg-leg right); equal bounds make "
-                        "s fixed")
+                        "(10 for both, 5 for --emg-leg right); required for B-form")
     p.add_argument("--emg-serial", action="store_true",
                    help="set MocoCasADiSolver parallel=0 for diagnostics")
     p.add_argument("--emg-sparsity-none", action="store_true",
                    help="set optim_sparsity_detection='none' for diagnostics")
     p.add_argument("--emg-sparsity-random", action="store_true",
                    help="force optim_sparsity_detection='random' for diagnostics")
-    p.add_argument("--emg-params-initsystem", action="store_true",
-                   help="set parameters_require_initsystem=True for diagnostics")
     p.add_argument("--emg-native-b-fixed", action="store_true",
-                   help="use native MocoControlTrackingGoal with reference e/s "
-                        "and per-control weight w*s^2 (requires fixed s)")
+                   help="required with --emg-tracking: native B-form reference e/s "
+                        "and per-control weight w*s^2")
 
     p.add_argument("--no-trim-grf", action="store_true",
                    help="do not trim the GRF file (much slower)")
@@ -794,15 +777,15 @@ def parse_args(argv=None):
 
 
 def add_emg_tracking_goal(problem, model, args):
-    """Add a soft MocoControlTrackingGoal on the 10 measured muscle controls.
+    """Add the native B-form tracking goal with fixed per-muscle s values.
 
-    The reference table has columns named ``/forceset/<muscle>``; only those
-    10 controls get weight 1.  Every other actuator (the 8 unmeasured muscles,
-    residuals and reserves) gets weight 0.  Each measured muscle also gets a
-    scale factor (``addScaleFactor``), so the optimizer can absorb the unknown
-    sEMG normalization anchor; the tracking error is
-    ``modelValue - gain * referenceValue``.
+    The reference becomes e/s and the per-control weight w*s^2, so the inner
+    objective is w*(e-s*u)^2 with no scale-factor parameters.  A-form support
+    has been removed; outer closed-form updates are orchestrated separately.
     """
+    if not getattr(args, "emg_native_b_fixed", False):
+        sys.exit("A-form support has been removed. Use --emg-native-b-fixed "
+                 "with --emg-s-values via run_bform_outer.py.")
     ref = os.path.abspath(args.emg_tracking)
     if not os.path.exists(ref):
         sys.exit(f"EMG reference table not found: {ref}")
@@ -842,95 +825,6 @@ def add_emg_tracking_goal(problem, model, args):
         print(f"      weight={args.emg_weight:g}; per-control weight=s^2; "
               "no MocoScaleFactor")
         return goal
-
-    goal = osim.MocoControlTrackingGoal("emg_tracking")
-    goal.setReference(osim.TableProcessor(ref))
-    goal.setWeight(args.emg_weight)
-    goal.setAllowUnusedReferences(True)
-
-    tracked = 0
-    scale_muscles = (active[:1] if getattr(args, "emg_one_gain", False)
-                     else active)
-    for m in active:
-        goal.setReferenceLabel(f"/forceset/{m}", f"/forceset/{m}")
-        goal.setWeightForControl(f"/forceset/{m}", 1.0)
-        tracked += 1
-    if not getattr(args, "emg_no_gain", False):
-        # Official order: add scale factors before adding the goal to the
-        # problem, then resetProblem()/parameters_require_initsystem(False).
-        s_vals = None
-        if getattr(args, "emg_s_values", None):
-            s_vals = [float(x) for x in
-                      args.emg_s_values.replace(",", " ").split()]
-            if len(s_vals) != len(active):
-                sys.exit(f"--emg-s-values needs exactly {len(active)} values "
-                         f"(got {len(s_vals)})")
-        for m in scale_muscles:
-            if s_vals is not None:
-                sv = s_vals[active.index(m)]
-                bounds = osim.MocoBounds(sv, sv)
-            else:
-                bounds = osim.MocoBounds(args.emg_gain_min,
-                                         args.emg_gain_max)
-            goal.addScaleFactor(f"gain_{m}", f"/forceset/{m}", bounds)
-        if s_vals is not None:
-            print("    fixed s: " + ", ".join(
-                f"{m}={v:g}" for m, v in zip(active, s_vals)))
-
-    if getattr(args, "emg_rev_goal", False):
-        # The XML round-trip is required because the plugin class has no SWIG
-        # binding.  Rename both the goal and its reference-label helper tags.
-        orig_xml = os.path.join(OUT_DIR, "emg_goal_orig.xml")
-        rev_xml = os.path.join(OUT_DIR, "emg_goal_rev.xml")
-        goal.printToXML(orig_xml)
-        with open(orig_xml, "r", encoding="utf-8") as f:
-            txt = f.read()
-        txt = txt.replace("MocoControlTrackingGoalReference",
-                          "MocoReverseScaledControlTrackingGoalReference")
-        txt = txt.replace("MocoControlTrackingGoal",
-                          "MocoReverseScaledControlTrackingGoal")
-        with open(rev_xml, "w", encoding="utf-8") as f:
-            f.write(txt)
-
-        plugin = args.emg_rev_plugin
-        if not plugin:
-            plugin = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  "revgoal", "build_vs", "Release",
-                                  "osimRevGoal.dll")
-        plugin = os.path.abspath(plugin)
-        if not os.path.exists(plugin):
-            sys.exit(f"reverse-scaled goal plugin not found: {plugin}")
-        env_root = os.path.dirname(os.path.abspath(sys.executable))
-        for d in (os.path.join(env_root, "Lib", "opensim"),
-                  os.path.join(env_root, "Library", "bin")):
-            if os.path.isdir(d):
-                try:
-                    os.add_dll_directory(d)
-                except (AttributeError, OSError):
-                    pass
-        osim.LoadOpenSimLibrary(plugin)
-        obj = osim.MocoGoal.makeObjectFromFile(rev_xml)
-        rev_goal = osim.MocoGoal.safeDownCast(obj)
-        if rev_goal is None:
-            sys.exit("could not load MocoReverseScaledControlTrackingGoal "
-                     "from XML; is the plugin registered?")
-        problem.addGoal(rev_goal)
-        try:
-            problem.printToXML(os.path.join(OUT_DIR, "rev_problem.xml"))
-        except Exception:
-            pass
-        print(f"    EMG tracking (REV): {ref}")
-        print(f"      plugin={plugin}")
-        print(f"      weight={args.emg_weight:g}; tracked {tracked} muscles; "
-              f"s bounds [{args.emg_gain_min:g}, {args.emg_gain_max:g}]")
-        return rev_goal
-
-    problem.addGoal(goal)
-    print(f"    EMG tracking: {ref}")
-    print(f"      weight={args.emg_weight:g}; tracked {tracked} muscles; "
-          f"gains [{args.emg_gain_min:g}, {args.emg_gain_max:g}]")
-    return goal
-
 
 def add_residuals_and_reserves_45(model, residual_rot, residual_trans):
     """OpenSim 4.5 has no ModOpAddResiduals; add the 4.6-equivalent actuators."""
@@ -1012,18 +906,6 @@ def solve_segment(args, mp, ik_file, seg, n_total):
             # The actuators stay in the model: the 3D equations of motion still
             # need them, they just may no longer contribute to the objective.
             study = inverse.initialize()
-            if args.emg_tracking and args.emg_custom_study:
-                # addScaleFactor() crashes/hangs when a MocoParameter is added
-                # after MocoInverse.initialize() has already prepared the
-                # solver.  Dump the fully built study, reload it as a fresh
-                # (not-yet-initialized) MocoStudy, and add the parameters
-                # before the first solve().
-                study_xml = os.path.join(
-                    OUT_DIR, f"moco_study_seg{seg['k']:02d}.xml")
-                study.printToXML(study_xml)
-                print(f"    reloaded MocoStudy from {study_xml} "
-                      f"(custom free-gain path)")
-                study = osim.MocoStudy(study_xml)
             problem = study.updProblem()
             if args.sagittal_cost:
                 goal = osim.MocoControlGoal.safeDownCast(
@@ -1048,14 +930,6 @@ def solve_segment(args, mp, ik_file, seg, n_total):
                 print(f"    solver sparsity="
                       f"{solver.get_optim_sparsity_detection()} "
                       f"fd={solver.get_optim_finite_difference_scheme()}")
-                if hasattr(solver, "set_parameters_require_initsystem"):
-                    if getattr(args, "emg_params_initsystem", False):
-                        solver.set_parameters_require_initsystem(True)
-                        print("    parameters_require_initsystem=True")
-                    else:
-                        solver.set_parameters_require_initsystem(False)
-                        print("    solver.resetProblem + "
-                              "parameters_require_initsystem=False")
                 if getattr(args, "emg_serial", False):
                     solver.set_parallel(0)
                     print("    solver.set_parallel(0)")
@@ -1065,41 +939,12 @@ def solve_segment(args, mp, ik_file, seg, n_total):
                         sys.exit(f"initial guess not found: {guess_path}")
                     solver.setGuess(osim.MocoTrajectory(guess_path))
                     print(f"    initial guess set on solver: {guess_path}")
-                if getattr(args, "emg_rev_goal", False):
-                    fixed_s = getattr(args, "emg_s_values", None) is not None
-                    if getattr(args, "emg_sparsity_random", False):
-                        solver.set_optim_sparsity_detection("random")
-                        print("    REV goal: forced sparsity='random'")
-                    elif getattr(args, "emg_initial_guess", None):
-                        if not fixed_s:
-                            solver.set_optim_sparsity_detection("initial-guess")
-                            print("    REV goal: guess; "
-                                  "optim_sparsity_detection='initial-guess'")
-                        else:
-                            print("    REV goal: fixed s + guess; sparsity=random")
-                    else:
-                        if not fixed_s:
-                            solver.set_optim_sparsity_detection("none")
-                            print("    REV goal: optim_sparsity_detection='none' "
-                                  "(H2 fix)")
-                        else:
-                            print("    REV goal: fixed s; sparsity=random")
+                if getattr(args, "emg_sparsity_random", False):
+                    solver.set_optim_sparsity_detection("random")
+                    print("    solver sparsity='random'")
                 if getattr(args, "emg_sparsity_none", False):
                     solver.set_optim_sparsity_detection("none")
                     print("    solver.set_optim_sparsity_detection('none')")
-                if getattr(args, "emg_reinit", False) and not args.emg_custom_study:
-                    print("    re-initializing the CasADi solver after adding EMG parameters")
-                    study.initCasADiSolver()
-                    solver = osim.MocoCasADiSolver.safeDownCast(study.updSolver())
-                    solver.set_multibody_dynamics_mode("implicit")
-                    solver.set_num_mesh_intervals(
-                        int(round((t1 - t0) / args.mesh)))
-                    solver.set_optim_convergence_tolerance(args.tol)
-                    solver.set_optim_constraint_tolerance(args.tol)
-                    solver.set_optim_max_iterations(args.max_iter)
-                    solver.set_minimize_implicit_auxiliary_derivatives(True)
-                    solver.set_implicit_auxiliary_derivatives_weight(0.01)
-                    solver.set_interpolate_control_mesh_interior_points(False)
             sol = study.solve()
             keepalive = (study, model, inverse)
         else:
@@ -1122,10 +967,22 @@ def solve_segment(args, mp, ik_file, seg, n_total):
 
 
 def main(argv=None):
-    global SEG_DIR
+    global SEG_DIR, MODEL_FILE, IK_FILE, GRF_XML, OUT_DIR
     args = parse_args(argv)
+    if args.model_file:
+        MODEL_FILE = os.path.abspath(args.model_file)
+    if args.ik_file:
+        IK_FILE = os.path.abspath(args.ik_file)
+    if args.grf_xml:
+        GRF_XML = os.path.abspath(args.grf_xml)
+    if args.out_dir:
+        OUT_DIR = os.path.abspath(args.out_dir)
+        SEG_DIR = os.path.join(OUT_DIR, "segments")
     if args.seg_dir:
         SEG_DIR = os.path.abspath(args.seg_dir)
+    if args.emg_tracking and not args.emg_native_b_fixed:
+        sys.exit("A-form support has been removed. Use --emg-native-b-fixed "
+                 "with --emg-s-values via run_bform_outer.py.")
 
     if args.full:
         args.start, args.end = 180.0, 240.0
@@ -1297,38 +1154,17 @@ def main(argv=None):
     print(f"wrote activations        -> {act_file}")
     print(f"wrote excitations        -> {exc_file}")
 
-    if args.emg_tracking and not getattr(args, "emg_no_gain", False):
+    if args.emg_tracking and args.emg_s_values:
         active = (EMG_MUSCLES_R if getattr(args, "emg_leg", "both") == "right"
                   else EMG_MUSCLES)
-        gains_file = os.path.join(OUT_DIR, f"moco_inverse_gains{tag}.csv")
-        with open(gains_file, "w", encoding="utf-8") as f:
-            f.write("segment,muscle,gain\n")
-            for k, s in enumerate(sols):
-                for m in active:
-                    try:
-                        g = float(s.getParameter(f"gain_{m}"))
-                    except Exception:
-                        g = float("nan")
-                    f.write(f"{k},{m},{g:.8f}\n")
-        print(f"wrote optimized gains    -> {gains_file}")
-        if getattr(args, "emg_native_b_fixed", False) and getattr(
-                args, "emg_s_values", None):
-            s_used = [float(x) for x in
-                      args.emg_s_values.replace(",", " ").split()]
-            s_file = os.path.join(OUT_DIR, f"moco_inverse_s_used{tag}.csv")
-            with open(s_file, "w", encoding="utf-8") as f:
-                f.write("segment,muscle,s\n")
-                for m, sv in zip(active, s_used):
-                    f.write(f"0,{m},{sv:.8f}\n")
-            print(f"wrote s_used             -> {s_file}")
-        for k, s in enumerate(sols):
-            vals = []
-            for m in active:
-                try:
-                    vals.append(f"{m}={float(s.getParameter(f'gain_{m}')):.2f}")
-                except Exception:
-                    pass
-            print(f"  seg{k} gains: " + ", ".join(vals))
+        s_used = [float(x) for x in
+                  args.emg_s_values.replace(",", " ").split()]
+        s_file = os.path.join(OUT_DIR, f"moco_inverse_s_used{tag}.csv")
+        with open(s_file, "w", encoding="utf-8") as f:
+            f.write("segment,muscle,s\n")
+            for m, sv in zip(active, s_used):
+                f.write(f"0,{m},{sv:.8f}\n")
+        print(f"wrote s_used             -> {s_file}")
 
     try:
         chk = osim.MocoTrajectory(sol_file)

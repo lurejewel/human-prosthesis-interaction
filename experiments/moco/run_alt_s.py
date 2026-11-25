@@ -1,8 +1,8 @@
-"""Alternating optimization of the reverse-scaled B-form scale factors.
+"""Alternating optimization of native B-form scale factors.
 
-For fixed s, minimize the MocoInverse objective with the reverse-scaled
-tracking goal (no free parameters).  Then update each scale factor by the
-closed-form block minimizer
+For fixed s, minimize the MocoInverse objective with reference e/s and
+per-control weight w*s^2 (no free parameters).  Then update each scale factor
+by the closed-form block minimizer
 
     s_i = clip( <e_i, u_i> / <u_i, u_i>,  s_min, s_max )
 
@@ -59,18 +59,6 @@ def update_s(traj_path, ref_path, s_old, lo=0.5, hi=2.0):
     return s_new
 
 
-def write_guess(src, dst, s_vals):
-    # Import lazily: only this helper needs OpenSim.
-    sys.path.insert(0, HERE)
-    import moco_bootstrap
-    moco_bootstrap.ensure_casadi_plugins()
-    import opensim as osim
-    tr = osim.MocoTrajectory(src)
-    for m, v in zip(MUSCLES, s_vals):
-        tr.setParameter(f"gain_{m}", float(v))
-    tr.write(dst)
-
-
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--start", type=float, default=199.5)
@@ -98,7 +86,7 @@ def main(argv=None):
             "--sagittal-cost", "--nonsagittal-weight", "1e-3",
             "--emg-tracking", REF,
             "--emg-weight", str(args.weight),
-            "--emg-rev-goal",
+            "--emg-native-b-fixed",
             "--emg-s-values", ",".join(f"{v:.10g}" for v in s),
             "--tag", tag,
         ]
@@ -122,10 +110,8 @@ def main(argv=None):
             f"{m}={v:.4f}" for m, v in zip(MUSCLES, s_new)))
         print(f"  max|ds| = {dmax:.6g}")
 
-        # Warm start for the next iteration, with parameters set to s_new.
-        guess = os.path.join(out, f"alt_guess_{args.tag}_{k + 1}.sto")
-        write_guess(seg, guess, s_new)
-        prev_sol = guess
+        # Warm start for the next iteration with the latest B-form trajectory.
+        prev_sol = seg
         s = s_new
         if dmax < args.tol:
             print(f"converged after {k + 1} iterations")

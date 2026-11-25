@@ -137,25 +137,23 @@ MocoInverse 内部再把旋转坐标 deg→rad（`prepare_kinematics_radians`）
 
 ## 6. 每组脚本就位与运行
 
-`experiments/scripts/setup_group_pipeline.py` 已把 10 个脚本拷入每组：
-`grf_filter.py, fix_grf_heel_strike.py, ik_filter.py, make_emg_reference.py, detect_steady_state.py, process_semg_jw.py, trial_paths.py, run_pipeline.py, moco_inverse.py, moco_bootstrap.py`。
+`experiments/scripts/setup_group_pipeline.py` 已把 14 个脚本拷入每组，包括预处理、可视化、`moco_inverse.py`（仅 B-form）和外层驱动 `run_bform_outer.py`。`trial_paths.py` 与各脚本均从所在目录定位输入，输出也全部留在本组目录。
 
-`trial_paths.py` 从**脚本所在目录**自动发现本组文件（`*_grf.mot / *_grf.xml / *_ik.mot / *_simbody.osim`），`run_pipeline.py` 用这些覆盖各模块的路径全局量并把 `OUT_DIR` 设到本组 `moco_outputs/`，且 `os.chdir` 到本组 ⇒ **所有输出（含 opensim.log、solver sentinel、分段文件）都留在本组目录**。原 SQR 脚本不受影响。
-
-运行（在组目录内）：
+预处理（已完成，若原始数据更新才需重跑）：
 ```
-python run_pipeline.py                 # 前置：grf,ik,semg,emg
-python run_pipeline.py --solve         # 前置 + MocoInverse（30 s 窗）
-python run_pipeline.py --solve -- --mesh 0.002 --emg-weight 0.1
+python run_pipeline.py
 ```
-MocoInverse 关键参数（沿用 SQR 验证值）：`--mesh 0.002`（2 ms；1 ms 不收敛、20 ms  chatter）、`--segment 2.0 --overlap 0.5`（30 s ⇒ ~15 段，每段 ~1500 区间 ≈4 GB、3–5 min；整组 45–75 min）、`--emg-tracking *_emg_reference.sto --emg-weight 0.1`、residual 容量 400 N·m / 500 N。
-**实测性能警告（本机）**：JW_walking1p0 在 2 ms 网格下单段（3 s、1500 区间）≈**29 min**（465 迭代），故 30 s/15 段 ≈**7 h**，比 README 估计慢 ~6–10 倍。后续 7 组生产求解的算力规划须按实测而非 README。慢因待查（RAM/swap、MUMPS 线程、EMG-gain 开销）。
-QC：`check_solution_quality.py`（chatter alt/std >0.15 判不可用）+ `read_moco_results.m`。
 
-**链路验证（已完成）**：JW_walking1p0 冒烟求解（0.3 s @ mesh 0.02）`solved=True, iterations=26, objective=172.26`，模型/IK 弧度化/GRF 窗/ExternalLoads/EMG 参考全部从组目录加载成功；residual 峰值 83 N / 46 N·m（远低于 500/400 容量），2/18 肌肉激活饱和。`.vtp` 几何缺失 warning 仅影响渲染，不影响求解。完整 30 s 求解（mesh 0.002、分段 2 s+0.5 overlap）随后执行。
+肌肉激励统一使用 **B-form 内外交替**，不允许 A-form：
+```
+python run_bform_outer.py --workers 4 --bootstrap-only
+python run_bform_outer.py --resume bform_outputs/checkpoint.json --workers 4
+```
+第 0 代以 10 块肌肉 `s=1` 求解形成初值；之后每代固定上一代闭式更新的 `s`，4 个 chunk 并行求解，并以上一代轨迹作初值。完整自动运行可用 `python run_bform_outer.py --workers 4 --max-updates 40`。详见 [JW_Bform_runbook.md](JW_Bform_runbook.md)。
+
+**旧的 A-form 冒烟与 30 s 串行结果仅作历史链路验证，不用于后续生产。** 旧结果曾验证模型/IK/GRF/EMG 输入可加载、2 ms 网格可收敛；A-form 的自由增益实现及其 `--solve` 入口已删除。
 **输入跨度审计（7/7 通过）**：各组 IK/GRF/EMG 参考均覆盖 `[a0-0.5, min(a1+0.5, 记录末端)]`（burn-in 钳位到数据末端）；EMG 参考左端留 1 s 余量。
-**30 s 生产配置验证（JW_walking1p0，已完成）**：15/15 段 `solved=True`，window 154.689–184.689、mesh 0.002，总耗时 383.8 min，objective 38498.6，5219 迭代。`check_solution_quality.py` 判定 **OK：激活平滑、肌肉力可信**（worst activation chatter 0.016 ≪ 0.15；残差近界 0 个）。EMG tracking 生效（10 个 gain 解出于 [0.5,2]）。
-**质量注意事项**：13/18 肌肉激活饱和（模型强度限制，SQR 亦 12/18）；14 个拼接刀口中 3 个（172.689 / 174.689 / 180.689 s）activation 跳变 0.14–0.28，属分段求解固有 seam 不连续，用肌肉力时避开这些刀口邻域或加大 overlap 重解。
+QC：`check_solution_quality.py`（chatter alt/std >0.15 判不可用）+ `read_moco_results.m`。
 
 ---
 
@@ -177,7 +175,8 @@ QC：`check_solution_quality.py`（chatter alt/std >0.15 判不可用）+ `read_
 - `process_semg_jw.py` — JW 多设备 sEMG 预处理
 - `derotate_grf.py` — 坡度组 GRF 台面系倾斜的**纯诊断**报告（禁止改力数据）
 - `trial_paths.py` — 组内路径自动发现
-- `run_pipeline.py` — 组内流水线编排
+- `run_pipeline.py` — 组内预处理流水线编排（不再直接调用 MocoInverse）
+- `run_bform_outer.py` — B-form 内外交替、第 0 代 bootstrap、chunk 并行与 checkpoint
 - `setup_group_pipeline.py` — 拷贝脚本到各组
 
-各组目录新增产物：`steady_state_*`、`*_grf_filtered.mot/.xml`、`*_ik_filtered.mot`、`*_semg_processed.csv`、`*_semg_artifacts.csv`、`*_semg_envelope.png`、`*_emg_reference.sto/.csv`、`grf_frame_report.json`（坡度组）、`notes.txt`（已填）、12 个脚本副本（含 `check_solution_quality.py`）。
+各组目录新增产物：`steady_state_*`、`*_grf_filtered.mot/.xml`、`*_ik_filtered.mot`、`*_semg_processed.csv`、`*_semg_artifacts.csv`、`*_semg_envelope.png`、`*_emg_reference.sto/.csv`、`grf_frame_report.json`（坡度组）、`notes.txt`（已填）、14 个脚本副本（含 `check_solution_quality.py`）。

@@ -21,7 +21,7 @@ DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data"))
 FROM_SCRIPTS = ["grf_filter.py", "fix_grf_heel_strike.py", "ik_filter.py",
                 "make_emg_reference.py", "detect_steady_state.py",
                 "process_semg_jw.py", "derotate_grf.py", "trial_paths.py",
-                "run_pipeline.py", "visualize_preprocessing.m"]
+                "run_pipeline.py", "run_bform_outer.py", "visualize_preprocessing.m"]
 FROM_MOCO = ["moco_inverse.py", "moco_bootstrap.py", "check_solution_quality.py"]
 
 
